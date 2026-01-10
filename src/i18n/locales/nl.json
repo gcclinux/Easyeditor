@@ -221,6 +221,8 @@
         "internal_desc": "Ankerlink naar een kop",
         "download": "Download Link",
         "download_desc": "Relatief pad om te downloaden",
+        "markdown_img": "Markdown Afbeelding",
+        "markdown_img_desc": "Markdown Afbeelding Link",
         "image_url": "Markdown Afb URL",
         "image_url_desc": "Afbeelding linken naar project"
     },

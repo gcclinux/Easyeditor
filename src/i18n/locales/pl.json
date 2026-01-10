@@ -221,6 +221,8 @@
         "internal_desc": "Kotwica do nagłówka",
         "download": "Link Pobierania",
         "download_desc": "Ścieżka względna pliku",
+        "markdown_img": "Obraz Markdown",
+        "markdown_img_desc": "Link do obrazu Markdown",
         "image_url": "URL Obrazu Markdown",
         "image_url_desc": "Osadź obraz z linkiem do projektu"
     },

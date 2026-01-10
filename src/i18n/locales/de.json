@@ -221,6 +221,8 @@
         "internal_desc": "Anker-Link zu einer Überschrift",
         "download": "Download-Link",
         "download_desc": "Relativer Pfad zum Herunterladen",
+        "markdown_img": "Markdown Bild",
+        "markdown_img_desc": "Markdown Bild Link",
         "image_url": "Markdown Bild-URL",
         "image_url_desc": "Bild einbetten mit Link zum Projekt"
     },

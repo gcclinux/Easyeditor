@@ -221,6 +221,8 @@
         "internal_desc": "Link âncora para um cabeçalho",
         "download": "Link de Download",
         "download_desc": "Caminho relativo para download",
+        "markdown_img": "Imagem Markdown",
+        "markdown_img_desc": "Link de Imagem Markdown",
         "image_url": "URL de Imagem Markdown",
         "image_url_desc": "Incorporar imagem com link para projeto"
     },

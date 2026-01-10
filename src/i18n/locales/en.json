@@ -221,6 +221,8 @@
         "internal_desc": "Anchor link to a heading within the current document",
         "download": "Download Link",
         "download_desc": "Relative path link for downloadable assets",
+        "markdown_img": "Markdown Image",
+        "markdown_img_desc": "Markdown Image Link",
         "image_url": "Markdown Img URL",
         "image_url_desc": "Embed an image that links to the EasyEditor project"
     },
