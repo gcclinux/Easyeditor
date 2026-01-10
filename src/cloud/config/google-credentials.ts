@@ -129,7 +129,8 @@ const ENVIRONMENT_CONFIGS: Record<string, GoogleDriveEnvironmentConfig> = {
       'https://127.0.0.1:3024',
       'http://tauri.localhost',
       'https://tauri.localhost',
-      'tauri://localhost'
+      'tauri://localhost',
+      'https://easyedit-cloud.web.app'
     ],
     REDIRECT_URI: typeof window !== 'undefined' ? window.location.origin : 'http://localhost:3024'
   },
@@ -140,10 +141,11 @@ const ENVIRONMENT_CONFIGS: Record<string, GoogleDriveEnvironmentConfig> = {
     API_KEY: getEnvVar('VITE_GOOGLE_API_KEY_PROD') ||
       'your-production-api-key',
     AUTHORIZED_DOMAINS: [
-      'https://easyeditoror.co.uk',
-      'https://www.easyeditoror.co.uk'
+      'https://easyeditor.co.uk',
+      'https://www.easyeditor.co.uk',
+      'https://easyedit-cloud.web.app'
     ],
-    REDIRECT_URI: 'https://easyeditoror.co.uk'
+    REDIRECT_URI: 'https://easyeditor.co.uk'
   }
 };
 

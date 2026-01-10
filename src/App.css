@@ -159,6 +159,16 @@ html,
   font-family: "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", sans-serif;
 }
 
+/* Ensure Horizontal Rule is visible in all preview modes */
+.preview-horizontal hr,
+.preview-parallel hr,
+.preview-horizontal-full hr {
+  border: none;
+  border-top: 1px solid var(--border-dark);
+  margin: 1.5em 0;
+  width: 100%;
+}
+
 
 
 /* Header spacing */
@@ -241,6 +251,22 @@ html,
     background-color: var(--bg-table-header);
     color: #000000;
   }
+}
+
+/* Ensure the full preview container handles scrolling */
+.preview-horizontal-full {
+  overflow-y: auto !important;
+  overflow-x: auto !important;
+  /* Allow horizontal scrolling */
+}
+
+/* Ensure code blocks and ascii art in full view expand fully and don't scroll internally */
+.preview-horizontal-full .code-block-container,
+.preview-horizontal-full .ascii-art {
+  overflow: visible !important;
+  /* Allow content to expand */
+  max-height: none !important;
+  height: auto !important;
 }
 
 /* Textarea Parallel */
