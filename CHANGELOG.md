@@ -7,9 +7,10 @@ EasyEditor is an easy markdown editor that allows you to write Markdown (MD) and
 *EasyEditor is a free and open-source project. You can use it for free and modify it as you like.*
 
 ## Latest CODE version
-- 1.5.2 - Several bug fixes, documentation and replacing electron with tauri
+- 1.6.0 - Packaging version bump and minor fixes and premium features enabled
 
 ## Version changes
+- 1.5.2 - Several bug fixes, documentation and replacing electron with tauri
 - 1.5.1-tauri - The same build just packaged with tauri package manager
 - 1.5.0 - Implemented File System Access API for modern browsers (Chrome/Edge/Opera)
 - 1.4.6 - Implemented new ascii template and ascii-art in preview

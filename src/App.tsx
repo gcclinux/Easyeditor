@@ -2050,11 +2050,27 @@ const App = () => {
               <button className="dropdown-item" onClick={async () => {
                 const url = 'https://github.com/gcclinux/EasyEditor/discussions';
                 let opened = false;
-                try {
-                  const w = window.open(url, '_blank', 'noopener');
-                  if (w) opened = true;
-                } catch (e) {
-                  console.warn('window.open threw:', e);
+
+                // Check environment
+                const isTauri = typeof window !== 'undefined' &&
+                  ((window as any).__TAURI__ || (window as any).__TAURI_INTERNALS__ ||
+                    typeof (window as any).__TAURI_INVOKE__ === 'function');
+
+                if (isTauri) {
+                  try {
+                    const { open } = await import('@tauri-apps/plugin-shell');
+                    await open(url);
+                    opened = true;
+                  } catch (e) {
+                    console.error('Tauri shell open failed:', e);
+                  }
+                } else {
+                  try {
+                    const w = window.open(url, '_blank', 'noopener');
+                    if (w) opened = true;
+                  } catch (e) {
+                    console.warn('window.open threw:', e);
+                  }
                 }
 
                 if (!opened) {
@@ -2077,11 +2093,27 @@ const App = () => {
               <button className="dropdown-item" onClick={async () => {
                 const url = 'https://buymeacoffee.com/gcclinux';
                 let opened = false;
-                try {
-                  const w = window.open(url, '_blank', 'noopener');
-                  if (w) opened = true;
-                } catch (e) {
-                  console.warn('window.open threw:', e);
+
+                // Check environment
+                const isTauri = typeof window !== 'undefined' &&
+                  ((window as any).__TAURI__ || (window as any).__TAURI_INTERNALS__ ||
+                    typeof (window as any).__TAURI_INVOKE__ === 'function');
+
+                if (isTauri) {
+                  try {
+                    const { open } = await import('@tauri-apps/plugin-shell');
+                    await open(url);
+                    opened = true;
+                  } catch (e) {
+                    console.error('Tauri shell open failed:', e);
+                  }
+                } else {
+                  try {
+                    const w = window.open(url, '_blank', 'noopener');
+                    if (w) opened = true;
+                  } catch (e) {
+                    console.warn('window.open threw:', e);
+                  }
                 }
 
                 if (!opened) {

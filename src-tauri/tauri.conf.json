@@ -1,6 +1,6 @@
 {
   "productName": "easyeditor",
-  "version": "1.5.2",
+  "version": "1.6.0",
   "identifier": "com.easyeditor.editor",
   "build": {
     "beforeBuildCommand": "npm run build",
@@ -24,7 +24,11 @@
     ],
     "security": {
       "csp": null,
-      "capabilities": ["default", "shell-scope", "window-scope"],
+      "capabilities": [
+        "default",
+        "shell-scope",
+        "window-scope"
+      ],
       "dangerousDisableAssetCspModification": true
     },
     "withGlobalTauri": false
@@ -44,7 +48,16 @@
     ],
     "fileAssociations": [
       {
-        "ext": ["md", "markdown", "mdown", "mkd", "mkdn", "mdwn", "mdtxt", "mdtext"],
+        "ext": [
+          "md",
+          "markdown",
+          "mdown",
+          "mkd",
+          "mkdn",
+          "mdwn",
+          "mdtxt",
+          "mdtext"
+        ],
         "name": "Markdown Document",
         "description": "Markdown Document",
         "role": "Editor"

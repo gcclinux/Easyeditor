@@ -30,8 +30,8 @@ ENV NODE_ENV=production
 CMD ["serve", "-s", "dist", "-l", "3024"]
 
 # BUILD:
-# docker build -t gcclinux/easyeditor:1.5.2 .
+# docker build -t gcclinux/easyeditor:1.6.0 .
 # RUN:
-# docker run --name EASYEDITOR --rm -p 3024:3024 gcclinux/easyeditor:1.5.2
+# docker run --name EASYEDITOR --rm -p 3024:3024 gcclinux/easyeditor:1.6.0
 # CONFIGURE:
-# docker run -d --name EASYEDITOR --rm -p 3024:3024 gcclinux/easyeditor:1.5.2
+# docker run -d --name EASYEDITOR --rm -p 3024:3024 gcclinux/easyeditor:1.6.0
