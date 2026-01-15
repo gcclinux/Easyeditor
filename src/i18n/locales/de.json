@@ -151,6 +151,7 @@
         "badge_hosted": "Eigenständig oder Gehostet (Kostenlos)",
         "badge_git": "Git-Versionskontrolle (Kostenlos)",
         "badge_cloud": "Cloud-Integration (Premium)",
+        "badge_roadmap": "Roadmap",
         "what_it_is": "Was es ist",
         "what_it_is_desc": "EasyEditor ist ein einfacher Markdown-Editor, mit dem Sie Markdown schreiben und in Echtzeit vorschauen können. Sie können .md-Dateien speichern und laden, Ihre Notizen als PDF exportieren und die gerenderte Ausgabe schnell teilen oder kopieren. Es ist leichtgewichtig, funktioniert offline und stört nicht, damit Sie sich auf das Schreiben konzentrieren können.",
         "support": "Support & Diskussionen:",

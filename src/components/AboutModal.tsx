@@ -133,6 +133,9 @@ export function AboutModal({ open, onClose }: AboutModalProps) {
               <span className="badge">{t('about.badge_hosted')}</span>
               <span className="badge">{t('about.badge_git')}</span>
               <span className="badge">{t('about.badge_cloud')}</span>
+              <a href="https://easyeditor.co.uk/" target="_blank" rel="noopener noreferrer" style={{ textDecoration: 'none' }}>
+                <span className="badge">{t('about.badge_roadmap')}</span>
+              </a>
             </div>
           </div>
         </div>

@@ -151,6 +151,7 @@
         "badge_hosted": "Zelfstandig of Gehost (Gratis)",
         "badge_git": "Git Versiebeheer (Gratis)",
         "badge_cloud": "Cloud Integratie (Premium)",
+        "badge_roadmap": "Roadmap",
         "what_it_is": "Wat het is",
         "what_it_is_desc": "EasyEditor is een eenvoudige Markdown-editor waarmee je Markdown kunt schrijven en in realtime kunt bekijken. Je kunt .md-bestanden opslaan en laden, je notities naar PDF exporteren en de gerenderde uitvoer snel delen of kopiëren. Het is lichtgewicht, werkt offline en zit niet in de weg, zodat je je kunt concentreren op het schrijven.",
         "support": "Ondersteuning & discussies:",
