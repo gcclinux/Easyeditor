@@ -4,8 +4,11 @@ import ConfirmationModal from './ConfirmationModal';
 import { cloudManager } from '../cloud/managers/CloudManager';
 import { cloudToastService } from '../cloud/utils/CloudToastService';
 import { offlineManager } from '../cloud/utils/OfflineManager';
+
 import CloudSyncIndicator from './CloudSyncIndicator';
 import type { NoteMetadata, ProviderMetadata } from '../cloud/interfaces';
+import LicenseManager from '../premium/LicenseManager';
+import { isTauriEnvironment } from '../utils/environment';
 
 interface EasyNotesSidebarProps {
   showEasyNotesSidebar: boolean;
@@ -33,7 +36,9 @@ const EasyNotesSidebar: React.FC<EasyNotesSidebarProps> = ({
   const [syncing, setSyncing] = useState(false);
   const [showNewNoteDialog, setShowNewNoteDialog] = useState(false);
   const [newNoteTitle, setNewNoteTitle] = useState('');
+
   const [selectedProvider, setSelectedProvider] = useState<string>('googledrive');
+  const [hasLicense, setHasLicense] = useState(LicenseManager.hasActiveLicense());
 
   // Delete confirmation modal state
   const [deleteConfirmModal, setDeleteConfirmModal] = useState<{
@@ -62,6 +67,7 @@ const EasyNotesSidebar: React.FC<EasyNotesSidebarProps> = ({
   });
 
   // Initialize CloudToastService with the showToast callback
+
   useEffect(() => {
     cloudToastService.initialize((message, type) => {
       // Convert loading type to info for the main app's toast system
@@ -77,8 +83,14 @@ const EasyNotesSidebar: React.FC<EasyNotesSidebarProps> = ({
 
     offlineManager.addListener(handleOfflineStateChange);
 
+    // Subscribe to license changes
+    const unsubscribeLicense = LicenseManager.subscribe(() => {
+      setHasLicense(LicenseManager.hasActiveLicense());
+    });
+
     return () => {
       offlineManager.removeListener(handleOfflineStateChange);
+      unsubscribeLicense();
     };
   }, [showToast]);
 
@@ -446,6 +458,23 @@ const EasyNotesSidebar: React.FC<EasyNotesSidebarProps> = ({
   const getConnectedProviders = () => {
     return Object.entries(providers).filter(([_, metadata]) => metadata.connected);
   };
+
+  const handleUpgradeClick = async (e: React.MouseEvent) => {
+    e.preventDefault();
+    const url = 'https://easyeditor.co.uk/#pricing';
+
+    if (isTauriEnvironment()) {
+      try {
+        const { open } = await import('@tauri-apps/plugin-shell');
+        await open(url);
+      } catch (err) {
+        console.error('Failed to open URL', err);
+        showToast('Failed to open browser', 'error');
+      }
+    } else {
+      window.open(url, '_blank', 'noopener,noreferrer');
+    }
+  };
   return (
     <div
       className={`easynotes-sidebar ${showEasyNotesSidebar ? 'easynotes-sidebar-open' : ''}`}
@@ -497,56 +526,90 @@ const EasyNotesSidebar: React.FC<EasyNotesSidebarProps> = ({
           Cloud Providers
         </h3>
 
-        {Object.entries(providers).map(([providerName, metadata]) => (
-          <div key={providerName} style={{
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'space-between',
-            padding: '8px 12px',
-            marginBottom: '8px',
-            backgroundColor: metadata.connected ? 'var(--bg-success-light)' : 'var(--bg-dropdown-hover)',
+        {!hasLicense ? (
+          <div style={{
+            padding: '15px',
+            backgroundColor: 'var(--bg-dropdown-hover)',
             border: '1px solid var(--border-secondary)',
-            borderRadius: '6px'
+            borderRadius: '6px',
+            textAlign: 'center'
           }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-              <span style={{ fontSize: '16px' }}>{metadata.icon}</span>
-              <span style={{ fontSize: '14px' }}>{metadata.displayName}</span>
-              {metadata.connected && metadata.lastSync && (
-                <span style={{ fontSize: '12px', color: 'var(--color-text-light)' }}>
-                  {formatDate(metadata.lastSync)}
-                </span>
-              )}
-            </div>
+            <p style={{ marginBottom: '10px', fontSize: '14px', color: 'var(--color-text-dropdown)' }}>
+              Upgrade to Premium to sync your notes with Google Drive.
+            </p>
             <button
-              onClick={() => metadata.connected ? handleDisconnectProvider(providerName) : handleConnectProvider(providerName)}
-              disabled={operationStates.connecting[providerName] || operationStates.disconnecting[providerName] || operationStates.authenticating[providerName]}
+              onClick={handleUpgradeClick}
               style={{
-                padding: '4px 8px',
-                fontSize: '12px',
-                backgroundColor: metadata.connected ? 'var(--bg-error)' : 'var(--bg-success)',
+                padding: '8px 16px',
+                backgroundColor: 'var(--bg-primary)',
                 color: 'white',
                 border: 'none',
                 borderRadius: '4px',
-                cursor: (operationStates.connecting[providerName] || operationStates.disconnecting[providerName] || operationStates.authenticating[providerName]) ? 'not-allowed' : 'pointer',
-                opacity: (operationStates.connecting[providerName] || operationStates.disconnecting[providerName] || operationStates.authenticating[providerName]) ? 0.6 : 1,
+                cursor: 'pointer',
+                fontSize: '14px',
+                fontWeight: '500',
                 display: 'flex',
                 alignItems: 'center',
-                gap: '4px'
+                justifyContent: 'center',
+                width: '100%',
+                gap: '5px'
               }}
             >
-              {(operationStates.connecting[providerName] || operationStates.authenticating[providerName]) && (
-                <FaSync className="fa-spin" style={{ fontSize: '10px' }} />
-              )}
-              {operationStates.disconnecting[providerName] && (
-                <FaSync className="fa-spin" style={{ fontSize: '10px' }} />
-              )}
-              {operationStates.connecting[providerName] ? 'Connecting...' :
-                operationStates.authenticating[providerName] ? 'Authenticating...' :
-                  operationStates.disconnecting[providerName] ? 'Disconnecting...' :
-                    metadata.connected ? 'Disconnect' : 'Connect'}
+              Enable Premium Subscription
             </button>
           </div>
-        ))}
+        ) : (
+          Object.entries(providers).map(([providerName, metadata]) => (
+            <div key={providerName} style={{
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+              padding: '8px 12px',
+              marginBottom: '8px',
+              backgroundColor: metadata.connected ? 'var(--bg-success-light)' : 'var(--bg-dropdown-hover)',
+              border: '1px solid var(--border-secondary)',
+              borderRadius: '6px'
+            }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <span style={{ fontSize: '16px' }}>{metadata.icon}</span>
+                <span style={{ fontSize: '14px' }}>{metadata.displayName}</span>
+                {metadata.connected && metadata.lastSync && (
+                  <span style={{ fontSize: '12px', color: 'var(--color-text-light)' }}>
+                    {formatDate(metadata.lastSync)}
+                  </span>
+                )}
+              </div>
+              <button
+                onClick={() => metadata.connected ? handleDisconnectProvider(providerName) : handleConnectProvider(providerName)}
+                disabled={operationStates.connecting[providerName] || operationStates.disconnecting[providerName] || operationStates.authenticating[providerName]}
+                style={{
+                  padding: '4px 8px',
+                  fontSize: '12px',
+                  backgroundColor: metadata.connected ? 'var(--bg-error)' : 'var(--bg-success)',
+                  color: 'white',
+                  border: 'none',
+                  borderRadius: '4px',
+                  cursor: (operationStates.connecting[providerName] || operationStates.disconnecting[providerName] || operationStates.authenticating[providerName]) ? 'not-allowed' : 'pointer',
+                  opacity: (operationStates.connecting[providerName] || operationStates.disconnecting[providerName] || operationStates.authenticating[providerName]) ? 0.6 : 1,
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '4px'
+                }}
+              >
+                {(operationStates.connecting[providerName] || operationStates.authenticating[providerName]) && (
+                  <FaSync className="fa-spin" style={{ fontSize: '10px' }} />
+                )}
+                {operationStates.disconnecting[providerName] && (
+                  <FaSync className="fa-spin" style={{ fontSize: '10px' }} />
+                )}
+                {operationStates.connecting[providerName] ? 'Connecting...' :
+                  operationStates.authenticating[providerName] ? 'Authenticating...' :
+                    operationStates.disconnecting[providerName] ? 'Disconnecting...' :
+                      metadata.connected ? 'Disconnect' : 'Connect'}
+              </button>
+            </div>
+          ))
+        )}
       </div>
 
       {/* Actions Section */}

@@ -5,7 +5,7 @@
  * Set a feature to `true` to enable it, or `false` to disable it.
  */
 
-import LicenseManager from '../premium/LicenseManager';
+
 
 export const FEATURES = {
   // EasyNotes cloud integration feature
@@ -26,8 +26,6 @@ export type FeatureFlag = keyof typeof FEATURES;
  */
 export const isFeatureEnabled = (feature: FeatureFlag): boolean => {
   // If the feature is the EasyNotes feature, check for an active license.
-  if (feature === 'EASY_NOTES') {
-    return LicenseManager.hasActiveLicense();
-  }
+
   return FEATURES[feature];
 };
