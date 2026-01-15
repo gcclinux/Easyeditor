@@ -158,25 +158,26 @@ export function AboutModal({ open, onClose }: AboutModalProps) {
             </ul>
           </div>
           <div className="about-card">
-            <h3>{t('about.credits')}</h3>
-            <p>{t('about.built_by')}<br />
-              <span className="muted">{t('about.last_updated')} {lastUpdated}</span>
-            </p>
-            <p>{t('about.license')}<br />{t('about.running_version')} <strong>{version || '...'}</strong><br />{t('about.available_version')} <strong>{availableVersion || '...'}</strong></p>
-          </div>
-          <div className="about-card">
-            <h3>{t('about.git_integration')}</h3>
-            <p>
-              {t('about.git_integration_desc1')}
-            </p>
-            <p>{t('about.git_integration_desc2')}</p>
-          </div>
-          <div className="about-card">
             <h3>{t('about.custom_themes')} & {t('about.why_like')}</h3>
             <p>
               {t('about.custom_themes_desc1')}
             </p>
             <p>{t('about.why_like_desc1')}</p>
+          </div>
+          <div className="about-card">
+            <h3>{t('about.git_integration')} &nbsp; {t('about.native_languages')}</h3>
+            <p>
+              {t('about.git_integration_desc1')}&nbsp;{t('about.git_integration_desc2')}
+              <br />
+              {t('about.native_languages_desc')}
+            </p>
+          </div>
+          <div className="about-card">
+            <h3>{t('about.credits')}</h3>
+            <p>{t('about.built_by')}<br />
+              <span className="muted">{t('about.last_updated')} {lastUpdated}</span>
+            </p>
+            <p>{t('about.license')}<br />{t('about.running_version')} <strong>{version || '...'}</strong><br />{t('about.available_version')} <strong>{availableVersion || '...'}</strong></p>
           </div>
           <div className="about-card">
             <div style={{ display: 'flex', gap: '1rem' }}>

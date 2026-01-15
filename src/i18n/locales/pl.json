@@ -177,6 +177,8 @@
         "license": "Licencja: MIT",
         "running_version": "Uruchomiona wersja:",
         "available_version": "Dostępna wersja:",
+        "native_languages": "Native Languages Integration",
+        "native_languages_desc": "EasyEditor provides built-in native language support for English (EN), Portuguese (BR), German (DE), Dutch (NL), and Polish (PL). The platform is designed to be extensible, allowing the community to create and share custom language files for direct integration into future releases.",
         "premium_features": "Funkcje Premium",
         "premium_features_li1": "Integracja z chmurą EasyNotes",
         "premium_features_li2": "Synchronizacja z Google Drive",
