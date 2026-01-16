@@ -194,6 +194,8 @@
         "license_email_placeholder": "Your Email",
         "license_date": "Purchase Date",
         "license_date_placeholder": "e.g. 1767633074989",
+        "subscription_type": "Subscription Type",
+        "subscription_type_placeholder": "Subscription Plan",
         "check_license": "Check License",
         "close": "Close"
     },

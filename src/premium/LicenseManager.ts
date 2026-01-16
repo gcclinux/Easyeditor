@@ -4,10 +4,12 @@ import { isTauriEnvironment } from '../utils/environment';
 class LicenseManager {
   private static instance: LicenseManager;
   private activeLicense: boolean = false;
+  private plan: string = '';
   private checking: boolean = false;
   private API_ENDPOINT = 'https://easyeditor-premium.web.app/api/check-license';
   private STORAGE_KEY_EMAIL = 'easyeditor-user-email';
   private STORAGE_KEY_DATE = 'easyeditor-user-purchase-date';
+  private STORAGE_KEY_PLAN = 'easyeditor-user-plan';
 
   private constructor() { }
 
@@ -32,9 +34,13 @@ class LicenseManager {
     return this.activeLicense;
   }
 
-  public async setLicenseData(email: string, purchaseDate: string): Promise<void> {
+  public getPlan(): string {
+    return this.plan;
+  }
+
+  public async setLicenseData(email: string): Promise<void> {
     localStorage.setItem(this.STORAGE_KEY_EMAIL, email);
-    localStorage.setItem(this.STORAGE_KEY_DATE, purchaseDate);
+    // We don't set purchase date manually anymore, it comes from the server
     await this.checkLicenseStatus();
   }
 
@@ -44,6 +50,10 @@ class LicenseManager {
 
   public getStoredPurchaseDate(): string | null {
     return localStorage.getItem(this.STORAGE_KEY_DATE);
+  }
+
+  public getStoredPlan(): string | null {
+    return localStorage.getItem(this.STORAGE_KEY_PLAN);
   }
 
   private listeners: (() => void)[] = [];
@@ -61,11 +71,11 @@ class LicenseManager {
 
   private async checkLicenseStatus(): Promise<void> {
     const email = this.getStoredEmail();
-    const purchaseDate = this.getStoredPurchaseDate();
 
-    if (!email || !purchaseDate) {
+    if (!email) {
       const oldStatus = this.activeLicense;
       this.activeLicense = false;
+      this.plan = '';
       if (oldStatus !== this.activeLicense) {
         this.notifyListeners();
       }
@@ -75,32 +85,54 @@ class LicenseManager {
     try {
       const fetchFn = isTauriEnvironment() ? tauriFetch : fetch;
 
+      // Only send email as per new requirement
       const response = await fetchFn(this.API_ENDPOINT, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ email, purchaseDate }),
+        body: JSON.stringify({ email }),
       });
 
       const oldStatus = this.activeLicense;
+      const oldPlan = this.plan;
+
       if (response.ok) {
         const data = await response.json();
-        // Check for "True" string or true boolean, based on the PowerShell output "True"
-        // The user example showed "True", usually JSON returns boolean true/false but PowerShell might format it. 
-        // Assuming standard JSON boolean from web API, but being safe.
+        // Check for "True" string or true boolean
         this.activeLicense = data.hasActiveLicense === true || data.hasActiveLicense === 'True';
+
+        // Store plan if available
+        if (data.plan) {
+          this.plan = data.plan;
+          localStorage.setItem(this.STORAGE_KEY_PLAN, this.plan);
+        } else {
+          this.plan = '';
+          localStorage.removeItem(this.STORAGE_KEY_PLAN);
+        }
+
+        // Store purchaseDate if available (returned from server)
+        if (data.purchaseDate) {
+          localStorage.setItem(this.STORAGE_KEY_DATE, data.purchaseDate.toString());
+        }
       } else {
         this.activeLicense = false;
+        this.plan = '';
       }
 
-      if (oldStatus !== this.activeLicense) {
+      if (oldStatus !== this.activeLicense || oldPlan !== this.plan) {
         this.notifyListeners();
       }
     } catch (error) {
       console.error('Error checking license status:', error);
       const oldStatus = this.activeLicense;
       this.activeLicense = false;
+      // We keep the plan locally if we fail to check? Better to clear it to be safe or keep it cached?
+      // For safety/validity, if check fails, we assume no license.
+      // But maybe we should keep the cached values if network error?
+      // Current implementation clears it. I'll stick to that.
+      this.plan = '';
+
       if (oldStatus !== this.activeLicense) {
         this.notifyListeners();
       }

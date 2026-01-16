@@ -18,14 +18,14 @@ export function AboutModal({ open, onClose }: AboutModalProps) {
   const [availableVersion, setAvailableVersion] = React.useState<string>('');
   const [name, setName] = React.useState('');
   const [email, setEmail] = React.useState('');
-  const [purchaseDate, setPurchaseDate] = React.useState('');
+  const [plan, setPlan] = React.useState('');
   const [isLicenseValid, setIsLicenseValid] = React.useState(false);
 
   React.useEffect(() => {
     const storedEmail = LicenseManager.getStoredEmail();
     if (storedEmail) setEmail(storedEmail);
-    const storedDate = LicenseManager.getStoredPurchaseDate();
-    if (storedDate) setPurchaseDate(storedDate);
+    const storedPlan = LicenseManager.getStoredPlan();
+    if (storedPlan) setPlan(storedPlan);
     const storedName = localStorage.getItem('easyeditor-user-name');
     if (storedName) setName(storedName);
 
@@ -33,12 +33,22 @@ export function AboutModal({ open, onClose }: AboutModalProps) {
     if (LicenseManager.hasActiveLicense()) {
       setIsLicenseValid(true);
     }
+
+    // Subscribe to license changes to update plan
+    const unsubscribe = LicenseManager.subscribe(() => {
+      setIsLicenseValid(LicenseManager.hasActiveLicense());
+      const updatedPlan = LicenseManager.getPlan();
+      setPlan(updatedPlan);
+    });
+
+    return () => unsubscribe();
   }, []);
 
   const handleSaveLicense = async () => {
     localStorage.setItem('easyeditor-user-name', name);
-    await LicenseManager.setLicenseData(email, purchaseDate);
+    await LicenseManager.setLicenseData(email);
     setIsLicenseValid(LicenseManager.hasActiveLicense());
+    setPlan(LicenseManager.getPlan());
   };
 
   React.useEffect(() => {
@@ -230,14 +240,14 @@ export function AboutModal({ open, onClose }: AboutModalProps) {
                     />
                   </div>
                   <div>
-                    <label style={{ display: 'block', fontSize: '0.9em', marginBottom: '4px' }}>{t('about.license_date')}</label>
+                    <label style={{ display: 'block', fontSize: '0.9em', marginBottom: '4px' }}>{t('about.subscription_type')}</label>
                     <input
                       type="text"
-                      value={purchaseDate}
-                      onChange={(e) => setPurchaseDate(e.target.value)}
-                      className="license-purchasedate-input"
-                      style={{ width: '95%', padding: '4px', borderRadius: '4px', border: '1px solid #ccc', color: 'black' }}
-                      placeholder={t('about.license_date_placeholder')}
+                      value={plan}
+                      readOnly
+                      className="license-plan-input"
+                      style={{ width: '95%', padding: '4px', borderRadius: '4px', border: '1px solid #ccc' }}
+                      placeholder={t('about.subscription_type_placeholder')}
                     />
                   </div>
                   <button
