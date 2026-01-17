@@ -2,10 +2,21 @@ name: easyeditor
 version: '1.6.0'
 summary: Easy Markdown Editor
 description: |
-  Easyeditor is an easy markdown editor that allows you to write Markdown (MD) 
-  and preview it in real-time. You can save, load .md files, load Git repo 
-  and stage, commit, push and export to HTML, TXT, PDF & SSTP Encryption, This 
-  application uses classic confinement because it's a Tauri-based application 
+  Easyeditor is a robust Markdown editor designed for developers and writers.
+  It mimics a full Integrated Development Environment (IDE) experience for
+  Markdown projects, featuring real-time preview, HTML/PDF export, and
+  deep integration with version control systems.
+  
+  Key features include:
+  - Real-time Markdown preview
+  - Integration with Cloud Storage Services
+  - Opening and editing files from arbitrary system locations
+  - Export functionality to HTML, PDF, and TXT
+  - SSTP Encryption support
+  - Save and load .md files
+  - Load Git repo and stage, commit, push and export to HTML, TXT, PDF & SSTP Encryption
+  
+  This application uses classic confinement because it's a Tauri-based application 
   requiring WebKitGTK 4.1 with full system access for file operations.
 
 grade: stable
