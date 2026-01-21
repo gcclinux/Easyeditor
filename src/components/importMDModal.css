@@ -1,0 +1,80 @@
+.import-md-modal {
+    text-align: left;
+    min-width: 600px;
+    max-width: 700px;
+}
+
+.import-md-modal h2 {
+    margin-top: 0;
+    text-align: center;
+}
+
+.import-md-modal p {
+    margin-bottom: 20px;
+    text-align: center;
+    color: var(--color-text-secondary);
+}
+
+.import-md-modal .input-group {
+    margin-bottom: 20px;
+}
+
+.import-md-modal .input-group label {
+    display: block;
+    margin-bottom: 5px;
+    font-weight: bold;
+    color: var(--color-text-primary);
+}
+
+.import-md-modal .input-group input {
+    width: 100%;
+    padding: 10px;
+    border-radius: 4px;
+    border: 1px solid var(--border-input);
+    background-color: var(--bg-input);
+    color: var(--color-text-primary);
+    box-sizing: border-box;
+}
+
+.import-md-modal .modal-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+    margin-top: 20px;
+}
+
+.import-md-modal .modal-button {
+    padding: 10px 20px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-weight: bold;
+}
+
+.import-md-modal .cancel-button {
+    background-color: var(--bg-button-secondary);
+    color: var(--color-text-button);
+}
+
+.import-md-modal .cancel-button:hover {
+    background-color: var(--bg-button-hover);
+}
+
+.import-md-modal .submit-button {
+    background: linear-gradient(135deg, var(--btn-menu-gradient-start) 0%, var(--btn-menu-gradient-end) 100%);
+    color: var(--color-text-button);
+}
+
+.import-md-modal .submit-button:hover {
+    opacity: 0.9;
+}
+
+.import-md-modal .submit-button.disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+    filter: grayscale(40%);
+}
+
+.import-md-modal .submit-button.active {
+    box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.15);
+}

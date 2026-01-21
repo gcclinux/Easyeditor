@@ -1,4 +1,8 @@
 {
+    "toasts": {
+        "import_success": "Markdown erfolgreich importiert",
+        "import_error": "Import fehlgeschlagen"
+    },
     "menu": {
         "file": "Datei",
         "select_language": "Sprache auswählen",
@@ -362,6 +366,14 @@
             "error_permission": "Kann nicht in dieses Verzeichnis schreiben. Bitte wählen Sie einen anderen Ordner.",
             "error_security": "Zugriff auf diesen Ordner aufgrund von Browser-Sicherheitsbeschränkungen verweigert.",
             "error_generic": "Fehler bei der Verzeichnisauswahl. Bitte wählen Sie einen anderen Ordner."
+        },
+        "import_md": {
+            "title": "Markdown importieren",
+            "subtitle": "Geben Sie die URL der Markdown-Datei ein, die Sie importieren möchten.",
+            "url_label": "Dokument",
+            "url_placeholder": "https://beispiel.de/datei.md",
+            "cancel": "Abbrechen",
+            "import": "Importieren"
         }
     },
     "templates": {
@@ -383,6 +395,8 @@
         "diagram_examples_desc": "Mermaid Diagrammtypen",
         "ascii_diagram": "ASCII Diagramm",
         "ascii_diagram_desc": "Text-Flussdiagramm",
+        "import_md": "MD Importieren",
+        "import_md_desc": "Markdown von URL importieren",
         "tasks": {
             "basic": "Einfache Liste",
             "basic_desc": "Markierte/Unmarkierte Elemente",

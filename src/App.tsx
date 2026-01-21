@@ -132,6 +132,7 @@ import PasswordModal from './components/PasswordModal';
 import { loadTheme, getCurrentTheme } from './themeLoader';
 import { saveCustomTheme } from './customThemeManager';
 import CloneModal from './components/CloneModal';
+import ImportMDModal from './components/ImportMDModal';
 import FileBrowserModal from './components/FileBrowserModal';
 import GitCredentialsModal from './components/GitCredentialsModal';
 import MasterPasswordModal from './components/MasterPasswordModal';
@@ -224,6 +225,7 @@ const App = () => {
     onSubmit: () => { },
   });
   const [cloneModalOpen, setCloneModalOpen] = useState(false);
+  const [importMDModalOpen, setImportMDModalOpen] = useState(false);
   const [fileBrowserModalOpen, setFileBrowserModalOpen] = useState(false);
   const [repoFiles, setRepoFiles] = useState<string[]>([]);
   const [currentRepoPath, setCurrentRepoPath] = useState<string | null>(null);
@@ -1035,6 +1037,22 @@ const App = () => {
   // Git operation handlers
   const handleGitClone = () => {
     setCloneModalOpen(true);
+  };
+
+  const handleImportMDSubmit = async (url: string) => {
+    try {
+      const response = await fetch(url);
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+      const text = await response.text();
+      setEditorContent(text);
+      setImportMDModalOpen(false);
+      showToast(t('toasts.import_success') || 'Successfully imported Markdown', 'success');
+    } catch (error) {
+      console.error("Import error", error);
+      showToast(`${t('toasts.import_error') || 'Failed to import'}: ${error}`, 'error');
+    }
   };
 
   const handleCloneSubmit = async (url: string, targetDir: string, branch?: string) => {
@@ -2447,6 +2465,11 @@ const App = () => {
           onSubmit={handleCloneSubmit}
           showToast={showToast}
         />
+        <ImportMDModal
+          open={importMDModalOpen}
+          onClose={() => setImportMDModalOpen(false)}
+          onSubmit={handleImportMDSubmit}
+        />
         <FileBrowserModal
           open={fileBrowserModalOpen}
           onClose={() => setFileBrowserModalOpen(false)}
@@ -2733,6 +2756,17 @@ const App = () => {
                   <div className="hdr-desc">{t('templates.ascii_diagram_desc')}</div>
                 </button>
                 <div className="hdr-sep" />
+                <button
+                  className="dropdown-item"
+                  onClick={() => {
+                    setImportMDModalOpen(true);
+                    setShowTemplatesDropdown(false);
+                    setTemplatesPos(null);
+                  }}
+                >
+                  <div className="hdr-title"><FaFileImport /> {t('templates.import_md') || 'Import MD'}</div>
+                  <div className="hdr-desc">{t('templates.import_md_desc') || 'Import Markdown from URL'}</div>
+                </button>
               </div>,
               document.body
             )}

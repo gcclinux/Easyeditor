@@ -1,14 +1,14 @@
- ## *Easyedit*
+ ## *Easyeditor*
 
-Easyedit is an easy markdown editor that allows you to write Markdown (MD) and preview it in real-time. You can save, load .md files, load Git repo and stage,commit, push and export to HTML,TXT, PDF & SSTP Encryption. The idea is to provide a single MD / Mermaid /UML Aplication that can help creating MD documents by build the MD code as easy as a click of a button, with over 130 features & examples.
+Easyeditor is an easy markdown editor that allows you to write Markdown (MD) and preview it in real-time. You can save, load .md files, load Git repo and stage,commit, push and export to HTML,TXT, PDF & SSTP Encryption. The idea is to provide a single MD / Mermaid /UML Aplication that can help creating MD documents by build the MD code as easy as a click of a button, with over 130 features & examples.
 
-![EasyEditor](screenshots/banner-tauri.png)
+![Easyeditor](screenshots/banner-tauri.png)
 
-***EasyEditor is a free and open-source project. You can use it for free and modify it as you like.***
+***Easyeditor is a free and open-source project. You can use it for free and modify it as you like.***
 
 ## *Try it before Installing it*
 
-[![Try EasyEditor Online](https://img.shields.io/badge/🚀_Try_EasyEditor-Launch_Web_App-success?style=for-the-badge&logo=rocket)](https://easyeditor-cloud.web.app/)
+[![Try Easyeditor Online](https://img.shields.io/badge/🚀_Try_Easyeditor-Launch_Web_App-success?style=for-the-badge&logo=rocket)](https://easyeditor-cloud.web.app/)
 
 ## *Install the project*
 ```
@@ -16,8 +16,8 @@ $ node --version
 $ npm --version
 $ git --version
 
-$ git clone https://github.com/gcclinux/EasyEditor.git
-$ cd EasyEditor
+$ git clone https://github.com/gcclinux/easyeditor.git
+$ cd easyeditor
 $ npm install
 ```
 

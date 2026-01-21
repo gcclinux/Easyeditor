@@ -1,4 +1,8 @@
 {
+    "toasts": {
+        "import_success": "Pomyślnie zaimportowano Markdown",
+        "import_error": "Import nie powiódł się"
+    },
     "menu": {
         "file": "Plik",
         "select_language": "Wybierz język",
@@ -362,6 +366,14 @@
             "error_permission": "Nie można pisać w tym katalogu. Wybierz inny folder.",
             "error_security": "Brak dostępu do tego folderu ze względu na zabezpieczenia przeglądarki.",
             "error_generic": "Nie udało się wybrać katalogu. Spróbuj innego folderu."
+        },
+        "import_md": {
+            "title": "Importuj Markdown",
+            "subtitle": "Wprowadź adres URL pliku Markdown, który chcesz zaimportować.",
+            "url_label": "Dokument",
+            "url_placeholder": "https://przyklad.pl/plik.md",
+            "cancel": "Anuluj",
+            "import": "Importuj"
         }
     },
     "templates": {
@@ -383,6 +395,8 @@
         "diagram_examples_desc": "Typy diagramów Mermaid",
         "ascii_diagram": "Diagram ASCII",
         "ascii_diagram_desc": "Schemat blokowy tekstowy",
+        "import_md": "Importuj MD",
+        "import_md_desc": "Importuj Markdown z URL",
         "tasks": {
             "basic": "Lista Podstawowa",
             "basic_desc": "Elementy zaznaczone/niezaznaczone",

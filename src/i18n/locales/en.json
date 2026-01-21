@@ -1,4 +1,8 @@
 {
+    "toasts": {
+        "import_success": "Successfully imported Markdown",
+        "import_error": "Failed to import"
+    },
     "menu": {
         "file": "File",
         "select_language": "Select Language",
@@ -364,6 +368,14 @@
             "error_permission": "Cannot write to this directory. Please choose a different folder or grant write permissions.",
             "error_security": "Cannot access this folder due to browser security restrictions. Please choose a different folder.",
             "error_generic": "Failed to select directory. Please try a different folder."
+        },
+        "import_md": {
+            "title": "Import Markdown",
+            "subtitle": "Enter the URL of the Markdown file you want to import.",
+            "url_label": "Document",
+            "url_placeholder": "https://example.com/file.md",
+            "cancel": "Cancel",
+            "import": "Import"
         }
     },
     "templates": {
@@ -385,6 +397,8 @@
         "diagram_examples_desc": "Mermaid diagram types",
         "ascii_diagram": "ASCII Diagram",
         "ascii_diagram_desc": "Flowchart using text",
+        "import_md": "Import MD",
+        "import_md_desc": "Import Markdown from URL",
         "tasks": {
             "basic": "Basic Task List",
             "basic_desc": "Simple checked/unchecked items",
