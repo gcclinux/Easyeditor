@@ -70,6 +70,14 @@ ul + ul {
   margin-top: 1em;
 }
 
+ul + p + ul {
+  margin-top: 1em;
+}
+
+li.list-break {
+  margin-top: 1em;
+}
+
 @media (prefers-color-scheme: light) {
   :root {
     color: var(--color-text-primary);

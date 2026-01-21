@@ -21,6 +21,50 @@ const PreviewComponent: React.FC<PreviewComponentProps> = React.memo(({
   isHorizontal,
   initializeMermaid
 }) => {
+  // Custom remark plugin to preserve blank lines between list items
+  const preserveListBreaks = () => {
+    return (tree: any) => {
+      const lines = editorContent.split('\n');
+      
+      const visit = (node: any, parent: any, index: number) => {
+        if (node.type === 'listItem' && node.position && index > 0) {
+          const currentLine = node.position.start.line;
+          const prevSibling = parent.children[index - 1];
+          
+          if (prevSibling && prevSibling.position) {
+            const prevLine = prevSibling.position.end.line;
+            if (currentLine - prevLine > 1) {
+              node.data = node.data || {};
+              node.data.hProperties = node.data.hProperties || {};
+              node.data.hProperties.className = 'list-break';
+            }
+          }
+        }
+        
+        // Also check if this is a list following a nested list
+        if (node.type === 'list' && node.position && parent && parent.type === 'root') {
+          const currentLine = node.position.start.line;
+          const prevSibling = parent.children[index - 1];
+          
+          if (prevSibling && prevSibling.position) {
+            const prevLine = prevSibling.position.end.line;
+            if (currentLine - prevLine > 1 && node.children && node.children[0]) {
+              node.children[0].data = node.children[0].data || {};
+              node.children[0].data.hProperties = node.children[0].data.hProperties || {};
+              node.children[0].data.hProperties.className = 'list-break';
+            }
+          }
+        }
+        
+        if (node.children) {
+          node.children.forEach((child: any, i: number) => visit(child, node, i));
+        }
+      };
+      
+      visit(tree, null, 0);
+    };
+  };
+  
   // Effect for view mode changes
   useEffect(() => {
     const reinitializeMermaid = async () => {
@@ -90,11 +134,11 @@ const PreviewComponent: React.FC<PreviewComponentProps> = React.memo(({
       ref={previewRef}
     >
       <ReactMarkdown
-        remarkPlugins={[remarkGfm, remarkEmoji]}
+        remarkPlugins={[remarkGfm, remarkEmoji, preserveListBreaks]}
         rehypePlugins={[rehypeRaw]}
         components={{
-          li({ children }) {
-            return <li>{children}</li>;
+          li({ children, className }) {
+            return <li className={className}>{children}</li>;
           },
           code(_props) {
             const { className, children, ...props } = _props as any;
