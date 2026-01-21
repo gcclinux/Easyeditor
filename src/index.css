@@ -57,6 +57,19 @@ button:focus-visible {
   outline: 4px auto var(--focus-ring);
 }
 
+ul li > p:only-child {
+  margin: 0;
+  display: inline;
+}
+
+ul li + li {
+  margin-top: 0;
+}
+
+ul + ul {
+  margin-top: 1em;
+}
+
 @media (prefers-color-scheme: light) {
   :root {
     color: var(--color-text-primary);

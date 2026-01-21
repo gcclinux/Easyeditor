@@ -93,6 +93,9 @@ const PreviewComponent: React.FC<PreviewComponentProps> = React.memo(({
         remarkPlugins={[remarkGfm, remarkEmoji]}
         rehypePlugins={[rehypeRaw]}
         components={{
+          li({ children }) {
+            return <li>{children}</li>;
+          },
           code(_props) {
             const { className, children, ...props } = _props as any;
             const isInlineFlag = (_props as any)?.inline as boolean | undefined;
@@ -160,8 +163,6 @@ const PreviewComponent: React.FC<PreviewComponentProps> = React.memo(({
               return arr
                 .map((n) => {
                   if (typeof n === 'string') return n;
-                  // @ts-ignore
-                  if (n && n.type === 'br') return '\n';
                   // @ts-ignore
                   if (n && n.props && n.props.children) return flatten(n.props.children as any);
                   return '';
