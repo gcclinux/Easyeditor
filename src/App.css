@@ -204,6 +204,23 @@ html,
   padding-left: 1.5em;
 }
 
+/* Remove vertical margin for nested lists to keep spacing consistent */
+.preview-horizontal ul ul,
+.preview-horizontal ul ol,
+.preview-horizontal ol ul,
+.preview-horizontal ol ol,
+.preview-parallel ul ul,
+.preview-parallel ul ol,
+.preview-parallel ol ul,
+.preview-parallel ol ol,
+.preview-horizontal-full ul ul,
+.preview-horizontal-full ul ol,
+.preview-horizontal-full ol ul,
+.preview-horizontal-full ol ol {
+  margin-top: 0;
+  margin-bottom: 0;
+}
+
 /* Full preview */
 .preview-horizontal-full {
   /* Base preview styles */
