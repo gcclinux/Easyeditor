@@ -24,7 +24,6 @@ setlocal
 set WEBKIT_DISABLE_DMABUF_RENDERER=1
 set WEBKIT_DISABLE_COMPOSITING_MODE=1
 echo Building Tauri application for Windows...
-npm run build
 npm run tauri build
 endlocal
 echo Build finished.
