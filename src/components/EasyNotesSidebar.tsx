@@ -9,6 +9,7 @@ import CloudSyncIndicator from './CloudSyncIndicator';
 import type { NoteMetadata, ProviderMetadata } from '../cloud/interfaces';
 import LicenseManager from '../premium/LicenseManager';
 import { isTauriEnvironment } from '../utils/environment';
+import { useLanguage } from '../i18n/LanguageContext';
 
 interface EasyNotesSidebarProps {
   showEasyNotesSidebar: boolean;
@@ -29,6 +30,7 @@ const EasyNotesSidebar: React.FC<EasyNotesSidebarProps> = ({
   currentCloudNote,
   refreshTrigger
 }) => {
+  const { t } = useLanguage();
   // Use singleton CloudManager instance
   const [notes, setNotes] = useState<NoteMetadata[]>([]);
   const [providers, setProviders] = useState<Record<string, ProviderMetadata>>({});
@@ -475,317 +477,423 @@ const EasyNotesSidebar: React.FC<EasyNotesSidebarProps> = ({
       window.open(url, '_blank', 'noopener,noreferrer');
     }
   };
+
+  // Calculate how many columns are needed based on notes count and available height
+  const calculateColumns = (noteCount: number) => {
+    const baseColumnWidth = 400;
+    const headerHeight = 320; // Height for header, providers, actions, and notes header
+    const noteItemHeight = 75; // Height per note item including margin
+    const availableHeight = window.innerHeight - 120 - headerHeight; // 120px is top offset
+    const notesPerColumn = Math.max(1, Math.floor(availableHeight / noteItemHeight));
+    
+    if (noteCount === 0) return 1;
+    
+    const columnsNeeded = Math.ceil(noteCount / notesPerColumn);
+    const maxColumns = Math.min(columnsNeeded, 3); // Cap at 3 columns
+    
+    // Check if screen can fit the columns
+    const screenWidth = window.innerWidth;
+    const maxPossibleColumns = Math.floor(screenWidth * 0.8 / baseColumnWidth); // Use max 80% of screen
+    
+    return Math.min(maxColumns, Math.max(1, maxPossibleColumns));
+  };
+
+  // Calculate notes per column for distribution
+  const getNotesPerColumn = () => {
+    const headerHeight = 320;
+    const noteItemHeight = 75;
+    const availableHeight = window.innerHeight - 120 - headerHeight;
+    return Math.max(1, Math.floor(availableHeight / noteItemHeight));
+  };
+
+  const [columnCount, setColumnCount] = useState(1);
+
+  // Update column count when notes change or window resizes
+  useEffect(() => {
+    const updateColumns = () => {
+      if (showEasyNotesSidebar) {
+        const newColumnCount = calculateColumns(notes.length);
+        console.log('[EasyNotesSidebar] Column calculation:', { 
+          notesCount: notes.length, 
+          notesPerColumn: getNotesPerColumn(),
+          calculatedColumns: newColumnCount 
+        });
+        setColumnCount(newColumnCount);
+      }
+    };
+
+    updateColumns();
+    window.addEventListener('resize', updateColumns);
+    return () => window.removeEventListener('resize', updateColumns);
+  }, [notes.length, showEasyNotesSidebar]);
+
+  // Split notes into columns
+  const getNotesForColumn = (columnIndex: number) => {
+    const notesPerColumn = getNotesPerColumn();
+    const startIndex = columnIndex * notesPerColumn;
+    const endIndex = startIndex + notesPerColumn;
+    return notes.slice(startIndex, endIndex);
+  };
+
+  const sidebarWidth = columnCount * 400;
+
+  // Helper function to render a note item
+  const renderNoteItem = (note: NoteMetadata) => {
+    const providerMetadata = providers[note.provider];
+    return (
+      <div
+        key={note.id}
+        onClick={() => !operationStates.openingNote[note.id] && handleOpenNote(note)}
+        style={{
+          padding: '10px 12px',
+          marginBottom: '8px',
+          backgroundColor: operationStates.openingNote[note.id] ? 'var(--bg-primary-light)' : 'var(--bg-dropdown-hover)',
+          border: '1px solid var(--border-secondary)',
+          borderRadius: '6px',
+          cursor: operationStates.openingNote[note.id] ? 'wait' : 'pointer',
+          transition: 'background-color 0.2s',
+          opacity: operationStates.openingNote[note.id] ? 0.8 : 1,
+          boxSizing: 'border-box',
+          width: '100%',
+          overflow: 'hidden'
+        }}
+        onMouseEnter={(e) => {
+          if (!operationStates.openingNote[note.id]) {
+            e.currentTarget.style.backgroundColor = 'var(--bg-primary-light)';
+          }
+        }}
+        onMouseLeave={(e) => {
+          if (!operationStates.openingNote[note.id]) {
+            e.currentTarget.style.backgroundColor = 'var(--bg-dropdown-hover)';
+          }
+        }}
+      >
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '4px', gap: '8px' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '6px', flex: 1, minWidth: 0, overflow: 'hidden' }}>
+            <span style={{ fontSize: '14px', flexShrink: 0 }}>{providerMetadata?.icon || '📄'}</span>
+            <span style={{ fontSize: '13px', fontWeight: '500', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{note.title}</span>
+            {currentCloudNote?.noteId === note.id && (
+              <span style={{ fontSize: '14px', flexShrink: 0 }} title="Currently open">🔥</span>
+            )}
+            {operationStates.openingNote[note.id] && (
+              <FaSync className="fa-spin" style={{ fontSize: '12px', color: 'var(--color-text-light)', flexShrink: 0 }} />
+            )}
+          </div>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '4px', flexShrink: 0 }}>
+            <span style={{ fontSize: '11px', color: 'var(--color-text-light)' }}>
+              {formatDate(note.lastModified)}
+            </span>
+            <button
+              onClick={(e) => handleDeleteNote(note, e)}
+              disabled={operationStates.deletingNote[note.id] || operationStates.openingNote[note.id]}
+              style={{
+                background: 'none',
+                border: 'none',
+                color: 'var(--bg-error)',
+                cursor: (operationStates.deletingNote[note.id] || operationStates.openingNote[note.id]) ? 'not-allowed' : 'pointer',
+                padding: '2px 4px',
+                borderRadius: '3px',
+                fontSize: '12px',
+                opacity: (operationStates.deletingNote[note.id] || operationStates.openingNote[note.id]) ? 0.6 : 0.7,
+                transition: 'opacity 0.2s, background-color 0.2s',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '2px'
+              }}
+              title={operationStates.deletingNote[note.id] ? 'Deleting...' : 'Delete note'}
+              onMouseEnter={(e) => {
+                if (!operationStates.deletingNote[note.id] && !operationStates.openingNote[note.id]) {
+                  e.currentTarget.style.opacity = '1';
+                  e.currentTarget.style.backgroundColor = 'var(--bg-error-light)';
+                }
+              }}
+              onMouseLeave={(e) => {
+                if (!operationStates.deletingNote[note.id] && !operationStates.openingNote[note.id]) {
+                  e.currentTarget.style.opacity = '0.7';
+                  e.currentTarget.style.backgroundColor = 'transparent';
+                }
+              }}
+            >
+              {operationStates.deletingNote[note.id] ? (
+                <FaSync className="fa-spin" style={{ fontSize: '10px' }} />
+              ) : (
+                <FaTrash style={{ fontSize: '10px' }} />
+              )}
+            </button>
+          </div>
+        </div>
+        <div style={{ fontSize: '12px', color: 'var(--color-text-light)' }}>
+          {providerMetadata?.displayName || note.provider} • {Math.round(note.size / 1024)}KB
+        </div>
+      </div>
+    );
+  };
+
   return (
     <div
       className={`easynotes-sidebar ${showEasyNotesSidebar ? 'easynotes-sidebar-open' : ''}`}
       style={{
         position: 'fixed',
         top: '120px', // Below the menu bars
-        left: showEasyNotesSidebar ? '0' : '-435px',
-        width: '400px', // Fixed width instead of percentage
+        left: showEasyNotesSidebar ? '0' : `-${sidebarWidth + 35}px`,
+        width: `${sidebarWidth}px`,
         height: 'calc(100vh - 120px)',
         backgroundColor: 'var(--bg-dropdown)',
         color: 'var(--color-text-dropdown)',
         zIndex: 1000000, // Higher than dropdowns (999999) but lower than modals (1000001)
-        transition: 'left 0.3s ease-in-out',
+        transition: 'left 0.3s ease-in-out, width 0.3s ease-in-out',
         borderRight: '2px solid var(--border-secondary)',
-        padding: '20px',
         boxShadow: showEasyNotesSidebar ? '2px 0 10px var(--shadow-md)' : 'none',
-        overflow: 'auto'
+        display: 'flex',
+        flexDirection: 'row',
+        overflow: 'hidden'
       }}
     >
-      {/* Header */}
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
-        <h2 style={{ margin: 0, fontSize: '1.5rem' }}>
-          <FaStickyNote style={{ marginRight: '10px' }} />
-          EasyNotes
-        </h2>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-          <CloudSyncIndicator showDetails={false} />
-          <button
-            onClick={() => setShowEasyNotesSidebar(false)}
-            style={{
-              background: 'none',
-              border: 'none',
-              color: 'var(--color-text-dropdown)',
-              fontSize: '1.5rem',
-              cursor: 'pointer',
-              padding: '5px'
-            }}
-            title="Close EasyNotes"
-          >
-            ×
-          </button>
-        </div>
-      </div>
-
-      {/* Cloud Providers Section */}
-      <div style={{ marginBottom: '20px' }}>
-        <h3 style={{ fontSize: '1rem', marginBottom: '10px', color: 'var(--color-text-dropdown)' }}>
-          <FaCloud style={{ marginRight: '8px' }} />
-          Cloud Providers
-        </h3>
-
-        {!hasLicense ? (
-          <div style={{
-            padding: '15px',
-            backgroundColor: 'var(--bg-dropdown-hover)',
-            border: '1px solid var(--border-secondary)',
-            borderRadius: '6px',
-            textAlign: 'center'
-          }}>
-            <p style={{ marginBottom: '10px', fontSize: '14px', color: 'var(--color-text-dropdown)' }}>
-              Upgrade to Premium to sync your notes with Google Drive.
-            </p>
+      {/* First Column - Header, Providers, Actions, and first set of notes */}
+      <div style={{
+        width: '400px',
+        minWidth: '400px',
+        maxWidth: '400px',
+        padding: '20px',
+        overflow: 'hidden',
+        display: 'flex',
+        flexDirection: 'column',
+        boxSizing: 'border-box'
+      }}>
+        {/* Header */}
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
+          <h2 style={{ margin: 0, fontSize: '1.5rem' }}>
+            <FaStickyNote style={{ marginRight: '10px' }} />
+            EasyNotes
+          </h2>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+            <CloudSyncIndicator showDetails={false} />
             <button
-              onClick={handleUpgradeClick}
+              onClick={() => setShowEasyNotesSidebar(false)}
               style={{
-                padding: '8px 16px',
-                backgroundColor: 'var(--bg-primary)',
-                color: 'white',
+                background: 'none',
                 border: 'none',
-                borderRadius: '4px',
+                color: 'var(--color-text-dropdown)',
+                fontSize: '1.5rem',
                 cursor: 'pointer',
-                fontSize: '14px',
-                fontWeight: '500',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                width: '100%',
-                gap: '5px'
+                padding: '5px'
               }}
+              title="Close EasyNotes"
             >
-              Enable Premium Subscription
+              ×
             </button>
           </div>
-        ) : (
-          Object.entries(providers).map(([providerName, metadata]) => (
-            <div key={providerName} style={{
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'space-between',
-              padding: '8px 12px',
-              marginBottom: '8px',
-              backgroundColor: metadata.connected ? 'var(--bg-success-light)' : 'var(--bg-dropdown-hover)',
+        </div>
+
+        {/* Cloud Providers Section */}
+        <div style={{ marginBottom: '20px' }}>
+          <h3 style={{ fontSize: '1rem', marginBottom: '10px', color: 'var(--color-text-dropdown)' }}>
+            <FaCloud style={{ marginRight: '8px' }} />
+            Cloud Providers
+          </h3>
+
+          {!hasLicense ? (
+            <div style={{
+              padding: '15px',
+              backgroundColor: 'var(--bg-dropdown-hover)',
               border: '1px solid var(--border-secondary)',
-              borderRadius: '6px'
+              borderRadius: '6px',
+              textAlign: 'center'
             }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                <span style={{ fontSize: '16px' }}>{metadata.icon}</span>
-                <span style={{ fontSize: '14px' }}>{metadata.displayName}</span>
-                {metadata.connected && metadata.lastSync && (
-                  <span style={{ fontSize: '12px', color: 'var(--color-text-light)' }}>
-                    {formatDate(metadata.lastSync)}
-                  </span>
-                )}
-              </div>
+              <p style={{ marginBottom: '10px', fontSize: '14px', color: 'var(--color-text-dropdown)' }}>
+                Upgrade to Premium to sync your notes with Google Drive.
+              </p>
               <button
-                onClick={() => metadata.connected ? handleDisconnectProvider(providerName) : handleConnectProvider(providerName)}
-                disabled={operationStates.connecting[providerName] || operationStates.disconnecting[providerName] || operationStates.authenticating[providerName]}
+                onClick={handleUpgradeClick}
                 style={{
-                  padding: '4px 8px',
-                  fontSize: '12px',
-                  backgroundColor: metadata.connected ? 'var(--bg-error)' : 'var(--bg-success)',
+                  padding: '8px 16px',
+                  backgroundColor: 'var(--bg-primary)',
                   color: 'white',
                   border: 'none',
                   borderRadius: '4px',
-                  cursor: (operationStates.connecting[providerName] || operationStates.disconnecting[providerName] || operationStates.authenticating[providerName]) ? 'not-allowed' : 'pointer',
-                  opacity: (operationStates.connecting[providerName] || operationStates.disconnecting[providerName] || operationStates.authenticating[providerName]) ? 0.6 : 1,
+                  cursor: 'pointer',
+                  fontSize: '14px',
+                  fontWeight: '500',
                   display: 'flex',
                   alignItems: 'center',
-                  gap: '4px'
+                  justifyContent: 'center',
+                  width: '100%',
+                  gap: '5px'
                 }}
               >
-                {(operationStates.connecting[providerName] || operationStates.authenticating[providerName]) && (
-                  <FaSync className="fa-spin" style={{ fontSize: '10px' }} />
-                )}
-                {operationStates.disconnecting[providerName] && (
-                  <FaSync className="fa-spin" style={{ fontSize: '10px' }} />
-                )}
-                {operationStates.connecting[providerName] ? 'Connecting...' :
-                  operationStates.authenticating[providerName] ? 'Authenticating...' :
-                    operationStates.disconnecting[providerName] ? 'Disconnecting...' :
-                      metadata.connected ? 'Disconnect' : 'Connect'}
+                Enable Premium Subscription
               </button>
             </div>
-          ))
-        )}
-      </div>
+          ) : (
+            Object.entries(providers).map(([providerName, metadata]) => (
+              <div key={providerName} style={{
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'space-between',
+                padding: '8px 12px',
+                marginBottom: '8px',
+                backgroundColor: metadata.connected ? 'var(--bg-success-light)' : 'var(--bg-dropdown-hover)',
+                border: '1px solid var(--border-secondary)',
+                borderRadius: '6px'
+              }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                  <span style={{ fontSize: '16px' }}>{metadata.icon}</span>
+                  <span style={{ fontSize: '14px' }}>{metadata.displayName}</span>
+                  {metadata.connected && metadata.lastSync && (
+                    <span style={{ fontSize: '12px', color: 'var(--color-text-light)' }}>
+                      {formatDate(metadata.lastSync)}
+                    </span>
+                  )}
+                </div>
+                <button
+                  onClick={() => metadata.connected ? handleDisconnectProvider(providerName) : handleConnectProvider(providerName)}
+                  disabled={operationStates.connecting[providerName] || operationStates.disconnecting[providerName] || operationStates.authenticating[providerName]}
+                  style={{
+                    padding: '4px 8px',
+                    fontSize: '12px',
+                    backgroundColor: metadata.connected ? 'var(--bg-error)' : 'var(--bg-success)',
+                    color: 'white',
+                    border: 'none',
+                    borderRadius: '4px',
+                    cursor: (operationStates.connecting[providerName] || operationStates.disconnecting[providerName] || operationStates.authenticating[providerName]) ? 'not-allowed' : 'pointer',
+                    opacity: (operationStates.connecting[providerName] || operationStates.disconnecting[providerName] || operationStates.authenticating[providerName]) ? 0.6 : 1,
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '4px'
+                  }}
+                >
+                  {(operationStates.connecting[providerName] || operationStates.authenticating[providerName]) && (
+                    <FaSync className="fa-spin" style={{ fontSize: '10px' }} />
+                  )}
+                  {operationStates.disconnecting[providerName] && (
+                    <FaSync className="fa-spin" style={{ fontSize: '10px' }} />
+                  )}
+                  {operationStates.connecting[providerName] ? 'Connecting...' :
+                    operationStates.authenticating[providerName] ? 'Authenticating...' :
+                      operationStates.disconnecting[providerName] ? 'Disconnecting...' :
+                        metadata.connected ? 'Disconnect' : 'Connect'}
+                </button>
+              </div>
+            ))
+          )}
+        </div>
 
-      {/* Actions Section */}
-      <div style={{ marginBottom: '20px' }}>
-        <div style={{ display: 'flex', gap: '8px', marginBottom: '10px' }}>
-          <button
-            onClick={() => setShowNewNoteDialog(true)}
-            disabled={loading || operationStates.creatingNote || getConnectedProviders().length === 0}
-            style={{
-              flex: 1,
-              padding: '10px',
-              backgroundColor: 'var(--bg-success)',
-              color: 'white',
-              border: 'none',
-              borderRadius: '6px',
-              cursor: (loading || operationStates.creatingNote || getConnectedProviders().length === 0) ? 'not-allowed' : 'pointer',
-              fontSize: '14px',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              gap: '6px',
-              opacity: (loading || operationStates.creatingNote || getConnectedProviders().length === 0) ? 0.6 : 1
-            }}
-          >
-            {operationStates.creatingNote ? (
-              <>
-                <FaSync className="fa-spin" /> Creating...
-              </>
-            ) : (
-              <>
-                <FaPlus /> New Note
-              </>
-            )}
-          </button>
+        {/* Actions Section */}
+        <div style={{ marginBottom: '20px' }}>
+          <div style={{ display: 'flex', gap: '8px', marginBottom: '10px' }}>
+            <button
+              onClick={() => setShowNewNoteDialog(true)}
+              disabled={loading || operationStates.creatingNote || getConnectedProviders().length === 0}
+              style={{
+                flex: 1,
+                padding: '10px',
+                backgroundColor: 'var(--bg-success)',
+                color: 'white',
+                border: 'none',
+                borderRadius: '6px',
+                cursor: (loading || operationStates.creatingNote || getConnectedProviders().length === 0) ? 'not-allowed' : 'pointer',
+                fontSize: '14px',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                gap: '6px',
+                opacity: (loading || operationStates.creatingNote || getConnectedProviders().length === 0) ? 0.6 : 1
+              }}
+            >
+              {operationStates.creatingNote ? (
+                <>
+                  <FaSync className="fa-spin" /> Creating...
+                </>
+              ) : (
+                <>
+                  <FaPlus /> New Note
+                </>
+              )}
+            </button>
 
-          <button
-            onClick={handleSyncNotes}
-            disabled={loading || syncing || getConnectedProviders().length === 0}
-            style={{
-              padding: '10px',
-              backgroundColor: 'var(--bg-primary)',
-              color: 'white',
-              border: 'none',
-              borderRadius: '6px',
-              cursor: (loading || syncing || getConnectedProviders().length === 0) ? 'not-allowed' : 'pointer',
-              fontSize: '14px',
-              opacity: (loading || syncing || getConnectedProviders().length === 0) ? 0.6 : 1,
-              display: 'flex',
-              alignItems: 'center',
-              gap: '4px'
-            }}
-            title={syncing ? 'Syncing notes...' : 'Sync notes'}
-          >
-            <FaSync className={syncing ? 'fa-spin' : ''} />
-            {syncing && <span style={{ fontSize: '12px' }}>Syncing</span>}
-          </button>
+            <button
+              onClick={handleSyncNotes}
+              disabled={loading || syncing || getConnectedProviders().length === 0}
+              style={{
+                padding: '10px',
+                backgroundColor: 'var(--bg-primary)',
+                color: 'white',
+                border: 'none',
+                borderRadius: '6px',
+                cursor: (loading || syncing || getConnectedProviders().length === 0) ? 'not-allowed' : 'pointer',
+                fontSize: '14px',
+                opacity: (loading || syncing || getConnectedProviders().length === 0) ? 0.6 : 1,
+                display: 'flex',
+                alignItems: 'center',
+                gap: '4px'
+              }}
+              title={syncing ? 'Syncing notes...' : 'Sync notes'}
+            >
+              <FaSync className={syncing ? 'fa-spin' : ''} />
+              {syncing && <span style={{ fontSize: '12px' }}>Syncing</span>}
+            </button>
+          </div>
+        </div>
+
+        {/* Notes List - First Column */}
+        <div style={{ borderTop: '1px solid var(--border-secondary)', paddingTop: '20px', flex: 1, overflow: 'hidden' }}>
+          <h3 style={{ fontSize: '1.2rem', marginBottom: '15px', color: 'var(--color-text-dropdown)' }}>
+            Notes ({notes.length})
+          </h3>
+
+          {loading && (
+            <div style={{ textAlign: 'center', padding: '20px', color: 'var(--color-text-light)' }}>
+              <FaSync className="fa-spin" style={{ marginRight: '8px' }} />
+              Loading...
+            </div>
+          )}
+
+          {!loading && notes.length === 0 && (
+            <p style={{ color: 'var(--color-text-light)', fontSize: '14px', textAlign: 'center', padding: '20px' }}>
+              {getConnectedProviders().length === 0
+                ? 'Connect to a cloud provider to start creating notes!'
+                : 'No notes yet. Create your first note!'
+              }
+            </p>
+          )}
+
+          {!loading && notes.length > 0 && (
+            <div>
+              {getNotesForColumn(0).map((note) => renderNoteItem(note))}
+            </div>
+          )}
         </div>
       </div>
 
-      {/* Notes List */}
-      <div style={{ borderTop: '1px solid var(--border-secondary)', paddingTop: '20px' }}>
-        <h3 style={{ fontSize: '1.2rem', marginBottom: '15px', color: 'var(--color-text-dropdown)' }}>
-          Notes ({notes.length})
-        </h3>
-
-        {loading && (
-          <div style={{ textAlign: 'center', padding: '20px', color: 'var(--color-text-light)' }}>
-            <FaSync className="fa-spin" style={{ marginRight: '8px' }} />
-            Loading...
+      {/* Additional Columns for overflow notes */}
+      {columnCount > 1 && Array.from({ length: columnCount - 1 }, (_, i) => i + 1).map((colIndex) => {
+        const columnNotes = getNotesForColumn(colIndex);
+        if (columnNotes.length === 0) return null;
+        
+        return (
+          <div
+            key={`column-${colIndex}`}
+            style={{
+              width: '400px',
+              minWidth: '400px',
+              maxWidth: '400px',
+              padding: '20px',
+              borderLeft: '1px solid var(--border-secondary)',
+              overflow: 'hidden',
+              display: 'flex',
+              flexDirection: 'column',
+              boxSizing: 'border-box'
+            }}
+          >
+            <h3 style={{ fontSize: '1rem', marginBottom: '15px', color: 'var(--color-text-dropdown)' }}>
+              EasyNotes ({t('easynotes.continued')})
+            </h3>
+            <div style={{ flex: 1, overflow: 'hidden' }}>
+              {columnNotes.map((note) => renderNoteItem(note))}
+            </div>
           </div>
-        )}
-
-        {!loading && notes.length === 0 && (
-          <p style={{ color: 'var(--color-text-light)', fontSize: '14px', textAlign: 'center', padding: '20px' }}>
-            {getConnectedProviders().length === 0
-              ? 'Connect to a cloud provider to start creating notes!'
-              : 'No notes yet. Create your first note!'
-            }
-          </p>
-        )}
-
-        {!loading && notes.length > 0 && (
-          <div>
-            {notes.map((note) => {
-              const providerMetadata = providers[note.provider];
-              return (
-                <div
-                  key={note.id}
-                  onClick={() => !operationStates.openingNote[note.id] && handleOpenNote(note)}
-                  style={{
-                    padding: '12px',
-                    marginBottom: '8px',
-                    backgroundColor: operationStates.openingNote[note.id] ? 'var(--bg-primary-light)' : 'var(--bg-dropdown-hover)',
-                    border: '1px solid var(--border-secondary)',
-                    borderRadius: '6px',
-                    cursor: operationStates.openingNote[note.id] ? 'wait' : 'pointer',
-                    transition: 'background-color 0.2s',
-                    opacity: operationStates.openingNote[note.id] ? 0.8 : 1
-                  }}
-                  onMouseEnter={(e) => {
-                    if (!operationStates.openingNote[note.id]) {
-                      e.currentTarget.style.backgroundColor = 'var(--bg-primary-light)';
-                    }
-                  }}
-                  onMouseLeave={(e) => {
-                    if (!operationStates.openingNote[note.id]) {
-                      e.currentTarget.style.backgroundColor = 'var(--bg-dropdown-hover)';
-                    }
-                  }}
-                >
-                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '4px' }}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                      <span style={{ fontSize: '14px' }}>{providerMetadata?.icon || '📄'}</span>
-                      <span style={{ fontSize: '14px', fontWeight: '500' }}>{note.title}</span>
-                      {currentCloudNote?.noteId === note.id && (
-                        <span style={{ fontSize: '14px' }} title="Currently open">🔥</span>
-                      )}
-                      {operationStates.openingNote[note.id] && (
-                        <FaSync className="fa-spin" style={{ fontSize: '12px', color: 'var(--color-text-light)' }} />
-                      )}
-                    </div>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
-                      {operationStates.openingNote[note.id] && (
-                        <span style={{ fontSize: '11px', color: 'var(--color-text-light)' }}>Opening...</span>
-                      )}
-                      <span style={{ fontSize: '12px', color: 'var(--color-text-light)' }}>
-                        {formatDate(note.lastModified)}
-                      </span>
-                      <button
-                        onClick={(e) => handleDeleteNote(note, e)}
-                        disabled={operationStates.deletingNote[note.id] || operationStates.openingNote[note.id]}
-                        style={{
-                          background: 'none',
-                          border: 'none',
-                          color: 'var(--bg-error)',
-                          cursor: (operationStates.deletingNote[note.id] || operationStates.openingNote[note.id]) ? 'not-allowed' : 'pointer',
-                          padding: '2px 4px',
-                          borderRadius: '3px',
-                          fontSize: '12px',
-                          opacity: (operationStates.deletingNote[note.id] || operationStates.openingNote[note.id]) ? 0.6 : 0.7,
-                          transition: 'opacity 0.2s, background-color 0.2s',
-                          display: 'flex',
-                          alignItems: 'center',
-                          gap: '2px'
-                        }}
-                        title={operationStates.deletingNote[note.id] ? 'Deleting...' : 'Delete note'}
-                        onMouseEnter={(e) => {
-                          if (!operationStates.deletingNote[note.id] && !operationStates.openingNote[note.id]) {
-                            e.currentTarget.style.opacity = '1';
-                            e.currentTarget.style.backgroundColor = 'var(--bg-error-light)';
-                          }
-                        }}
-                        onMouseLeave={(e) => {
-                          if (!operationStates.deletingNote[note.id] && !operationStates.openingNote[note.id]) {
-                            e.currentTarget.style.opacity = '0.7';
-                            e.currentTarget.style.backgroundColor = 'transparent';
-                          }
-                        }}
-                      >
-                        {operationStates.deletingNote[note.id] ? (
-                          <FaSync className="fa-spin" style={{ fontSize: '10px' }} />
-                        ) : (
-                          <FaTrash style={{ fontSize: '10px' }} />
-                        )}
-                      </button>
-                    </div>
-                  </div>
-                  <div style={{ fontSize: '12px', color: 'var(--color-text-light)' }}>
-                    {providerMetadata?.displayName || note.provider} • {Math.round(note.size / 1024)}KB
-                  </div>
-                </div>
-              );
-            })}
-          </div>
-        )}
-      </div>
+        );
+      })}
 
       {/* New Note Dialog */}
       {showNewNoteDialog && (

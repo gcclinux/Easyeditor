@@ -465,5 +465,8 @@
         "encrypted_desc": "Als .sstp speichern",
         "cloud": "In Cloud speichern",
         "cloud_desc": "Speichern in"
+    },
+    "easynotes": {
+        "continued": "Fortsetzung"
     }
 }

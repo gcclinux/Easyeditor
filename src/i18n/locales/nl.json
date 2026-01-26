@@ -465,5 +465,8 @@
         "encrypted_desc": "Opslaan als .sstp bestand",
         "cloud": "Opslaan in Cloud",
         "cloud_desc": "Opslaan in"
+    },
+    "easynotes": {
+        "continued": "vervolg"
     }
 }

@@ -465,5 +465,8 @@
         "encrypted_desc": "Zapisz jako plik .sstp",
         "cloud": "Zapisz w Chmurze",
         "cloud_desc": "Zapisz w"
+    },
+    "easynotes": {
+        "continued": "kontynuacja"
     }
 }

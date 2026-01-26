@@ -467,5 +467,8 @@
         "encrypted_desc": "Save as encrypted (.sstp) file",
         "cloud": "Save to Cloud",
         "cloud_desc": "Save to"
+    },
+    "easynotes": {
+        "continued": "continued"
     }
 }
