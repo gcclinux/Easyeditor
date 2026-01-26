@@ -111,7 +111,7 @@ import FooterDropdown from './components/FooterDropdown';
 import SymbolsDropdown from './components/SymbolsDropdown';
 import IconsDropdown from './components/IconsDropdown';
 import AutoDropdown from './components/AutoDropdown';
-import GitDropdown from './components/GitDropdown';
+import GitModal from './components/GitModal';
 import { buildDailyJournalTemplate } from './templates/dailyJournal';
 import { buildMeetingNotesTemplate } from './templates/meetingNotes';
 import { buildProjectPlanTemplate } from './templates/projectPlan';
@@ -205,9 +205,7 @@ const App = () => {
   const [showTasksDropdown, setShowTasksDropdown] = useState(false);
   const tasksButtonRef = useRef<HTMLButtonElement | null>(null);
   const [tasksPos, setTasksPos] = useState<{ top: number; left: number; width: number } | null>(null);
-  const [showGitDropdown, setShowGitDropdown] = useState(false);
-  const gitButtonRef = useRef<HTMLButtonElement | null>(null);
-  const [gitPos, setGitPos] = useState<{ top: number; left: number; width: number } | null>(null);
+  const [showGitModal, setShowGitModal] = useState(false);
   const [showEasyNotesSidebar, setShowEasyNotesSidebar] = useState(false);
   const easyNotesButtonRef = useRef<HTMLButtonElement | null>(null);
   const [isEditFull, setIsEditFull] = useState<boolean>(false);
@@ -387,9 +385,7 @@ const App = () => {
     setHelpPos(null);
     setShowTasksDropdown(false);
     setTasksPos(null);
-    setShowGitDropdown(false);
-    setGitPos(null);
-    // Note: EasyNotes sidebar is independent and doesn't close with other dropdowns
+    // Note: Git modal and EasyNotes sidebar are independent and don't close with other dropdowns
   };
 
   // Click-away listener to close dropdowns when clicking outside
@@ -2189,53 +2185,14 @@ const App = () => {
         <div className="dropdown-container">
           <button
             className="help-menubar-btn"
-            ref={el => { gitButtonRef.current = el; }}
-            onMouseDown={(e) => {
-              e.preventDefault();
+            onClick={() => {
               closeAllDropdowns();
-              setShowGitDropdown(true);
-              if (gitButtonRef.current) {
-                const rect = gitButtonRef.current.getBoundingClientRect();
-                const scrollX = window.scrollX || window.pageXOffset || 0;
-                const scrollY = window.scrollY || window.pageYOffset || 0;
-                const dropdownMin = 140;
-                const dropdownWidth = Math.max(rect.width, dropdownMin);
-                let leftPos = rect.left + scrollX + (rect.width - dropdownWidth) / 2;
-                leftPos = Math.max(0, leftPos);
-                setGitPos({ top: rect.bottom + scrollY, left: leftPos, width: dropdownWidth });
-              } else {
-                setGitPos(null);
-              }
+              setShowGitModal(true);
             }}
             title="Git Operations"
           >
-            <FaCodeBranch /> &nbsp; Git ▾
+            <FaCodeBranch /> &nbsp; Git
           </button>
-          {showGitDropdown && gitPos && createPortal(
-            <div className="header-dropdown format-dropdown" style={{ position: 'absolute', top: gitPos.top + 'px', left: gitPos.left + 'px', zIndex: 999999, width: '380px' }}>
-              <GitDropdown
-                onClone={handleGitClone}
-                onOpenRepository={handleOpenRepositoryClick}
-                onPull={handleGitPull}
-                onPush={handleGitPush}
-                onFetch={handleGitFetch}
-                onCommit={handleGitCommit}
-                onSave={handleGitSave}
-                onSaveCommitPush={handleSaveStageCommitPush}
-                onSetupCredentials={handleSetupCredentials}
-                onClearCredentials={handleClearCredentials}
-                onViewHistory={handleViewHistory}
-                onInitRepo={handleInitRepo}
-                hasCredentials={hasStoredCredentials}
-                isAuthenticated={gitCredentialManager.isUnlocked()}
-                onClose={() => {
-                  setShowGitDropdown(false);
-                  setGitPos(null);
-                }}
-              />
-            </div>,
-            document.body
-          )}
         </div>
         {isGitRepo && (
           <GitStatusIndicator
@@ -2427,6 +2384,27 @@ const App = () => {
             document.body
           )}
         </div>
+
+        {/* Git Modal */}
+        {showGitModal && (
+          <GitModal
+            onClone={handleGitClone}
+            onOpenRepository={handleOpenRepositoryClick}
+            onPull={handleGitPull}
+            onPush={handleGitPush}
+            onFetch={handleGitFetch}
+            onCommit={handleGitCommit}
+            onSave={handleGitSave}
+            onSaveCommitPush={handleSaveStageCommitPush}
+            onSetupCredentials={handleSetupCredentials}
+            onClearCredentials={handleClearCredentials}
+            onViewHistory={handleViewHistory}
+            onInitRepo={handleInitRepo}
+            hasCredentials={hasStoredCredentials}
+            isAuthenticated={gitCredentialManager.isUnlocked()}
+            onClose={() => setShowGitModal(false)}
+          />
+        )}
 
         {/* About & Features Modals */}
         <AboutModal
