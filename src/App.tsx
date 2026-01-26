@@ -2043,6 +2043,7 @@ const App = () => {
             className="help-menubar-btn"
             onClick={() => {
               closeAllDropdowns();
+              setShowEasyNotesSidebar(false);
               setShowFileModal(true);
             }}
             title={t('menu.file')}
@@ -2073,6 +2074,7 @@ const App = () => {
             className="help-menubar-btn"
             onClick={() => {
               closeAllDropdowns();
+              setShowEasyNotesSidebar(false);
               setShowGitModal(true);
             }}
             title="Git Operations"
@@ -2108,7 +2110,10 @@ const App = () => {
         </button>
         <button
           className="menu-item fixed-menubar-btn"
-          onClick={handleNewFile}
+          onClick={() => {
+            setShowEasyNotesSidebar(false);
+            handleNewFile();
+          }}
           title={t('menu.new_file')}
         >
           <GrDocumentText /> &nbsp; {t('menu.new_file')}
@@ -2129,6 +2134,7 @@ const App = () => {
               e.preventDefault();
               cacheSelection();
               closeAllDropdowns();
+              setShowEasyNotesSidebar(false);
               setShowTasksDropdown(true);
               if (tasksButtonRef.current) {
                 const rect = tasksButtonRef.current.getBoundingClientRect();
@@ -2174,6 +2180,7 @@ const App = () => {
               e.preventDefault();
               cacheSelection();
               closeAllDropdowns();
+              setShowEasyNotesSidebar(false);
               setShowExportsDropdown(true);
               if (exportsButtonRef.current) {
                 const rect = exportsButtonRef.current.getBoundingClientRect();

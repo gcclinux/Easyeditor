@@ -57,7 +57,9 @@
         "file_operations_settings": "Bestandsbewerkingen & Instellingen",
         "open_save": "Openen & Opslaan",
         "settings_app": "Instellingen & App",
-        "community_support": "Gemeenschap & Ondersteuning"
+        "community_support": "Gemeenschap & Ondersteuning",
+        "website": "Website",
+        "website_desc": "Bezoek easyeditor.co.uk"
     },
     "toolbar": {
         "headers": "Koppen",

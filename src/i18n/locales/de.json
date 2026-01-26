@@ -57,7 +57,9 @@
         "file_operations_settings": "Dateioperationen & Einstellungen",
         "open_save": "Öffnen & Speichern",
         "settings_app": "Einstellungen & App",
-        "community_support": "Community & Support"
+        "community_support": "Community & Support",
+        "website": "Webseite",
+        "website_desc": "Besuchen Sie easyeditor.co.uk"
     },
     "toolbar": {
         "headers": "Überschriften",

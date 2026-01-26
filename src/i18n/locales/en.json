@@ -57,7 +57,9 @@
         "file_operations_settings": "File operations & settings",
         "open_save": "Open & Save",
         "settings_app": "Settings & App",
-        "community_support": "Community & Support"
+        "community_support": "Community & Support",
+        "website": "Website",
+        "website_desc": "Visit easyeditor.co.uk"
     },
     "toolbar": {
         "headers": "Headers",

@@ -95,6 +95,24 @@ export default function FileModal({
                     <div className="file-tiles-grid">
                         {renderTile(<FaGithub />, 'menu.support', 'menu.support_desc', onSupport)}
                         {renderTile(<FaHeart />, 'menu.buy_coffee', 'menu.sponsor', onBuyCoffee)}
+                        {renderTile(<FaGlobe />, 'menu.website', 'menu.website_desc', async () => {
+                            const url = 'https://easyeditor.co.uk';
+                            const isTauri = typeof window !== 'undefined' &&
+                                ((window as any).__TAURI__ || (window as any).__TAURI_INTERNALS__ ||
+                                    typeof (window as any).__TAURI_INVOKE__ === 'function');
+
+                            if (isTauri) {
+                                try {
+                                    const { open } = await import('@tauri-apps/plugin-shell');
+                                    await open(url);
+                                } catch (e) {
+                                    console.error('Tauri shell open failed:', e);
+                                    window.open(url, '_blank');
+                                }
+                            } else {
+                                window.open(url, '_blank');
+                            }
+                        })}
                     </div>
                 </div>
 
