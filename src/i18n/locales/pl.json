@@ -53,7 +53,11 @@
         "view_split": "Widok Podzielony",
         "view_edit": "Tryb Edycji",
         "view_preview": "Tryb Podglądu",
-        "toggled_view": "Przełącz Widok"
+        "toggled_view": "Przełącz Widok",
+        "file_operations_settings": "Operacje na plikach i ustawienia",
+        "open_save": "Otwórz i Zapisz",
+        "settings_app": "Ustawienia i Aplikacja",
+        "community_support": "Społeczność i Wsparcie"
     },
     "toolbar": {
         "headers": "Nagłówki",

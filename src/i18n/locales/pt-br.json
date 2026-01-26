@@ -53,7 +53,11 @@
         "view_split": "Visão Dividida",
         "view_edit": "Modo Edição",
         "view_preview": "Modo Visualização",
-        "toggled_view": "Visão Alternada"
+        "toggled_view": "Visão Alternada",
+        "file_operations_settings": "Operações de arquivo e configurações",
+        "open_save": "Abrir e Salvar",
+        "settings_app": "Configurações e App",
+        "community_support": "Comunidade e Suporte"
     },
     "toolbar": {
         "headers": "Cabeçalhos",

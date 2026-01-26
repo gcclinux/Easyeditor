@@ -53,7 +53,11 @@
         "view_split": "Geteilte Ansicht",
         "view_edit": "Bearbeitungsmodus",
         "view_preview": "Vorschaumodus",
-        "toggled_view": "Ansicht umgeschaltet"
+        "toggled_view": "Ansicht umgeschaltet",
+        "file_operations_settings": "Dateioperationen & Einstellungen",
+        "open_save": "Öffnen & Speichern",
+        "settings_app": "Einstellungen & App",
+        "community_support": "Community & Support"
     },
     "toolbar": {
         "headers": "Überschriften",

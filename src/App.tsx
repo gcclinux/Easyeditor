@@ -137,6 +137,7 @@ import FileBrowserModal from './components/FileBrowserModal';
 import GitCredentialsModal from './components/GitCredentialsModal';
 import MasterPasswordModal from './components/MasterPasswordModal';
 import CommitModal from './components/CommitModal';
+import FileModal from './components/FileModal';
 import GitHistoryModal from './components/GitHistoryModal';
 import GitStatusIndicator from './components/GitStatusIndicator';
 import { getGitManager } from './gitManagerWrapper';
@@ -186,9 +187,7 @@ const App = () => {
   const [showTemplatesDropdown, setShowTemplatesDropdown] = useState(false);
   const templatesButtonRef = useRef<HTMLButtonElement | null>(null);
   const [templatesPos, setTemplatesPos] = useState<{ top: number; left: number; width: number } | null>(null);
-  const [showHelpDropdown, setShowHelpDropdown] = useState(false);
-  const helpButtonRef = useRef<HTMLButtonElement | null>(null);
-  const [helpPos, setHelpPos] = useState<{ top: number; left: number; width: number } | null>(null);
+  const [showFileModal, setShowFileModal] = useState(false);
   const [aboutOpen, setAboutOpen] = useState(false);
   const [featuresOpen, setFeaturesOpen] = useState(false);
   const [themeOpen, setThemeOpen] = useState(false);
@@ -381,8 +380,11 @@ const App = () => {
     setExportsPos(null);
     setShowTemplatesDropdown(false);
     setTemplatesPos(null);
-    setShowHelpDropdown(false);
-    setHelpPos(null);
+    setShowTemplatesDropdown(false);
+    setTemplatesPos(null);
+    // setShowHelpDropdown(false); // Removed
+    // setHelpPos(null); // Removed
+    setShowTasksDropdown(false);
     setShowTasksDropdown(false);
     setTasksPos(null);
     // Note: Git modal and EasyNotes sidebar are independent and don't close with other dropdowns
@@ -1692,6 +1694,144 @@ const App = () => {
     showToast('Repository initialization is not available in web mode. Use "Clone Repository" instead.', 'info');
   };
 
+  // File operations for File Modal
+  const handleOpenMarkdown = async () => {
+    const isTauri = typeof window !== 'undefined' && (window as any).__TAURI_INTERNALS__;
+
+    if (isTauri) {
+      const { handleTauriOpenFile } = await import('./tauriFileHandler');
+      await handleTauriOpenFile(async (content: string, filePath?: string | null) => {
+        setEditorContent(content);
+        if (filePath) {
+          setCurrentFilePath(filePath);
+          setCurrentCloudNote(null);
+          console.log('[App] File path set:', filePath);
+
+          if (!isGitRepo) {
+            showToast('File opened!', 'info');
+          }
+        }
+      });
+    } else {
+      handleOpenClick(
+        async (content: string, filePath?: string | null) => {
+          setEditorContent(content);
+
+          if (filePath) {
+            setCurrentFilePath(filePath);
+            setCurrentCloudNote(null);
+            console.log('[App] File path set:', filePath);
+
+            if (!isGitRepo) {
+              showToast('File opened! For Git features, use "File → Open Repository"', 'info');
+            }
+          }
+        },
+        async (repoPath: string, dirHandle: any) => {
+          console.log('[App] Git repo detected via File System Access API:', repoPath);
+
+          if (dirHandle) {
+            setCurrentDirHandle(dirHandle);
+            setCurrentRepoPath(repoPath);
+            setIsGitRepo(true);
+
+            const lightningFSPath = `/${repoPath}`;
+            console.log('[App] Syncing repo to LightningFS:', lightningFSPath);
+            try {
+              await gitManager.openRepoFromHandle(dirHandle, lightningFSPath);
+              console.log('[App] Repo sync complete');
+            } catch (e) {
+              console.error('[App] Repo sync failed:', e);
+              gitManager.setRepoDir(lightningFSPath);
+              gitManager.setDirHandle(dirHandle);
+            }
+
+            showToast('Git repository detected! Git features are now available.', 'success');
+            await updateGitStatus();
+          } else {
+            showToast('Git repository detected! Use "Git → Open Repository" for full Git features', 'info');
+          }
+        }
+      );
+    }
+  };
+
+  const handleOpenEncrypted = () => {
+    const showPrompt = (onSubmit: (password: string) => void) =>
+      showPasswordPrompt(t('menu.decrypt_file_title'), t('menu.decrypt_file_prompt'), onSubmit);
+    decryptFile(setEditorContent, showPrompt, showToast);
+  };
+
+  const handleOpenSupport = async () => {
+    const url = 'https://github.com/gcclinux/EasyEditor/discussions';
+    let opened = false;
+
+    const isTauri = typeof window !== 'undefined' &&
+      ((window as any).__TAURI__ || (window as any).__TAURI_INTERNALS__ ||
+        typeof (window as any).__TAURI_INVOKE__ === 'function');
+
+    if (isTauri) {
+      try {
+        const { open } = await import('@tauri-apps/plugin-shell');
+        await open(url);
+        opened = true;
+      } catch (e) {
+        console.error('Tauri shell open failed:', e);
+      }
+    } else {
+      try {
+        const w = window.open(url, '_blank', 'noopener');
+        if (w) opened = true;
+      } catch (e) {
+        console.warn('window.open threw:', e);
+      }
+    }
+
+    if (!opened) {
+      try {
+        await navigator.clipboard.writeText(url);
+        showToast('Unable to open link automatically. The URL has been copied to your clipboard.', 'warning');
+      } catch (e) {
+        showToast('Unable to open or copy link automatically. Please open the URL manually from the address bar.', 'error');
+      }
+    }
+  };
+
+  const handleBuyCoffee = async () => {
+    const url = 'https://buymeacoffee.com/gcclinux';
+    let opened = false;
+
+    const isTauri = typeof window !== 'undefined' &&
+      ((window as any).__TAURI__ || (window as any).__TAURI_INTERNALS__ ||
+        typeof (window as any).__TAURI_INVOKE__ === 'function');
+
+    if (isTauri) {
+      try {
+        const { open } = await import('@tauri-apps/plugin-shell');
+        await open(url);
+        opened = true;
+      } catch (e) {
+        console.error('Tauri shell open failed:', e);
+      }
+    } else {
+      try {
+        const w = window.open(url, '_blank', 'noopener');
+        if (w) opened = true;
+      } catch (e) {
+        console.warn('window.open threw:', e);
+      }
+    }
+
+    if (!opened) {
+      try {
+        await navigator.clipboard.writeText(url);
+        showToast('Unable to open link automatically. The URL has been copied to your clipboard.', 'warning');
+      } catch (e) {
+        showToast('Unable to open or copy link automatically. Please open the URL manually from the address bar.', 'error');
+      }
+    }
+  };
+
   // Cloud note save handler
   const handleCloudNoteSave = async () => {
     if (!currentCloudNote) {
@@ -1901,268 +2041,14 @@ const App = () => {
         <div className="dropdown-container">
           <button
             className="help-menubar-btn"
-            ref={el => { helpButtonRef.current = el; }}
-            onMouseDown={(e) => {
-              e.preventDefault();
+            onClick={() => {
               closeAllDropdowns();
-              setShowHelpDropdown(true);
-              if (helpButtonRef.current) {
-                const rect = helpButtonRef.current.getBoundingClientRect();
-                const scrollX = window.scrollX || window.pageXOffset || 0;
-                const scrollY = window.scrollY || window.pageYOffset || 0;
-                const dropdownMin = 140; // same minWidth used in portal
-                const dropdownWidth = Math.max(rect.width, dropdownMin);
-                // Center the dropdown under the button
-                let leftPos = rect.left + scrollX + (rect.width - dropdownWidth) / 2;
-                // Clamp to keep on-screen
-                leftPos = Math.max(0, leftPos);
-                setHelpPos({ top: rect.bottom + scrollY, left: leftPos, width: dropdownWidth });
-              } else {
-                setHelpPos(null);
-              }
+              setShowFileModal(true);
             }}
             title={t('menu.file')}
           >
-            <FaFileImport /> &nbsp; {t('menu.file')} ▾
+            <FaFileImport /> &nbsp; {t('menu.file')}
           </button>
-          {showHelpDropdown && helpPos && createPortal(
-            <div className="header-dropdown format-dropdown" style={{ position: 'absolute', top: helpPos.top + 'px', left: helpPos.left + 'px', zIndex: 999999, minWidth: helpPos.width + 'px' }}>
-              <button
-                className="dropdown-item"
-                onClick={async () => {
-                  const isTauri = typeof window !== 'undefined' && (window as any).__TAURI_INTERNALS__;
-
-                  if (isTauri) {
-                    const { handleTauriOpenFile } = await import('./tauriFileHandler');
-                    await handleTauriOpenFile(async (content: string, filePath?: string | null) => {
-                      setEditorContent(content);
-                      if (filePath) {
-                        setCurrentFilePath(filePath);
-                        setCurrentCloudNote(null);
-                        console.log('[App] File path set:', filePath);
-
-                        // If it's a new file not in the current repo, we might want to update repo info
-                        // but stay simple for now.
-                        if (!isGitRepo) {
-                          showToast('File opened!', 'info');
-                        }
-                      }
-                    });
-                  } else {
-                    handleOpenClick(
-                      async (content: string, filePath?: string | null) => {
-                        setEditorContent(content);
-
-                        // Set file path for both Electron and Web
-                        if (filePath) {
-                          setCurrentFilePath(filePath);
-                          setCurrentCloudNote(null); // Clear cloud note state when opening regular file
-                          console.log('[App] File path set:', filePath);
-
-                          // Show helpful message for web users about Git features
-                          if (!isGitRepo) {
-                            showToast('File opened! For Git features, use "File → Open Repository"', 'info');
-                          }
-                        }
-                      },
-                      // Git repo detection callback for File System Access API (web)
-                      async (repoPath: string, dirHandle: any) => {
-                        console.log('[App] Git repo detected via File System Access API:', repoPath);
-
-                        if (dirHandle) {
-                          // Store the directory handle for web-based Git operations
-                          setCurrentDirHandle(dirHandle);
-                          setCurrentRepoPath(repoPath);
-                          setIsGitRepo(true);
-
-                          // Set repo directory in gitManager for web mode
-                          const lightningFSPath = `/${repoPath}`;
-
-                          // Sync the repo contents to LightningFS
-                          console.log('[App] Syncing repo to LightningFS:', lightningFSPath);
-                          try {
-                            await gitManager.openRepoFromHandle(dirHandle, lightningFSPath);
-                            console.log('[App] Repo sync complete');
-                          } catch (e) {
-                            console.error('[App] Repo sync failed:', e);
-                            // Fallback to basic setup if sync fails
-                            gitManager.setRepoDir(lightningFSPath);
-                            gitManager.setDirHandle(dirHandle);
-                          }
-
-                          showToast('Git repository detected! Git features are now available.', 'success');
-
-                          // Update Git status
-                          await updateGitStatus();
-                        } else {
-                          // Note: Full Git integration in browser requires additional setup
-                          // For now, just show that we detected a repo
-                          showToast('Git repository detected! Use "Git → Open Repository" for full Git features', 'info');
-                        }
-                      }
-                    );
-                  }
-                  setShowHelpDropdown(false);
-                }}
-              >
-                <div className="hdr-title"><FaFileImport /> {t('menu.open_markdown')}</div>
-                <div className="hdr-desc">{t('menu.open_markdown_desc')}</div>
-              </button>
-              <div className="hdr-sep" />
-              <button
-                className="dropdown-item"
-                onClick={() => {
-                  handleOpenTxtClick(setEditorContent);
-                  setShowHelpDropdown(false);
-                }}
-              >
-                <div className="hdr-title"><FaFileImport /> {t('menu.open_txt')}</div>
-                <div className="hdr-desc">{t('menu.open_txt_desc')}</div>
-              </button>
-
-              <div className="hdr-sep" />
-              <button
-                className="dropdown-item"
-                onClick={() => {
-                  const showPrompt = (onSubmit: (password: string) => void) =>
-                    showPasswordPrompt(t('menu.decrypt_file_title'), t('menu.decrypt_file_prompt'), onSubmit);
-                  decryptFile(setEditorContent, showPrompt, showToast);
-                  setShowHelpDropdown(false);
-                }}
-              >
-                <div className="hdr-title"><BsFileEarmarkLockFill /> {t('menu.open_encrypted')}</div>
-                <div className="hdr-desc">{t('menu.open_encrypted_desc')}</div>
-              </button>
-              <div className="hdr-sep" />
-              <button
-                className="dropdown-item"
-                onClick={() => {
-                  handleUniversalSave();
-                  setShowHelpDropdown(false);
-                }}
-              >
-                <div className="hdr-title"><FaSave /> {t('menu.save')}</div>
-                <div className="hdr-desc">{t('menu.save_desc')}</div>
-              </button>
-              <div className="hdr-sep" />
-              <button
-                className="dropdown-item"
-                onClick={async () => {
-                  await handleSaveToMarkdown();
-                  setShowHelpDropdown(false);
-                }}
-              >
-                <div className="hdr-title"><FaSave /> {t('menu.save_as')}</div>
-                <div className="hdr-desc">{t('menu.save_as_desc')}</div>
-              </button>
-              <div className="hdr-sep" />
-              <button className="dropdown-item" onClick={() => { setFeaturesOpen(true); setShowHelpDropdown(false); }}>
-                <div className="hdr-title"><FaStar /> {t('menu.features')}</div>
-                <div className="hdr-desc">{t('menu.features_desc')}</div>
-              </button>
-              <div className="hdr-sep" />
-              <button className="dropdown-item" onClick={async () => {
-                const url = 'https://github.com/gcclinux/EasyEditor/discussions';
-                let opened = false;
-
-                // Check environment
-                const isTauri = typeof window !== 'undefined' &&
-                  ((window as any).__TAURI__ || (window as any).__TAURI_INTERNALS__ ||
-                    typeof (window as any).__TAURI_INVOKE__ === 'function');
-
-                if (isTauri) {
-                  try {
-                    const { open } = await import('@tauri-apps/plugin-shell');
-                    await open(url);
-                    opened = true;
-                  } catch (e) {
-                    console.error('Tauri shell open failed:', e);
-                  }
-                } else {
-                  try {
-                    const w = window.open(url, '_blank', 'noopener');
-                    if (w) opened = true;
-                  } catch (e) {
-                    console.warn('window.open threw:', e);
-                  }
-                }
-
-                if (!opened) {
-                  // Try to copy to clipboard as a last-resort fallback and inform the user
-                  try {
-                    await navigator.clipboard.writeText(url);
-                    showToast('Unable to open link automatically. The URL has been copied to your clipboard.', 'warning');
-                  } catch (e) {
-                    // If clipboard isn't available, just show a message to the user
-                    showToast('Unable to open or copy link automatically. Please open the URL manually from the address bar.', 'error');
-                  }
-                }
-
-                setShowHelpDropdown(false);
-              }}>
-                <div className="hdr-title"><FaGithub /> {t('menu.support')}</div>
-                <div className="hdr-desc">{t('menu.support_desc')}</div>
-              </button>
-              <div className="hdr-sep" />
-              <button className="dropdown-item" onClick={async () => {
-                const url = 'https://buymeacoffee.com/gcclinux';
-                let opened = false;
-
-                // Check environment
-                const isTauri = typeof window !== 'undefined' &&
-                  ((window as any).__TAURI__ || (window as any).__TAURI_INTERNALS__ ||
-                    typeof (window as any).__TAURI_INVOKE__ === 'function');
-
-                if (isTauri) {
-                  try {
-                    const { open } = await import('@tauri-apps/plugin-shell');
-                    await open(url);
-                    opened = true;
-                  } catch (e) {
-                    console.error('Tauri shell open failed:', e);
-                  }
-                } else {
-                  try {
-                    const w = window.open(url, '_blank', 'noopener');
-                    if (w) opened = true;
-                  } catch (e) {
-                    console.warn('window.open threw:', e);
-                  }
-                }
-
-                if (!opened) {
-                  // Try to copy to clipboard as a last-resort fallback and inform the user
-                  try {
-                    await navigator.clipboard.writeText(url);
-                    showToast('Unable to open link automatically. The URL has been copied to your clipboard.', 'warning');
-                  } catch (e) {
-                    // If clipboard isn't available, just show a message to the user
-                    showToast('Unable to open or copy link automatically. Please open the URL manually from the address bar.', 'error');
-                  }
-                }
-
-                setShowHelpDropdown(false);
-              }}>
-                <div className="hdr-title"><FaHeart /> {t('menu.buy_coffee')}</div>
-                <div className="hdr-desc">{t('menu.sponsor')}</div>
-              </button>
-              <div className="hdr-sep" />
-              <button className="dropdown-item" onClick={() => { setThemeOpen(true); setShowHelpDropdown(false); }}>
-                <div className="hdr-title"><FaPalette /> {t('menu.select_theme')}</div>
-                <div className="hdr-desc">{t('menu.choose_theme')}</div>
-              </button>
-              <div className="hdr-sep" />
-              <button className="dropdown-item" onClick={() => { setLanguageOpen(true); setShowHelpDropdown(false); }}>
-                <div className="hdr-title"><FaGlobe /> {t('menu.select_language')}</div>
-                <div className="hdr-desc">{t('menu.choose_language')}</div>
-              </button>
-              <div className="hdr-sep" />
-              <button className="dropdown-item" onClick={() => { setAboutOpen(true); setShowHelpDropdown(false); }}>
-                <div className="hdr-title"><FaInfoCircle /> {t('menu.about')}</div>
-                <div className="hdr-desc">{t('menu.version_info')}</div>
-              </button>
-            </div>, document.body
-          )}
         </div>
         {/* EasyNotes Feature - Controlled by feature flag */}
         {isFeatureEnabled('EASY_NOTES') && (
@@ -2403,6 +2289,24 @@ const App = () => {
             hasCredentials={hasStoredCredentials}
             isAuthenticated={gitCredentialManager.isUnlocked()}
             onClose={() => setShowGitModal(false)}
+          />
+        )}
+
+        {/* File Modal */}
+        {showFileModal && (
+          <FileModal
+            onOpenMarkdown={handleOpenMarkdown}
+            onOpenTxt={() => handleOpenTxtClick(setEditorContent)}
+            onOpenEncrypted={handleOpenEncrypted}
+            onSave={handleUniversalSave}
+            onSaveAs={handleSaveToMarkdown}
+            onFeatures={() => setFeaturesOpen(true)}
+            onSupport={handleOpenSupport}
+            onBuyCoffee={handleBuyCoffee}
+            onSelectTheme={() => setThemeOpen(true)}
+            onSelectLanguage={() => setLanguageOpen(true)}
+            onAbout={() => setAboutOpen(true)}
+            onClose={() => setShowFileModal(false)}
           />
         )}
 

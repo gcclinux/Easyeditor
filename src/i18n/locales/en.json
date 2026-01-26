@@ -53,7 +53,11 @@
         "view_split": "Split View",
         "view_edit": "Edit Mode",
         "view_preview": "Preview Mode",
-        "toggled_view": "Toggled View"
+        "toggled_view": "Toggled View",
+        "file_operations_settings": "File operations & settings",
+        "open_save": "Open & Save",
+        "settings_app": "Settings & App",
+        "community_support": "Community & Support"
     },
     "toolbar": {
         "headers": "Headers",
