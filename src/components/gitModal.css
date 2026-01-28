@@ -1,8 +1,9 @@
 .git-modal {
   min-width: 45%;
-  max-width: 50%;
+  max-width: 600px;
   padding: 16px 20px;
-  height: 75vh;
+  height: auto;
+  max-height: 85vh;
   overflow-y: auto;
 }
 

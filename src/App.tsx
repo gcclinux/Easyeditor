@@ -3,34 +3,24 @@ import { createPortal } from 'react-dom';
 import {
   FaUndo,
   FaRedo,
-  // FaTrash,
   FaExchangeAlt,
   FaFileImport,
-  FaInfoCircle,
-  FaGithub,
-  FaHeart,
-  FaStar,
   FaTable,
   FaLink,
   FaImage,
   FaStickyNote,
   FaDownload,
   FaFilePdf,
-  FaFileCode,
   FaFileAlt,
   FaLock,
-  FaPalette,
-  FaGlobe,
   FaCodeBranch,
-  FaCloud,
-  FaSave
+  FaCloud
 } from 'react-icons/fa';
 import { VscSymbolKeyword } from "react-icons/vsc";
 import { GoTasklist } from "react-icons/go";
 import { GrDocumentText } from "react-icons/gr";
 import { AiOutlineLayout } from "react-icons/ai";
-import { BsFileEarmarkLockFill, BsJournalBookmarkFill, BsKanban, BsClipboard2Check, BsDiagram3, BsBook, BsMap, BsActivity, BsBug, BsCodeSquare } from "react-icons/bs";
-// import { GiJourney } from "react-icons/gi";
+import { BsJournalBookmarkFill, BsKanban, BsClipboard2Check, BsDiagram3, BsBook, BsMap, BsActivity, BsBug, BsCodeSquare } from "react-icons/bs";
 import { SiMermaid } from "react-icons/si";
 import { CgFormatText, CgFormatHeading } from "react-icons/cg";
 import { MdAutoAwesome, MdOutlineInsertChartOutlined } from "react-icons/md";
@@ -38,8 +28,6 @@ import { MdAutoAwesome, MdOutlineInsertChartOutlined } from "react-icons/md";
 import mermaid from 'mermaid';
 import debounce from 'lodash.debounce';
 import './App.css';
-// import { IpcRendererEvent } from 'electron';
-// const electronAPI = (window as any).electronAPI;
 import { saveAsPDF } from './saveAsPDF.tsx';
 import {
   insertClassSyntax,
@@ -72,7 +60,6 @@ import {
   handleRedo,
   handleOpenClick,
   handleOpenTxtClick,
-  saveToHTML,
   saveToFile,
   saveToTxT,
   saveAsFile,
@@ -1935,10 +1922,7 @@ const App = () => {
     saveAsPDF(editorContent);
   };
 
-  // Save to HTML wrapper
-  const handleSaveToHTML = () => {
-    saveToHTML(editorContent);
-  };
+
 
   // Save to Markdown wrapper
   const handleSaveToMarkdown = async () => {
@@ -2209,18 +2193,7 @@ const App = () => {
                 <div className="hdr-title"><FaFilePdf /> {t('exports.pdf')}</div>
                 <div className="hdr-desc">{t('exports.pdf_desc')}</div>
               </button>
-              <div className="hdr-sep" />
-              <button
-                className="dropdown-item"
-                onClick={() => {
-                  handleSaveToHTML();
-                  setShowExportsDropdown(false);
-                  setExportsPos(null);
-                }}
-              >
-                <div className="hdr-title"><FaFileCode /> {t('exports.html')}</div>
-                <div className="hdr-desc">{t('exports.html_desc')}</div>
-              </button>
+
               <div className="hdr-sep" />
               <button
                 className="dropdown-item"

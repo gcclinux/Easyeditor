@@ -1,9 +1,7 @@
 // src/mainHandler.ts
 import { RefObject, MutableRefObject } from 'react';
 import { saveAs } from 'file-saver';
-import mermaid from 'mermaid';
-// import { marked } from 'marked'; // Not needed for saveToFile
-import nomnoml from 'nomnoml';
+
 
 
 export interface HistoryState {
@@ -11,118 +9,7 @@ export interface HistoryState {
   cursorPosition: number;
 }
 
-// saveToHTML function
-export const saveToHTML = async (editorContent: string): Promise<void> => {
-  try {
-    // Initialize mermaid with config
-    mermaid.initialize({
-      startOnLoad: true,
-      theme: 'default',
-      securityLevel: 'loose'
-    });
 
-    // First convert markdown to HTML
-    const htmlContent = await marked(editorContent);
-
-    // Create a temporary div to render mermaid
-    const tempDiv = document.createElement('div');
-    tempDiv.innerHTML = htmlContent;
-
-    // Find all mermaid code blocks
-    const mermaidBlocks = tempDiv.querySelectorAll('code.language-mermaid');
-
-    // Process each mermaid block
-    await Promise.all(Array.from(mermaidBlocks).map(async (block) => {
-      try {
-        const mermaidCode = block.textContent || '';
-        const uniqueId = `mermaid-${Math.random().toString(36).substring(7)}`;
-
-        // Create a container for the diagram
-        const container = document.createElement('div');
-        container.className = 'mermaid';
-        container.id = uniqueId;
-
-        // Render the diagram
-        const { svg } = await mermaid.render(uniqueId, mermaidCode);
-        container.innerHTML = svg;
-
-        // Replace the code block with rendered diagram
-        const pre = block.closest('pre');
-        if (pre?.parentElement) {
-          pre.parentElement.replaceChild(container, pre);
-        }
-      } catch (error) {
-        console.error('Mermaid rendering error:', error);
-      }
-    }));
-
-    // Find all Nomnoml/UML code blocks
-    const plantumlBlocks = tempDiv.querySelectorAll('code.language-plantuml');
-
-    // Process each Nomnoml block (offline rendering)
-    plantumlBlocks.forEach((block) => {
-      try {
-        const umlCode = block.textContent || '';
-        const svg = nomnoml.renderSvg(umlCode);
-
-        // Create a container for the diagram
-        const container = document.createElement('div');
-        container.className = 'plantuml-diagram';
-        container.style.textAlign = 'center';
-        container.style.margin = '1em 0';
-        container.innerHTML = svg;
-
-        // Replace the code block with rendered diagram
-        const pre = block.closest('pre');
-        if (pre?.parentElement) {
-          pre.parentElement.replaceChild(container, pre);
-        }
-      } catch (error) {
-        console.error('Nomnoml rendering error:', error);
-      }
-    });
-
-    // Create final HTML with proper styling and mermaid script
-    const finalHTML = `
-        <!DOCTYPE html>
-        <html>
-        <head>
-          <meta charset="utf-8">
-          <title>Markdown Export</title>
-          <style>
-            body { 
-              font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
-              margin: 2em;
-            }
-            .mermaid { 
-              text-align: center;
-              margin: 1em 0;
-            }
-            .plantuml-diagram {
-              text-align: center;
-              margin: 1em 0;
-            }
-            svg, img {
-              max-width: 100%;
-              height: auto;
-            }
-          </style>
-        </head>
-        <body>
-          ${tempDiv.innerHTML}
-        </body>
-        </html>
-      `;
-
-    // Save the file
-    const blob = new Blob([finalHTML], {
-      type: "text/html;charset=utf-8",
-    });
-    saveAs(blob, "easyeditor.html");
-  } catch (error) {
-    console.error('Error saving HTML:', error);
-  }
-};
 
 // Store file handle for File System Access API (modern browsers)
 let currentFileHandle: any = null;
@@ -236,7 +123,7 @@ export const detectGitRepo = async (fileHandle: any): Promise<string | null> => 
 
 // Open a repository directory and then select a file from it
 export const handleOpenRepository = async (
-  setEditorContent: (content: string, filePath?: string | null) => void,
+  _setEditorContent: (content: string, filePath?: string | null) => void,
   onGitRepoDetected?: (repoPath: string, dirHandle: any) => void,
   onFileListReady?: (files: string[], dirHandle: any) => void
 ): Promise<void> => {
@@ -548,7 +435,7 @@ export const saveAsFile = async (editorContent: string, defaultName: string = "e
 
 export const saveToFile = async (editorContent: string, setCurrentFilePath?: (path: string) => void): Promise<void> => {
   console.log('saveToFile called with content length:', editorContent.length);
-  
+
   // Try File System Access API first (modern browsers)
   if (hasFileSystemAccess()) {
     try {
@@ -567,15 +454,15 @@ export const saveToFile = async (editorContent: string, setCurrentFilePath?: (pa
       const writable = await fileHandle.createWritable();
       await writable.write(editorContent);
       await writable.close();
-      
+
       // Store the file handle for future saves
       currentFileHandle = fileHandle;
-      
+
       // Set the current file path if callback provided
       if (setCurrentFilePath) {
         setCurrentFilePath(fileHandle.name);
       }
-      
+
       console.log('File saved successfully via File System Access API');
       return;
     } catch (error: any) {
@@ -585,7 +472,7 @@ export const saveToFile = async (editorContent: string, setCurrentFilePath?: (pa
       // Fall through to file-saver fallback
     }
   }
-  
+
   // Fallback: use file-saver (downloads to default folder)
   try {
     const blob = new Blob([editorContent], { type: "text/markdown;charset=utf-8" });
