@@ -484,9 +484,36 @@ export const saveToFile = async (editorContent: string, setCurrentFilePath?: (pa
   }
 };
 
-export const saveToTxT = (editorContent: string): void => {
-  const blob = new Blob([editorContent], { type: "text/plain;charset=utf-8" });
-  saveAs(blob, "easyeditor.txt");
+export const saveToTxT = async (editorContent: string): Promise<void> => {
+  const isTauri = typeof window !== 'undefined' && (window as any).__TAURI_INTERNALS__;
+
+  if (isTauri) {
+    try {
+      const { save } = await import('@tauri-apps/plugin-dialog');
+      const { writeTextFile } = await import('@tauri-apps/plugin-fs');
+
+      const filePath = await save({
+        defaultPath: 'easyeditor.txt',
+        filters: [{
+          name: 'Text Document',
+          extensions: ['txt']
+        }]
+      });
+
+      if (filePath) {
+        await writeTextFile(filePath, editorContent);
+        console.log('TXT saved successfully to:', filePath);
+      }
+    } catch (tauriError) {
+      console.error('Tauri save failed:', tauriError);
+      // Fallback or alert
+      const blob = new Blob([editorContent], { type: "text/plain;charset=utf-8" });
+      saveAs(blob, "easyeditor.txt");
+    }
+  } else {
+    const blob = new Blob([editorContent], { type: "text/plain;charset=utf-8" });
+    saveAs(blob, "easyeditor.txt");
+  }
 };
 
 export interface MainHandlerProps {

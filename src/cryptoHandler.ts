@@ -5,7 +5,7 @@ export const encryptContent = async (
   showPasswordPrompt: (onSubmit: (password: string) => void) => void,
   showToast: (message: string, type?: 'success' | 'error' | 'info' | 'warning') => void
 ): Promise<void> => {
-  showPasswordPrompt((password) => {
+  showPasswordPrompt(async (password) => {
     if (!password || password.length < 8) {
       showToast('Password must be at least 8 characters long', 'warning');
       return;
@@ -15,14 +15,41 @@ export const encryptContent = async (
       const encrypted = encryptTextToBytes(content, password);
       // Ensure we pass an ArrayBuffer-backed ArrayBufferView to Blob to satisfy TypeScript
       const uint8 = encrypted instanceof Uint8Array ? encrypted : new Uint8Array(encrypted as any);
-      const blob = new Blob([uint8.slice()], { type: 'application/octet-stream' });
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = 'document.sstp';
-      a.click();
-      URL.revokeObjectURL(url);
-      showToast('File encrypted and download started', 'success');
+
+      const isTauri = typeof window !== 'undefined' && (window as any).__TAURI_INTERNALS__;
+
+      if (isTauri) {
+        try {
+          const { save } = await import('@tauri-apps/plugin-dialog');
+          const { writeFile } = await import('@tauri-apps/plugin-fs');
+
+          const filePath = await save({
+            defaultPath: 'easyeditor.sstp',
+            filters: [{
+              name: 'Encrypted Document',
+              extensions: ['sstp']
+            }]
+          });
+
+          if (filePath) {
+            await writeFile(filePath, uint8);
+            showToast('File encrypted and saved successfully', 'success');
+          }
+        } catch (tauriError) {
+          console.error('Tauri save failed:', tauriError);
+          showToast('Failed to save via Tauri: ' + tauriError, 'error');
+        }
+      } else {
+        // Web fallback
+        const blob = new Blob([uint8.slice()], { type: 'application/octet-stream' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = 'easyeditor.sstp';
+        a.click();
+        URL.revokeObjectURL(url);
+        showToast('File encrypted and download started', 'success');
+      }
     } catch (error) {
       showToast('Encryption failed: ' + (error as Error).message, 'error');
     }
