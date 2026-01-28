@@ -25,12 +25,12 @@ const PreviewComponent: React.FC<PreviewComponentProps> = React.memo(({
   const preserveListBreaks = () => {
     return (tree: any) => {
       const lines = editorContent.split('\n');
-      
+
       const visit = (node: any, parent: any, index: number) => {
         if (node.type === 'listItem' && node.position && index > 0) {
           const currentLine = node.position.start.line;
           const prevSibling = parent.children[index - 1];
-          
+
           if (prevSibling && prevSibling.position) {
             const prevLine = prevSibling.position.end.line;
             if (currentLine - prevLine > 1) {
@@ -40,12 +40,12 @@ const PreviewComponent: React.FC<PreviewComponentProps> = React.memo(({
             }
           }
         }
-        
+
         // Also check if this is a list following a nested list
         if (node.type === 'list' && node.position && parent && parent.type === 'root') {
           const currentLine = node.position.start.line;
           const prevSibling = parent.children[index - 1];
-          
+
           if (prevSibling && prevSibling.position) {
             const prevLine = prevSibling.position.end.line;
             if (currentLine - prevLine > 1 && node.children && node.children[0]) {
@@ -55,16 +55,16 @@ const PreviewComponent: React.FC<PreviewComponentProps> = React.memo(({
             }
           }
         }
-        
+
         if (node.children) {
           node.children.forEach((child: any, i: number) => visit(child, node, i));
         }
       };
-      
+
       visit(tree, null, 0);
     };
   };
-  
+
   // Effect for view mode changes
   useEffect(() => {
     const reinitializeMermaid = async () => {
@@ -132,6 +132,7 @@ const PreviewComponent: React.FC<PreviewComponentProps> = React.memo(({
             : 'preview-parallel'
       }
       ref={previewRef}
+      id="preview-content"
     >
       <ReactMarkdown
         remarkPlugins={[remarkGfm, remarkEmoji, preserveListBreaks]}
@@ -145,7 +146,7 @@ const PreviewComponent: React.FC<PreviewComponentProps> = React.memo(({
             const isInlineFlag = (_props as any)?.inline as boolean | undefined;
             const isMermaid = /language-mermaid/.test(className || "");
             const isPlantUML = /language-plantuml/.test(className || "");
-            
+
             if (isMermaid) {
               return (
                 <div className="mermaid">
@@ -153,17 +154,17 @@ const PreviewComponent: React.FC<PreviewComponentProps> = React.memo(({
                 </div>
               );
             }
-            
+
             if (isPlantUML) {
               const umlCode = String(children).replace(/\n$/, "");
-              
+
               // Render nomnoml diagram offline
               try {
                 const svg = nomnoml.renderSvg(umlCode);
-                
+
                 return (
-                  <div 
-                    className="plantuml-diagram" 
+                  <div
+                    className="plantuml-diagram"
                     style={{ textAlign: 'center', margin: '1em 0' }}
                     dangerouslySetInnerHTML={{ __html: svg }}
                   />
@@ -186,13 +187,13 @@ const PreviewComponent: React.FC<PreviewComponentProps> = React.memo(({
                 );
               }
             }
-            
+
             // ReactMarkdown provides `inline` flag to distinguish inline vs fenced code
             const isInline = !!isInlineFlag;
-            
+
             return (
-              <code 
-                className={`${isInline ? 'inline-code' : 'code-block'} ${className || ''}`} 
+              <code
+                className={`${isInline ? 'inline-code' : 'code-block'} ${className || ''}`}
                 {...props}
               >
                 {children}
@@ -216,7 +217,7 @@ const PreviewComponent: React.FC<PreviewComponentProps> = React.memo(({
 
             const text = flatten(children);
             const hasBoxChars = /[\u2500-\u257F]/.test(text);
-            
+
             // If it has box-drawing chars, get the original text from the node to preserve whitespace
             if (hasBoxChars && node && node.position) {
               // Extract original text from markdown source
@@ -244,7 +245,7 @@ const PreviewComponent: React.FC<PreviewComponentProps> = React.memo(({
       >
         {editorContent}
       </ReactMarkdown>
-    </div>
+    </div >
   );
 });
 

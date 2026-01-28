@@ -1,9 +1,10 @@
 import React from 'react';
-import { FaDownload, FaFilePdf, FaFileAlt, FaLock, FaCloud, FaTimes } from 'react-icons/fa';
+import { FaDownload, FaFilePdf, FaFileAlt, FaLock, FaCloud, FaTimes, FaImage } from 'react-icons/fa';
 import { useLanguage } from '../i18n/LanguageContext';
 import './exportModal.css';
 
 type Props = {
+    onSaveAsPNG: () => void;
     onSaveAsPDF: () => void;
     onSaveToMarkdown: () => void;
     onSaveToTXT: () => void;
@@ -14,6 +15,7 @@ type Props = {
 };
 
 export default function ExportModal({
+    onSaveAsPNG,
     onSaveAsPDF,
     onSaveToMarkdown,
     onSaveToTXT,
@@ -59,6 +61,7 @@ export default function ExportModal({
                 <div className="export-tiles-section">
                     <div className="export-tiles-section-title">{t('modals.exports.section_title')}</div>
                     <div className="export-tiles-grid">
+                        {renderTile(<FaImage />, 'exports.png', 'exports.png_desc', onSaveAsPNG)}
                         {renderTile(<FaFilePdf />, 'exports.pdf', 'exports.pdf_desc', onSaveAsPDF)}
                         {renderTile(<FaFileAlt />, 'exports.markdown', 'exports.markdown_desc', onSaveToMarkdown)}
                         {renderTile(<FaFileAlt />, 'exports.txt', 'exports.txt_desc', onSaveToTXT)}

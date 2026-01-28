@@ -475,6 +475,8 @@
         }
     },
     "exports": {
+        "png": "Exporteer naar PNG",
+        "png_desc": "Opslaan als afbeelding",
         "pdf": "Exporteer naar PDF",
         "pdf_desc": "Opslaan als PDF-bestand",
         "html": "Exporteer naar HTML",

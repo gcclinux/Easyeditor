@@ -69,6 +69,7 @@ const TextareaComponent: React.FC<TextareaComponentProps> = React.memo(({
 
   return (
     <textarea
+      id="editor-textarea"
       ref={textareaRef}
       value={editorContent}
       onChange={handleChange}

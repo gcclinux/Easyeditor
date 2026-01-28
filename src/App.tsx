@@ -25,6 +25,7 @@ import mermaid from 'mermaid';
 import debounce from 'lodash.debounce';
 import './App.css';
 import { saveAsPDF } from './saveAsPDF.tsx';
+import { saveAsPNG } from './saveAsPNG.ts';
 import {
   insertClassSyntax,
   insertGanttSyntax,
@@ -1909,8 +1910,13 @@ const App = () => {
     showToast('No file is currently open. Use "Save As" to save to a new file.', 'info');
   };
 
+  /* Export Functions */
   const handleSaveAsPDF = () => {
-    saveAsPDF(editorContent);
+    saveAsPDF(isPreviewFull ? 'preview-content' : (isEditFull ? 'editor-textarea' : 'preview-content'));
+  };
+
+  const handleSaveAsPNG = () => {
+    saveAsPNG(isPreviewFull ? 'preview-content' : (isEditFull ? 'editor-textarea' : 'preview-content'));
   };
 
 
@@ -2183,10 +2189,10 @@ const App = () => {
           )
         }
 
-        {/* Export Modal */}
         {
           showExportModal && (
             <ExportModal
+              onSaveAsPNG={handleSaveAsPNG}
               onSaveAsPDF={handleSaveAsPDF}
               onSaveToMarkdown={handleSaveToMarkdown}
               onSaveToTXT={handleSaveToTXT}
