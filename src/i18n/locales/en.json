@@ -386,6 +386,10 @@
         "tasks": {
             "subtitle": "Insert pre-defined task lists and trackers",
             "section_title": "Task Templates"
+        },
+        "exports": {
+            "subtitle": "Choose a format to export your document",
+            "section_title": "Export Options"
         }
     },
     "templates": {

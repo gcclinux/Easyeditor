@@ -384,6 +384,10 @@
         "tasks": {
             "subtitle": "Wstaw zdefiniowane listy zadań i śledzenia",
             "section_title": "Szablony zadań"
+        },
+        "exports": {
+            "subtitle": "Wybierz format eksportu",
+            "section_title": "Opcje eksportu"
         }
     },
     "templates": {

@@ -384,6 +384,10 @@
         "tasks": {
             "subtitle": "Inserir listas de tarefas e rastreadores predefinidos",
             "section_title": "Modelos de Tarefas"
+        },
+        "exports": {
+            "subtitle": "Escolha um formato para exportar",
+            "section_title": "Opções de Exportação"
         }
     },
     "templates": {

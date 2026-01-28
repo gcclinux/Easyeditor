@@ -384,6 +384,10 @@
         "tasks": {
             "subtitle": "Vordefinierte Aufgabenlisten und Tracker einfügen",
             "section_title": "Aufgabenvorlagen"
+        },
+        "exports": {
+            "subtitle": "Wählen Sie ein Format zum Exportieren",
+            "section_title": "Exportoptionen"
         }
     },
     "templates": {

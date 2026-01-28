@@ -10,11 +10,7 @@ import {
   FaImage,
   FaStickyNote,
   FaDownload,
-  FaFilePdf,
-  FaFileAlt,
-  FaLock,
-  FaCodeBranch,
-  FaCloud
+  FaCodeBranch
 } from 'react-icons/fa';
 import { VscSymbolKeyword } from "react-icons/vsc";
 import { GoTasklist } from "react-icons/go";
@@ -126,6 +122,7 @@ import MasterPasswordModal from './components/MasterPasswordModal';
 import CommitModal from './components/CommitModal';
 import FileModal from './components/FileModal';
 import TaskModal from './components/TaskModal';
+import ExportModal from './components/ExportModal';
 import GitHistoryModal from './components/GitHistoryModal';
 import GitStatusIndicator from './components/GitStatusIndicator';
 import { getGitManager } from './gitManagerWrapper';
@@ -169,9 +166,7 @@ const App = () => {
   const [showFooterDropdown, setShowFooterDropdown] = useState(false);
   const [showInsertDropdown, setShowInsertDropdown] = useState(false);
   const [showImagesDropdown, setShowImagesDropdown] = useState(false);
-  const [showExportsDropdown, setShowExportsDropdown] = useState(false);
-  const exportsButtonRef = useRef<HTMLButtonElement | null>(null);
-  const [exportsPos, setExportsPos] = useState<{ top: number; left: number; width: number } | null>(null);
+  const [showExportModal, setShowExportModal] = useState(false);
   const [showTemplatesDropdown, setShowTemplatesDropdown] = useState(false);
   const templatesButtonRef = useRef<HTMLButtonElement | null>(null);
   const [templatesPos, setTemplatesPos] = useState<{ top: number; left: number; width: number } | null>(null);
@@ -362,8 +357,7 @@ const App = () => {
     setShowFooterDropdown(false);
     setShowInsertDropdown(false);
     setShowImagesDropdown(false);
-    setShowExportsDropdown(false);
-    setExportsPos(null);
+
     setShowTemplatesDropdown(false);
     setTemplatesPos(null);
     setShowTemplatesDropdown(false);
@@ -2123,144 +2117,86 @@ const App = () => {
         <div className="dropdown-container">
           <button
             className="menu-item fixed-menubar-btn"
-            ref={exportsButtonRef}
-            onMouseDown={(e) => {
-              e.preventDefault();
+            onClick={() => {
               cacheSelection();
               closeAllDropdowns();
               setShowEasyNotesSidebar(false);
-              setShowExportsDropdown(true);
-              if (exportsButtonRef.current) {
-                const rect = exportsButtonRef.current.getBoundingClientRect();
-                setExportsPos({ top: rect.bottom + window.scrollY, left: rect.left + window.scrollX, width: rect.width });
-              } else {
-                setExportsPos(null);
-              }
+              setShowExportModal(true);
             }}
             title={t('menu.exports')}
           >
-            <FaDownload /> &nbsp; {t('menu.exports')} ▾
+            <FaDownload /> &nbsp; {t('menu.exports')}
           </button>
-          {showExportsDropdown && exportsPos && createPortal(
-            <div
-              className="header-dropdown format-dropdown"
-              style={{ position: 'absolute', top: exportsPos.top + 'px', left: exportsPos.left + 'px', zIndex: 999999, minWidth: exportsPos.width + 'px' }}
-            >
-              <button
-                className="dropdown-item"
-                onClick={() => {
-                  handleSaveAsPDF();
-                  setShowExportsDropdown(false);
-                  setExportsPos(null);
-                }}
-              >
-                <div className="hdr-title"><FaFilePdf /> {t('exports.pdf')}</div>
-                <div className="hdr-desc">{t('exports.pdf_desc')}</div>
-              </button>
-
-              <div className="hdr-sep" />
-              <button
-                className="dropdown-item"
-                onClick={() => {
-                  handleSaveToMarkdown();
-                  setShowExportsDropdown(false);
-                  setExportsPos(null);
-                }}
-              >
-                <div className="hdr-title"><FaFileAlt /> {t('exports.markdown')}</div>
-                <div className="hdr-desc">{t('exports.markdown_desc')}</div>
-              </button>
-              <div className="hdr-sep" />
-              <button
-                className="dropdown-item"
-                onClick={() => {
-                  handleSaveToTXT();
-                  setShowExportsDropdown(false);
-                  setExportsPos(null);
-                }}
-              >
-                <div className="hdr-title"><FaFileAlt /> {t('exports.txt')}</div>
-                <div className="hdr-desc">{t('exports.txt_desc')}</div>
-              </button>
-              <div className="hdr-sep" />
-              <button
-                className="dropdown-item"
-                onClick={() => {
-                  handleSaveEncrypted();
-                  setShowExportsDropdown(false);
-                  setExportsPos(null);
-                }}
-              >
-                <div className="hdr-title"><FaLock /> {t('exports.encrypted')}</div>
-                <div className="hdr-desc">{t('exports.encrypted_desc')}</div>
-              </button>
-              {currentCloudNote && (
-                <>
-                  <div className="hdr-sep" />
-                  <button
-                    className="dropdown-item"
-                    onClick={() => {
-                      handleCloudNoteSave();
-                      setShowExportsDropdown(false);
-                      setExportsPos(null);
-                    }}
-                  >
-                    <div className="hdr-title"><FaCloud /> {t('exports.cloud')}</div>
-                    <div className="hdr-desc">{t('exports.cloud_desc')} {currentCloudNote.providerDisplayName}</div>
-                  </button>
-                </>
-              )}
-            </div>,
-            document.body
-          )}
         </div>
 
+
         {/* Git Modal */}
-        {showGitModal && (
-          <GitModal
-            onClone={handleGitClone}
-            onOpenRepository={handleOpenRepositoryClick}
-            onPull={handleGitPull}
-            onPush={handleGitPush}
-            onFetch={handleGitFetch}
-            onCommit={handleGitCommit}
-            onSave={handleGitSave}
-            onSaveCommitPush={handleSaveStageCommitPush}
-            onSetupCredentials={handleSetupCredentials}
-            onClearCredentials={handleClearCredentials}
-            onViewHistory={handleViewHistory}
-            onInitRepo={handleInitRepo}
-            hasCredentials={hasStoredCredentials}
-            isAuthenticated={gitCredentialManager.isUnlocked()}
-            onClose={() => setShowGitModal(false)}
-          />
-        )}
+        {
+          showGitModal && (
+            <GitModal
+              onClone={handleGitClone}
+              onOpenRepository={handleOpenRepositoryClick}
+              onPull={handleGitPull}
+              onPush={handleGitPush}
+              onFetch={handleGitFetch}
+              onCommit={handleGitCommit}
+              onSave={handleGitSave}
+              onSaveCommitPush={handleSaveStageCommitPush}
+              onSetupCredentials={handleSetupCredentials}
+              onClearCredentials={handleClearCredentials}
+              onViewHistory={handleViewHistory}
+              onInitRepo={handleInitRepo}
+              hasCredentials={hasStoredCredentials}
+              isAuthenticated={gitCredentialManager.isUnlocked()}
+              onClose={() => setShowGitModal(false)}
+            />
+          )
+        }
 
         {/* File Modal */}
-        {showFileModal && (
-          <FileModal
-            onOpenMarkdown={handleOpenMarkdown}
-            onOpenTxt={() => handleOpenTxtClick(setEditorContent)}
-            onOpenEncrypted={handleOpenEncrypted}
-            onSave={handleUniversalSave}
-            onSaveAs={handleSaveToMarkdown}
-            onFeatures={() => setFeaturesOpen(true)}
-            onSupport={handleOpenSupport}
-            onBuyCoffee={handleBuyCoffee}
-            onSelectTheme={() => setThemeOpen(true)}
-            onSelectLanguage={() => setLanguageOpen(true)}
-            onAbout={() => setAboutOpen(true)}
-            onClose={() => setShowFileModal(false)}
-          />
-        )}
+        {
+          showFileModal && (
+            <FileModal
+              onOpenMarkdown={handleOpenMarkdown}
+              onOpenTxt={() => handleOpenTxtClick(setEditorContent)}
+              onOpenEncrypted={handleOpenEncrypted}
+              onSave={handleUniversalSave}
+              onSaveAs={handleSaveToMarkdown}
+              onFeatures={() => setFeaturesOpen(true)}
+              onSupport={handleOpenSupport}
+              onBuyCoffee={handleBuyCoffee}
+              onSelectTheme={() => setThemeOpen(true)}
+              onSelectLanguage={() => setLanguageOpen(true)}
+              onAbout={() => setAboutOpen(true)}
+              onClose={() => setShowFileModal(false)}
+            />
+          )
+        }
 
         {/* Task Modal */}
-        {showTaskModal && (
-          <TaskModal
-            onInsertTask={handleInsertImageTemplate}
-            onClose={() => setShowTaskModal(false)}
-          />
-        )}
+        {
+          showTaskModal && (
+            <TaskModal
+              onInsertTask={handleInsertImageTemplate}
+              onClose={() => setShowTaskModal(false)}
+            />
+          )
+        }
+
+        {/* Export Modal */}
+        {
+          showExportModal && (
+            <ExportModal
+              onSaveAsPDF={handleSaveAsPDF}
+              onSaveToMarkdown={handleSaveToMarkdown}
+              onSaveToTXT={handleSaveToTXT}
+              onSaveEncrypted={handleSaveEncrypted}
+              onSaveToCloud={handleCloudNoteSave}
+              currentCloudNote={currentCloudNote}
+              onClose={() => setShowExportModal(false)}
+            />
+          )
+        }
 
         {/* About & Features Modals */}
         <AboutModal
@@ -2774,55 +2710,57 @@ const App = () => {
         <p></p>
 
         {/* EasyNotes Sidebar - Feature flag controlled */}
-        {isFeatureEnabled('EASY_NOTES') && (
-          <EasyNotesSidebar
-            showEasyNotesSidebar={showEasyNotesSidebar}
-            setShowEasyNotesSidebar={setShowEasyNotesSidebar}
-            showToast={showToast}
-            currentCloudNote={currentCloudNote}
-            refreshTrigger={sidebarRefreshTrigger}
-            onNoteDelete={(noteId: string) => {
-              // If the deleted note is currently open, clear the editor
-              if (currentCloudNote?.noteId === noteId) {
-                setEditorContent('');
-                setCurrentCloudNote(null);
+        {
+          isFeatureEnabled('EASY_NOTES') && (
+            <EasyNotesSidebar
+              showEasyNotesSidebar={showEasyNotesSidebar}
+              setShowEasyNotesSidebar={setShowEasyNotesSidebar}
+              showToast={showToast}
+              currentCloudNote={currentCloudNote}
+              refreshTrigger={sidebarRefreshTrigger}
+              onNoteDelete={(noteId: string) => {
+                // If the deleted note is currently open, clear the editor
+                if (currentCloudNote?.noteId === noteId) {
+                  setEditorContent('');
+                  setCurrentCloudNote(null);
+                  setCurrentFilePath(null);
+                }
+              }}
+              onNoteSelect={async (noteId: string, content: string, noteMetadata?: any) => {
+                setEditorContent(content);
+
+                // Clear current file path since we're opening a cloud note
                 setCurrentFilePath(null);
-              }
-            }}
-            onNoteSelect={async (noteId: string, content: string, noteMetadata?: any) => {
-              setEditorContent(content);
 
-              // Clear current file path since we're opening a cloud note
-              setCurrentFilePath(null);
+                // Set cloud note state if metadata is provided
+                if (noteMetadata) {
+                  // Import cloudManager singleton to get provider metadata
+                  const { cloudManager } = await import('./cloud/managers/CloudManager');
 
-              // Set cloud note state if metadata is provided
-              if (noteMetadata) {
-                // Import cloudManager singleton to get provider metadata
-                const { cloudManager } = await import('./cloud/managers/CloudManager');
+                  if (!cloudManager) {
+                    console.warn('Cloud features are disabled, cannot load provider metadata');
+                    return;
+                  }
 
-                if (!cloudManager) {
-                  console.warn('Cloud features are disabled, cannot load provider metadata');
-                  return;
+                  const providerMetadata = await cloudManager.getProviderMetadata(noteMetadata.provider);
+
+                  setCurrentCloudNote({
+                    noteId,
+                    title: noteMetadata.title,
+                    provider: noteMetadata.provider,
+                    providerDisplayName: providerMetadata?.displayName || noteMetadata.provider,
+                    providerIcon: providerMetadata?.icon || '📄',
+                    lastSaved: new Date(noteMetadata.lastSynced),
+                    hasUnsavedChanges: false
+                  });
                 }
 
-                const providerMetadata = await cloudManager.getProviderMetadata(noteMetadata.provider);
-
-                setCurrentCloudNote({
-                  noteId,
-                  title: noteMetadata.title,
-                  provider: noteMetadata.provider,
-                  providerDisplayName: providerMetadata?.displayName || noteMetadata.provider,
-                  providerIcon: providerMetadata?.icon || '📄',
-                  lastSaved: new Date(noteMetadata.lastSynced),
-                  hasUnsavedChanges: false
-                });
-              }
-
-              // Add to history for undo/redo functionality
-              addToHistory(content, cursorPositionRef.current, documentHistory, historyIndex, setDocumentHistory, setHistoryIndex);
-            }}
-          />
-        )}
+                // Add to history for undo/redo functionality
+                addToHistory(content, cursorPositionRef.current, documentHistory, historyIndex, setDocumentHistory, setHistoryIndex);
+              }}
+            />
+          )
+        }
 
         <div
           className={getEditorPreviewContainerClass()}
@@ -2853,57 +2791,61 @@ const App = () => {
           )}
         </div>
 
-        {contextMenu.visible && (
-          <ContextMenu
-            contextMenu={contextMenu}
-            textareaRef={textareaRef}
-            editorContent={editorContent}
-            setEditorContent={setEditorContent}
-            cursorPositionRef={cursorPositionRef}
-            setContextMenu={setContextMenu}
-            setCachedSelection={setCachedSelection}
-            setSelectionStart={setSelectionStart}
-            setSelectionEnd={setSelectionEnd}
-            cachedSelection={cachedSelection}
-          />
-        )}
+        {
+          contextMenu.visible && (
+            <ContextMenu
+              contextMenu={contextMenu}
+              textareaRef={textareaRef}
+              editorContent={editorContent}
+              setEditorContent={setEditorContent}
+              cursorPositionRef={cursorPositionRef}
+              setContextMenu={setContextMenu}
+              setCachedSelection={setCachedSelection}
+              setSelectionStart={setSelectionStart}
+              setSelectionEnd={setSelectionEnd}
+              cachedSelection={cachedSelection}
+            />
+          )
+        }
 
         {/* Toast Notifications */}
         <ToastContainer toasts={toasts} onRemove={removeToast} />
 
         {/* Confirmation Modal */}
-        {confirmModalConfig.open && (
-          <div className="modal-overlay">
-            <div className="modal-dialog">
-              <h2>{confirmModalConfig.title}</h2>
-              <p style={{ whiteSpace: 'pre-wrap' }}>{confirmModalConfig.message}</p>
-              <div className="modal-actions">
-                {confirmModalConfig.cancelLabel !== null && (
+        {
+          confirmModalConfig.open && (
+            <div className="modal-overlay">
+              <div className="modal-dialog">
+                <h2>{confirmModalConfig.title}</h2>
+                <p style={{ whiteSpace: 'pre-wrap' }}>{confirmModalConfig.message}</p>
+                <div className="modal-actions">
+                  {confirmModalConfig.cancelLabel !== null && (
+                    <button
+                      className="modal-button cancel"
+                      onClick={() => setConfirmModalConfig(prev => ({ ...prev, open: false }))}
+                    >
+                      {confirmModalConfig.cancelLabel || 'Cancel'}
+                    </button>
+                  )}
                   <button
-                    className="modal-button cancel"
-                    onClick={() => setConfirmModalConfig(prev => ({ ...prev, open: false }))}
+                    className="modal-button primary"
+                    onClick={async () => {
+                      const action = confirmModalConfig.onConfirm;
+                      setConfirmModalConfig(prev => ({ ...prev, open: false }));
+                      if (action) {
+                        await action();
+                      }
+                    }}
                   >
-                    {confirmModalConfig.cancelLabel || 'Cancel'}
+                    {confirmModalConfig.confirmLabel || 'Confirm'}
                   </button>
-                )}
-                <button
-                  className="modal-button primary"
-                  onClick={async () => {
-                    const action = confirmModalConfig.onConfirm;
-                    setConfirmModalConfig(prev => ({ ...prev, open: false }));
-                    if (action) {
-                      await action();
-                    }
-                  }}
-                >
-                  {confirmModalConfig.confirmLabel || 'Confirm'}
-                </button>
+                </div>
               </div>
             </div>
-          </div>
-        )}
+          )
+        }
 
-      </div>
+      </div >
     </div >
   );
 };

@@ -384,6 +384,10 @@
         "tasks": {
             "subtitle": "Voorgeconfigureerde takenlijsten en trackers invoegen",
             "section_title": "Taaksjablonen"
+        },
+        "exports": {
+            "subtitle": "Kies een formaat om te exporteren",
+            "section_title": "Exportopties"
         }
     },
     "templates": {
