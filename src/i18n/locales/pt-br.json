@@ -380,6 +380,10 @@
             "url_placeholder": "https://exemplo.com.br/arquivo.md",
             "cancel": "Cancelar",
             "import": "Importar"
+        },
+        "tasks": {
+            "subtitle": "Inserir listas de tarefas e rastreadores predefinidos",
+            "section_title": "Modelos de Tarefas"
         }
     },
     "templates": {
@@ -413,7 +417,15 @@
             "shopping": "Lista de Compras",
             "shopping_desc": "Lista aninhada",
             "study": "Checklist de Estudos",
-            "study_desc": "Modelo acadêmico"
+            "study_desc": "Modelo acadêmico",
+            "release": "Checklist de Lançamento",
+            "release_desc": "Etapas de implantação",
+            "content": "Publicação de Conteúdo",
+            "content_desc": "Checklist de postagem",
+            "review": "Revisão de Código",
+            "review_desc": "Garantia de qualidade",
+            "habits": "Hábitos Semanais",
+            "habits_desc": "Rastrear hábitos recorrentes"
         }
     },
     "auto_generate": {

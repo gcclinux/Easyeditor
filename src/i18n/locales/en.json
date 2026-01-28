@@ -382,6 +382,10 @@
             "url_placeholder": "https://example.com/file.md",
             "cancel": "Cancel",
             "import": "Import"
+        },
+        "tasks": {
+            "subtitle": "Insert pre-defined task lists and trackers",
+            "section_title": "Task Templates"
         }
     },
     "templates": {
@@ -415,7 +419,15 @@
             "shopping": "Shopping List",
             "shopping_desc": "Nested shopping list",
             "study": "Study Checklist",
-            "study_desc": "Academic study template"
+            "study_desc": "Academic study template",
+            "release": "Release Checklist",
+            "release_desc": "Deployment steps",
+            "content": "Content Publishing",
+            "content_desc": "Blog post checklist",
+            "review": "Code Review",
+            "review_desc": "Quality assurance checklist",
+            "habits": "Weekly Habits",
+            "habits_desc": "Track recurring habits"
         }
     },
     "auto_generate": {

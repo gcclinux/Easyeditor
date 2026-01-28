@@ -113,7 +113,7 @@ import EasyNotesSidebar from './components/EasyNotesSidebar';
 import FeaturesModal from './components/FeaturesModal';
 import ThemeModal from './components/ThemeModal';
 import ImportThemeModal from './components/ImportThemeModal';
-import taskTemplates from './templates/tasks';
+
 import { encryptContent, decryptFile } from './cryptoHandler';
 import PasswordModal from './components/PasswordModal';
 import { loadTheme, getCurrentTheme } from './themeLoader';
@@ -125,6 +125,7 @@ import GitCredentialsModal from './components/GitCredentialsModal';
 import MasterPasswordModal from './components/MasterPasswordModal';
 import CommitModal from './components/CommitModal';
 import FileModal from './components/FileModal';
+import TaskModal from './components/TaskModal';
 import GitHistoryModal from './components/GitHistoryModal';
 import GitStatusIndicator from './components/GitStatusIndicator';
 import { getGitManager } from './gitManagerWrapper';
@@ -188,9 +189,7 @@ const App = () => {
     loadTheme(id, true);
     setCurrentTheme(id);
   };
-  const [showTasksDropdown, setShowTasksDropdown] = useState(false);
-  const tasksButtonRef = useRef<HTMLButtonElement | null>(null);
-  const [tasksPos, setTasksPos] = useState<{ top: number; left: number; width: number } | null>(null);
+  const [showTaskModal, setShowTaskModal] = useState(false);
   const [showGitModal, setShowGitModal] = useState(false);
   const [showEasyNotesSidebar, setShowEasyNotesSidebar] = useState(false);
   const easyNotesButtonRef = useRef<HTMLButtonElement | null>(null);
@@ -371,9 +370,7 @@ const App = () => {
     setTemplatesPos(null);
     // setShowHelpDropdown(false); // Removed
     // setHelpPos(null); // Removed
-    setShowTasksDropdown(false);
-    setShowTasksDropdown(false);
-    setTasksPos(null);
+
     // Note: Git modal and EasyNotes sidebar are independent and don't close with other dropdowns
   };
 
@@ -2113,48 +2110,15 @@ const App = () => {
         <div className="dropdown-container">
           <button
             className="menu-item fixed-menubar-btn"
-            ref={el => { tasksButtonRef.current = el; }}
-            onMouseDown={(e) => {
-              e.preventDefault();
-              cacheSelection();
+            onClick={() => {
               closeAllDropdowns();
               setShowEasyNotesSidebar(false);
-              setShowTasksDropdown(true);
-              if (tasksButtonRef.current) {
-                const rect = tasksButtonRef.current.getBoundingClientRect();
-                setTasksPos({ top: rect.bottom + window.scrollY, left: rect.left + window.scrollX, width: rect.width });
-              } else {
-                setTasksPos(null);
-              }
+              setShowTaskModal(true);
             }}
             title={t('menu.tasks')}
           >
-            <GoTasklist /> &nbsp; {t('menu.tasks')} ▾
+            <GoTasklist /> &nbsp; {t('menu.tasks')}
           </button>
-          {showTasksDropdown && tasksPos && createPortal(
-            <div
-              className="header-dropdown format-dropdown"
-              style={{ position: 'absolute', top: tasksPos.top + 'px', left: tasksPos.left + 'px', zIndex: 999999, minWidth: tasksPos.width + 'px' }}
-            >
-              {taskTemplates.map((tpl, idx) => (
-                <div key={idx}>
-                  <button
-                    className="dropdown-item"
-                    onClick={() => {
-                      handleInsertImageTemplate(tpl.markdown + '\n\n');
-                      setShowTasksDropdown(false);
-                      setTasksPos(null);
-                    }}
-                  >
-                    <div className="hdr-title"><GoTasklist /> {t(`templates.tasks.${tpl.id}`)}</div>
-                    <div className="hdr-desc">{t(`templates.tasks.${tpl.id}_desc`)}</div>
-                  </button>
-                  <div className="hdr-sep" />
-                </div>
-              ))}
-            </div>,
-            document.body
-          )}
         </div>
         <div className="dropdown-container">
           <button
@@ -2287,6 +2251,14 @@ const App = () => {
             onSelectLanguage={() => setLanguageOpen(true)}
             onAbout={() => setAboutOpen(true)}
             onClose={() => setShowFileModal(false)}
+          />
+        )}
+
+        {/* Task Modal */}
+        {showTaskModal && (
+          <TaskModal
+            onInsertTask={handleInsertImageTemplate}
+            onClose={() => setShowTaskModal(false)}
           />
         )}
 

@@ -380,6 +380,10 @@
             "url_placeholder": "https://voorbeeld.nl/bestand.md",
             "cancel": "Annuleren",
             "import": "Importeren"
+        },
+        "tasks": {
+            "subtitle": "Voorgeconfigureerde takenlijsten en trackers invoegen",
+            "section_title": "Taaksjablonen"
         }
     },
     "templates": {
@@ -413,7 +417,15 @@
             "shopping": "Boodschappenlijst",
             "shopping_desc": "Geneste lijst",
             "study": "Studie Checklist",
-            "study_desc": "Academische template"
+            "study_desc": "Academische template",
+            "release": "Release Checklist",
+            "release_desc": "Deployment stappen",
+            "content": "Content Publicatie",
+            "content_desc": "Blog post checklist",
+            "review": "Code Review",
+            "review_desc": "Kwaliteitscontrole",
+            "habits": "Wekelijkse Gewoonten",
+            "habits_desc": "Gewoonten bijhouden"
         }
     },
     "auto_generate": {

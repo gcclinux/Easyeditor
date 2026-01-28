@@ -380,6 +380,10 @@
             "url_placeholder": "https://przyklad.pl/plik.md",
             "cancel": "Anuluj",
             "import": "Importuj"
+        },
+        "tasks": {
+            "subtitle": "Wstaw zdefiniowane listy zadań i śledzenia",
+            "section_title": "Szablony zadań"
         }
     },
     "templates": {
@@ -413,7 +417,15 @@
             "shopping": "Lista Zakupów",
             "shopping_desc": "Lista zagnieżdżona",
             "study": "Lista Studiów",
-            "study_desc": "Szablon akademicki"
+            "study_desc": "Szablon akademicki",
+            "release": "Lista Wydania",
+            "release_desc": "Kroki wdrożenia",
+            "content": "Publikacja Treści",
+            "content_desc": "Lista wpisów na bloga",
+            "review": "Przegląd Kodu",
+            "review_desc": "Zapewnienie jakości",
+            "habits": "Nawyki Tygodniowe",
+            "habits_desc": "Śledzenie nawyków"
         }
     },
     "auto_generate": {

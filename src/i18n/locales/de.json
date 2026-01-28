@@ -380,6 +380,10 @@
             "url_placeholder": "https://beispiel.de/datei.md",
             "cancel": "Abbrechen",
             "import": "Importieren"
+        },
+        "tasks": {
+            "subtitle": "Vordefinierte Aufgabenlisten und Tracker einfügen",
+            "section_title": "Aufgabenvorlagen"
         }
     },
     "templates": {
@@ -413,7 +417,15 @@
             "shopping": "Einkaufsliste",
             "shopping_desc": "Verschachtelte Liste",
             "study": "Studien-Checkliste",
-            "study_desc": "Akademische Vorlage"
+            "study_desc": "Akademische Vorlage",
+            "release": "Release-Checkliste",
+            "release_desc": "Bereitstellungsschritte",
+            "content": "Content-Veröffentlichung",
+            "content_desc": "Blog-Post-Checkliste",
+            "review": "Code-Review",
+            "review_desc": "Qualitätssicherung",
+            "habits": "Wöchentliche Gewohnheiten",
+            "habits_desc": "Wiederkehrende Gewohnheiten"
         }
     },
     "auto_generate": {
