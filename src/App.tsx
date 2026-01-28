@@ -2385,6 +2385,7 @@ const App = () => {
                 onAutoTable={() => setTableModalOpen(true)}
                 onAutoGantt={() => setGanttModalOpen(true)}
                 onAutoTimeline={() => setTimelineModalOpen(true)}
+                onImportMD={() => setImportMDModalOpen(true)}
                 onClose={() => setShowAutoDropdown(false)}
               />
             )}
@@ -2531,18 +2532,7 @@ const App = () => {
                   <div className="hdr-title"><BsCodeSquare /> {t('templates.ascii_diagram')}</div>
                   <div className="hdr-desc">{t('templates.ascii_diagram_desc')}</div>
                 </button>
-                <div className="hdr-sep" />
-                <button
-                  className="dropdown-item"
-                  onClick={() => {
-                    setImportMDModalOpen(true);
-                    setShowTemplatesDropdown(false);
-                    setTemplatesPos(null);
-                  }}
-                >
-                  <div className="hdr-title"><FaFileImport /> {t('templates.import_md') || 'Import MD'}</div>
-                  <div className="hdr-desc">{t('templates.import_md_desc') || 'Import Markdown from URL'}</div>
-                </button>
+
               </div>,
               document.body
             )}
