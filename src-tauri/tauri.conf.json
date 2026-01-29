@@ -1,6 +1,6 @@
 {
   "productName": "easyeditor",
-  "version": "1.6.1",
+  "version": "1.6.2",
   "identifier": "com.easyeditor.editor",
   "build": {
     "beforeBuildCommand": "npm run build",
@@ -60,6 +60,14 @@
         ],
         "name": "Markdown Document",
         "description": "Markdown Document",
+        "role": "Editor"
+      },
+      {
+        "ext": [
+          "sstp"
+        ],
+        "name": "Encrypted Document",
+        "description": "EasyEditor Encrypted Document",
         "role": "Editor"
       }
     ]

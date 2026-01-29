@@ -22,6 +22,7 @@ interface LanguageContextType {
     t: (key: string) => string;
     availableLanguages: Language[];
     importLanguage: (code: string, name: string, data: Record<string, any>) => void;
+    isLoading: boolean;
 }
 
 const LanguageContext = createContext<LanguageContextType | undefined>(undefined);
@@ -44,6 +45,7 @@ export const LanguageProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     });
     const [translations, setTranslations] = useState<Record<string, any>>({});
     const [customLanguages, setCustomLanguages] = useState<Language[]>([]);
+    const [isLoading, setIsLoading] = useState(true);
 
     // Load custom languages on startup
     useEffect(() => {
@@ -61,6 +63,7 @@ export const LanguageProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     // Load translations when language changes
     useEffect(() => {
         const loadTranslations = async () => {
+            setIsLoading(true);
             try {
                 let data: any;
 
@@ -102,6 +105,8 @@ export const LanguageProvider: React.FC<{ children: React.ReactNode }> = ({ chil
                 }
             } catch (error) {
                 console.error(`Failed to load translations for ${language}`, error);
+            } finally {
+                setIsLoading(false);
             }
         };
 
@@ -145,7 +150,7 @@ export const LanguageProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     const availableLanguages = [...LANGUAGES, ...customLanguages];
 
     return (
-        <LanguageContext.Provider value={{ language, setLanguage, t, availableLanguages, importLanguage }}>
+        <LanguageContext.Provider value={{ language, setLanguage, t, availableLanguages, importLanguage, isLoading }}>
             {children}
         </LanguageContext.Provider>
     );

@@ -86,3 +86,38 @@ export const decryptFile = async (
 
   input.click();
 };
+
+export const decryptFileFromPath = async (
+  filePath: string,
+  setEditorContent: (content: string) => void,
+  showPasswordPrompt: (onSubmit: (password: string) => void) => void,
+  showToast: (message: string, type?: 'success' | 'error' | 'info' | 'warning') => void
+): Promise<void> => {
+  const isTauri = typeof window !== 'undefined' && (window as any).__TAURI_INTERNALS__;
+
+  if (!isTauri) {
+    showToast('Direct file opening is only supported in the desktop app', 'error');
+    return;
+  }
+
+  try {
+    const { readFile } = await import('@tauri-apps/plugin-fs');
+    const fileBytes = await readFile(filePath);
+
+    showPasswordPrompt(async (password) => {
+      if (!password) return;
+
+      try {
+        const decrypted = decryptBytesToText(fileBytes, password);
+        setEditorContent(decrypted);
+        showToast('File decrypted successfully', 'success');
+      } catch (error) {
+        showToast('Decryption failed: ' + (error as Error).message, 'error');
+      }
+    });
+
+  } catch (error) {
+    console.error('Failed to read encrypted file:', error);
+    showToast('Failed to read file: ' + (error as Error).message, 'error');
+  }
+};

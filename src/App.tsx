@@ -135,7 +135,7 @@ import LanguageModal from './components/LanguageModal';
 import LicenseManager from './premium/LicenseManager';
 
 const App = () => {
-  const { t } = useLanguage();
+  const { t, isLoading } = useLanguage();
   const [documentHistory, setDocumentHistory] = useState<HistoryState[]>([]);
 
   // Listen for license updates to enable premium features dynamically
@@ -152,6 +152,8 @@ const App = () => {
   const [gitManager, setGitManager] = useState<any>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null!);
   const cursorPositionRef = useRef<number>(0);
+  // Ref to hold the latest file opening function to avoid stale closures
+  const handleOpenFileRef = useRef<((path: string) => void) | null>(null);
   const [tableModalOpen, setTableModalOpen] = useState(false);
   const [ganttModalOpen, setGanttModalOpen] = useState(false);
   const [timelineModalOpen, setTimelineModalOpen] = useState(false);
@@ -209,6 +211,7 @@ const App = () => {
   const [repoFiles, setRepoFiles] = useState<string[]>([]);
   const [currentRepoPath, setCurrentRepoPath] = useState<string | null>(null);
   const [currentFilePath, setCurrentFilePath] = useState<string | null>(null);
+  const [pendingFileToOpen, setPendingFileToOpen] = useState<string | null>(null);
   const [isGitRepo, setIsGitRepo] = useState(false);
 
   // Cloud note state
@@ -530,7 +533,9 @@ const App = () => {
             const filePath = event.payload as string;
 
             // Open the file
-            handleOpenFileFromCommandLine(filePath);
+            if (handleOpenFileRef.current) {
+              handleOpenFileRef.current(filePath);
+            }
           });
 
           // Check for command line arguments on startup
@@ -539,7 +544,9 @@ const App = () => {
             const filePath = await invoke('open_file_from_args');
             if (filePath) {
               console.log('Opening file from command line args:', filePath);
-              handleOpenFileFromCommandLine(filePath as string);
+              if (handleOpenFileRef.current) {
+                handleOpenFileRef.current(filePath as string);
+              }
             }
           } catch (error) {
             console.log('No file specified in command line args');
@@ -1268,14 +1275,33 @@ const App = () => {
 
   // Handle opening file from command line arguments
   const handleOpenFileFromCommandLine = async (filePath: string) => {
+    // If translations are loading, wait
+    if (isLoading) {
+      console.log('Translations loading, queueing file open:', filePath);
+      setPendingFileToOpen(filePath);
+      return;
+    }
+
     try {
       console.log('Opening file from command line:', filePath);
       const isTauri = typeof window !== 'undefined' && (window as any).__TAURI_INTERNALS__;
       let targetPath = filePath;
 
       const { readFileContent, resolvePath } = await import('./tauriFileHandler');
+      // Resolve path first
       if (isTauri) {
         targetPath = await resolvePath(filePath);
+      }
+
+      // Check if it is an encrypted file
+      if (targetPath.toLowerCase().endsWith('.sstp')) {
+        const { decryptFileFromPath } = await import('./cryptoHandler');
+        const showPrompt = (onSubmit: (password: string) => void) =>
+          showPasswordPrompt(t('menu.decrypt_file_title'), t('menu.decrypt_file_prompt'), onSubmit);
+
+        await decryptFileFromPath(targetPath, setEditorContent, showPrompt, showToast);
+        setCurrentFilePath(targetPath);
+        return;
       }
 
       const content = await readFileContent(targetPath);
@@ -1308,6 +1334,20 @@ const App = () => {
       showToast(`Failed to open file: ${(error as Error).message}`, 'error');
     }
   };
+
+  // Update the ref whenever the function changes
+  useEffect(() => {
+    handleOpenFileRef.current = handleOpenFileFromCommandLine;
+  }, [handleOpenFileFromCommandLine]);
+
+  // Process pending file when loading completes
+  useEffect(() => {
+    if (!isLoading && pendingFileToOpen) {
+      console.log('Processing queued file:', pendingFileToOpen);
+      handleOpenFileFromCommandLine(pendingFileToOpen);
+      setPendingFileToOpen(null);
+    }
+  }, [isLoading, pendingFileToOpen, handleOpenFileFromCommandLine]);
 
   const handleFileSelect = async (filePath: string) => {
     setFileBrowserModalOpen(false);

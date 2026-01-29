@@ -26,7 +26,8 @@ fn open_file_from_args(_app_handle: tauri::AppHandle) -> Option<String> {
         if arg.ends_with(".md") || arg.ends_with(".markdown") || 
            arg.ends_with(".mdown") || arg.ends_with(".mkd") || 
            arg.ends_with(".mkdn") || arg.ends_with(".mdwn") || 
-           arg.ends_with(".mdtxt") || arg.ends_with(".mdtext") {
+           arg.ends_with(".mdtxt") || arg.ends_with(".mdtext") ||
+           arg.ends_with(".sstp") || arg.ends_with(".txt") {
             return Some(arg.clone());
         }
     }
@@ -78,7 +79,8 @@ pub fn run() {
                 if arg.ends_with(".md") || arg.ends_with(".markdown") || 
                    arg.ends_with(".mdown") || arg.ends_with(".mkd") || 
                    arg.ends_with(".mkdn") || arg.ends_with(".mdwn") || 
-                   arg.ends_with(".mdtxt") || arg.ends_with(".mdtext") {
+                   arg.ends_with(".mdtxt") || arg.ends_with(".mdtext") ||
+                   arg.ends_with(".sstp") || arg.ends_with(".txt") {
                     
                     // Emit an event to the frontend with the file path
                     let _ = app.emit("open-file", arg);
