@@ -56,7 +56,9 @@
           "mkdn",
           "mdwn",
           "mdtxt",
-          "mdtext"
+          "mdtext",
+          "sstp",
+          "txt"
         ],
         "name": "Markdown Document",
         "description": "Markdown Document",
