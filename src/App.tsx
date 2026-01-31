@@ -90,7 +90,7 @@ import UMLDropdown from './components/UMLDropdown';
 import InsertModal from './components/InsertModal';
 import ImagesModal from './components/ImagesModal';
 import LinksModal from './components/LinksModal';
-import TablesDropdown from './components/TablesDropdown';
+import TablesModal from './components/TablesModal';
 import FooterDropdown from './components/FooterDropdown';
 import SymbolsDropdown from './components/SymbolsDropdown';
 import IconsDropdown from './components/IconsDropdown';
@@ -191,7 +191,7 @@ const App = () => {
   const [showIconsDropdown, setShowIconsDropdown] = useState(false);
   const [showAutoDropdown, setShowAutoDropdown] = useState(false);
   const [showLinksModal, setShowLinksModal] = useState(false);
-  const [showTablesDropdown, setShowTablesDropdown] = useState(false);
+  const [showTablesModal, setShowTablesModal] = useState(false);
   const [showFooterDropdown, setShowFooterDropdown] = useState(false);
   const [showInsertModal, setShowInsertModal] = useState(false);
   const [showImagesModal, setShowImagesModal] = useState(false);
@@ -385,7 +385,6 @@ const App = () => {
     setShowIconsDropdown(false);
     setShowAutoDropdown(false);
 
-    setShowTablesDropdown(false);
     setShowFooterDropdown(false);
 
 
@@ -2344,6 +2343,14 @@ const App = () => {
             />
           )
         }
+        {
+          showTablesModal && (
+            <TablesModal
+              onInsertTemplate={handleInsertImageTemplate}
+              onClose={() => setShowTablesModal(false)}
+            />
+          )
+        }
         <ThemeModal
           open={themeOpen}
           onClose={() => setThemeOpen(false)}
@@ -2431,13 +2438,7 @@ const App = () => {
           </div>
           &#8741;
           <div className="dropdown-container">
-            <button className="button-mermaid" onMouseDown={() => { cacheSelection(); closeAllDropdowns(); setShowTablesDropdown(true); }} title={t('toolbar.tables')}><FaTable />&nbsp;{t('toolbar.tables')}</button>
-            {showTablesDropdown && (
-              <TablesDropdown
-                onInsertTemplate={handleInsertImageTemplate}
-                onClose={() => setShowTablesDropdown(false)}
-              />
-            )}
+            <button className="button-mermaid" onMouseDown={() => { cacheSelection(); closeAllDropdowns(); setShowTablesModal(true); }} title={t('toolbar.tables')}><FaTable />&nbsp;{t('toolbar.tables')}</button>
           </div>
           &#8741;
           <div className="dropdown-container">
