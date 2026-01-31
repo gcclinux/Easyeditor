@@ -88,7 +88,7 @@ import FormattingModal from './components/FormattingModal';
 import MermaidDropdown from './components/MermaidDropdown';
 import UMLDropdown from './components/UMLDropdown';
 import InsertModal from './components/InsertModal';
-import ImagesDropdown from './components/ImagesDropdown';
+import ImagesModal from './components/ImagesModal';
 import LinksModal from './components/LinksModal';
 import TablesDropdown from './components/TablesDropdown';
 import FooterDropdown from './components/FooterDropdown';
@@ -194,7 +194,7 @@ const App = () => {
   const [showTablesDropdown, setShowTablesDropdown] = useState(false);
   const [showFooterDropdown, setShowFooterDropdown] = useState(false);
   const [showInsertModal, setShowInsertModal] = useState(false);
-  const [showImagesDropdown, setShowImagesDropdown] = useState(false);
+  const [showImagesModal, setShowImagesModal] = useState(false);
   const [showExportModal, setShowExportModal] = useState(false);
   const [showTemplatesDropdown, setShowTemplatesDropdown] = useState(false);
   const templatesButtonRef = useRef<HTMLButtonElement | null>(null);
@@ -388,7 +388,6 @@ const App = () => {
     setShowTablesDropdown(false);
     setShowFooterDropdown(false);
 
-    setShowImagesDropdown(false);
 
     setShowTemplatesDropdown(false);
     setTemplatesPos(null);
@@ -2337,6 +2336,14 @@ const App = () => {
             />
           )
         }
+        {
+          showImagesModal && (
+            <ImagesModal
+              onInsertTemplate={handleInsertImageTemplate}
+              onClose={() => setShowImagesModal(false)}
+            />
+          )
+        }
         <ThemeModal
           open={themeOpen}
           onClose={() => setThemeOpen(false)}
@@ -2420,13 +2427,7 @@ const App = () => {
           </div>
           &#8741;
           <div className="dropdown-container">
-            <button className="button-mermaid" onMouseDown={() => { cacheSelection(); closeAllDropdowns(); setShowImagesDropdown(true); }} title={t('toolbar.images')}><FaImage />&nbsp;{t('toolbar.images')}</button>
-            {showImagesDropdown && (
-              <ImagesDropdown
-                onInsertTemplate={handleInsertImageTemplate}
-                onClose={() => setShowImagesDropdown(false)}
-              />
-            )}
+            <button className="button-mermaid" onMouseDown={() => { cacheSelection(); closeAllDropdowns(); setShowImagesModal(true); }} title={t('toolbar.images')}><FaImage />&nbsp;{t('toolbar.images')}</button>
           </div>
           &#8741;
           <div className="dropdown-container">
