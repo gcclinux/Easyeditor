@@ -83,7 +83,7 @@ import {
 } from './insertMarkdown.ts';
 import TextareaComponent from './components/TextareaComponent.tsx';
 import PreviewComponent from './components/PreviewComponent.tsx';
-import HeaderDropdown from './components/HeaderDropdown';
+import HeadersModal from './components/HeadersModal';
 import FormatDropdown from './components/FormatDropdown';
 import MermaidDropdown from './components/MermaidDropdown';
 import UMLDropdown from './components/UMLDropdown';
@@ -183,7 +183,7 @@ const App = () => {
   const [tableModalOpen, setTableModalOpen] = useState(false);
   const [ganttModalOpen, setGanttModalOpen] = useState(false);
   const [timelineModalOpen, setTimelineModalOpen] = useState(false);
-  const [showHeaderDropdown, setShowHeaderDropdown] = useState(false);
+  const [showHeaderModal, setShowHeaderModal] = useState(false);
   const [showFormatDropdown, setShowFormatDropdown] = useState(false);
   const [showMermaidDropdown, setShowMermaidDropdown] = useState(false);
   const [showUMLDropdown, setShowUMLDropdown] = useState(false);
@@ -375,7 +375,9 @@ const App = () => {
 
   // Function to close all dropdowns
   const closeAllDropdowns = () => {
-    setShowHeaderDropdown(false);
+    // setShowHeaderModal(false); // Modals don't need to be closed by this fn usually, or if they do, use the new name.
+    // However, existing modals like FileModal are NOT closed here. So I will just remove the line.
+
     setShowFormatDropdown(false);
     setShowMermaidDropdown(false);
     setShowUMLDropdown(false);
@@ -405,7 +407,7 @@ const App = () => {
 
       // Check if click is outside dropdown containers and dropdown content
       const isDropdownButton = target.closest('.dropdown-container, .menu-item, .fixed-menubar-btn, .button-mermaid');
-      const isDropdownContent = target.closest('.header-dropdown, .format-dropdown');
+      const isDropdownContent = target.closest('.format-dropdown');
 
       // If clicking outside both the button and dropdown content, close all
       if (!isDropdownButton && !isDropdownContent) {
@@ -2288,6 +2290,19 @@ const App = () => {
         />
 
         <FeaturesModal open={featuresOpen} onClose={() => setFeaturesOpen(false)} />
+        {
+          showHeaderModal && (
+            <HeadersModal
+              onInsertH1={handlerinserth1Syntax}
+              onInsertH2={handlerinserth2Syntax}
+              onInsertH3={handlerinserth3Syntax}
+              onInsertH4={handlerinserth4Syntax}
+              onInsertH5={handlerinserth5Syntax}
+              onInsertH6={handlerinserth6Syntax}
+              onClose={() => setShowHeaderModal(false)}
+            />
+          )
+        }
         <ThemeModal
           open={themeOpen}
           onClose={() => setThemeOpen(false)}
@@ -2355,18 +2370,7 @@ const App = () => {
 
         <div className="menubar-bottom">
           <div className="dropdown-container">
-            <button className="button-mermaid" onMouseDown={() => { cacheSelection(); closeAllDropdowns(); setShowHeaderDropdown(true); }} title={t('toolbar.headers')}><CgFormatHeading />{t('toolbar.headers')}</button>
-            {showHeaderDropdown && (
-              <HeaderDropdown
-                onInsertH1={handlerinserth1Syntax}
-                onInsertH2={handlerinserth2Syntax}
-                onInsertH3={handlerinserth3Syntax}
-                onInsertH4={handlerinserth4Syntax}
-                onInsertH5={handlerinserth5Syntax}
-                onInsertH6={handlerinserth6Syntax}
-                onClose={() => setShowHeaderDropdown(false)}
-              />
-            )}
+            <button className="button-mermaid" onMouseDown={() => { cacheSelection(); closeAllDropdowns(); setShowHeaderModal(true); }} title={t('toolbar.headers')}><CgFormatHeading />{t('toolbar.headers')}</button>
           </div>
           &#8741;
           <div className="dropdown-container">
