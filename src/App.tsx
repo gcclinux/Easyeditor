@@ -89,7 +89,7 @@ import MermaidDropdown from './components/MermaidDropdown';
 import UMLDropdown from './components/UMLDropdown';
 import InsertModal from './components/InsertModal';
 import ImagesDropdown from './components/ImagesDropdown';
-import LinksDropdown from './components/LinksDropdown';
+import LinksModal from './components/LinksModal';
 import TablesDropdown from './components/TablesDropdown';
 import FooterDropdown from './components/FooterDropdown';
 import SymbolsDropdown from './components/SymbolsDropdown';
@@ -190,7 +190,7 @@ const App = () => {
   const [showSymbolsDropdown, setShowSymbolsDropdown] = useState(false);
   const [showIconsDropdown, setShowIconsDropdown] = useState(false);
   const [showAutoDropdown, setShowAutoDropdown] = useState(false);
-  const [showLinksDropdown, setShowLinksDropdown] = useState(false);
+  const [showLinksModal, setShowLinksModal] = useState(false);
   const [showTablesDropdown, setShowTablesDropdown] = useState(false);
   const [showFooterDropdown, setShowFooterDropdown] = useState(false);
   const [showInsertModal, setShowInsertModal] = useState(false);
@@ -384,7 +384,7 @@ const App = () => {
     setShowSymbolsDropdown(false);
     setShowIconsDropdown(false);
     setShowAutoDropdown(false);
-    setShowLinksDropdown(false);
+
     setShowTablesDropdown(false);
     setShowFooterDropdown(false);
 
@@ -2329,6 +2329,14 @@ const App = () => {
             />
           )
         }
+        {
+          showLinksModal && (
+            <LinksModal
+              onInsertTemplate={handleInsertImageTemplate}
+              onClose={() => setShowLinksModal(false)}
+            />
+          )
+        }
         <ThemeModal
           open={themeOpen}
           onClose={() => setThemeOpen(false)}
@@ -2408,13 +2416,7 @@ const App = () => {
           </div>
           &#8741;
           <div className="dropdown-container">
-            <button className="button-mermaid" onMouseDown={() => { cacheSelection(); closeAllDropdowns(); setShowLinksDropdown(true); }} title={t('toolbar.links')}><FaLink />&nbsp;{t('toolbar.links')}</button>
-            {showLinksDropdown && (
-              <LinksDropdown
-                onInsertTemplate={handleInsertImageTemplate}
-                onClose={() => setShowLinksDropdown(false)}
-              />
-            )}
+            <button className="button-mermaid" onMouseDown={() => { cacheSelection(); closeAllDropdowns(); setShowLinksModal(true); }} title={t('toolbar.links')}><FaLink />&nbsp;{t('toolbar.links')}</button>
           </div>
           &#8741;
           <div className="dropdown-container">
