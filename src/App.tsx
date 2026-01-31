@@ -96,15 +96,7 @@ import SymbolsDropdown from './components/SymbolsDropdown';
 import IconsDropdown from './components/IconsDropdown';
 import AutoModal from './components/AutoModal';
 import GitModal from './components/GitModal';
-import { buildDailyJournalTemplate } from './templates/dailyJournal';
-import { buildMeetingNotesTemplate } from './templates/meetingNotes';
-import { buildProjectPlanTemplate } from './templates/projectPlan';
-import { buildStudyNotesTemplate } from './templates/studyNotes';
-import { buildTravelLogsTemplate } from './templates/travelLogs';
-import { buildWorkoutLogTemplate } from './templates/workoutLog';
-import { buildBugReportTemplate } from './templates/bugReport';
-import { buildDiagramExamplesTemplate } from './templates/diagramExamples';
-import { buildDiagramASCIITemplate } from './templates/diagramASCII';
+import TemplatesModal from './components/TemplatesModal';
 import AboutModal from './components/AboutModal';
 import EasyNotesSidebar from './components/EasyNotesSidebar';
 import FeaturesModal from './components/FeaturesModal';
@@ -196,9 +188,7 @@ const App = () => {
   const [showInsertModal, setShowInsertModal] = useState(false);
   const [showImagesModal, setShowImagesModal] = useState(false);
   const [showExportModal, setShowExportModal] = useState(false);
-  const [showTemplatesDropdown, setShowTemplatesDropdown] = useState(false);
-  const templatesButtonRef = useRef<HTMLButtonElement | null>(null);
-  const [templatesPos, setTemplatesPos] = useState<{ top: number; left: number; width: number } | null>(null);
+  const [showTemplatesModal, setShowTemplatesModal] = useState(false);
   const [showFileModal, setShowFileModal] = useState(false);
   const [aboutOpen, setAboutOpen] = useState(false);
   const [featuresOpen, setFeaturesOpen] = useState(false);
@@ -386,10 +376,6 @@ const App = () => {
 
 
 
-    setShowTemplatesDropdown(false);
-    setTemplatesPos(null);
-    setShowTemplatesDropdown(false);
-    setTemplatesPos(null);
     // setShowHelpDropdown(false); // Removed
     // setHelpPos(null); // Removed
 
@@ -2368,6 +2354,14 @@ const App = () => {
             />
           )
         }
+        {
+          showTemplatesModal && (
+            <TemplatesModal
+              onInsertTemplate={handleInsertImageTemplate}
+              onClose={() => setShowTemplatesModal(false)}
+            />
+          )
+        }
         <ThemeModal
           open={themeOpen}
           onClose={() => setThemeOpen(false)}
@@ -2480,148 +2474,16 @@ const App = () => {
           <div className="dropdown-container">
             <button
               className="button-mermaid"
-              ref={el => { templatesButtonRef.current = el; }}
               onMouseDown={(e) => {
                 e.preventDefault();
                 cacheSelection();
                 closeAllDropdowns();
-                setShowTemplatesDropdown(true);
-                if (templatesButtonRef.current) {
-                  const rect = templatesButtonRef.current.getBoundingClientRect();
-                  setTemplatesPos({ top: rect.bottom + window.scrollY, left: rect.left + window.scrollX, width: rect.width });
-                } else {
-                  setTemplatesPos(null);
-                }
+                setShowTemplatesModal(true);
               }}
               title={t('menu.templates')}
             >
-              <GrDocumentText /> &nbsp; {t('menu.templates')} ▾
+              <GrDocumentText /> &nbsp; {t('menu.templates')}
             </button>
-            {showTemplatesDropdown && templatesPos && createPortal(
-              <div
-                className="header-dropdown format-dropdown"
-                style={{ position: 'absolute', top: templatesPos.top + 'px', left: templatesPos.left + 'px', zIndex: 999999, minWidth: templatesPos.width + 'px' }}
-              >
-                <button
-                  className="dropdown-item"
-                  onClick={() => {
-                    const tpl = buildDailyJournalTemplate(new Date());
-                    handleInsertImageTemplate(tpl + '\n\n');
-                    setShowTemplatesDropdown(false);
-                    setTemplatesPos(null);
-                  }}
-                >
-                  <div className="hdr-title"><BsJournalBookmarkFill />  {t('templates.daily_journal')}</div>
-                  <div className="hdr-desc">{t('templates.daily_journal_desc')}</div>
-                </button>
-                <div className="hdr-sep" />
-                <button
-                  className="dropdown-item"
-                  onClick={() => {
-                    const tpl = buildMeetingNotesTemplate(new Date());
-                    handleInsertImageTemplate(tpl + '\n\n');
-                    setShowTemplatesDropdown(false);
-                    setTemplatesPos(null);
-                  }}
-                >
-                  <div className="hdr-title"><BsKanban /> {t('templates.meeting_notes')}</div>
-                  <div className="hdr-desc">{t('templates.meeting_notes_desc')}</div>
-                </button>
-                <div className="hdr-sep" />
-                <button
-                  className="dropdown-item"
-                  onClick={() => {
-                    const tpl = buildProjectPlanTemplate(new Date());
-                    handleInsertImageTemplate(tpl + '\n\n');
-                    setShowTemplatesDropdown(false);
-                    setTemplatesPos(null);
-                  }}
-                >
-                  <div className="hdr-title"><BsClipboard2Check /> {t('templates.project_plan')}</div>
-                  <div className="hdr-desc">{t('templates.project_plan_desc')}</div>
-                </button>
-                <div className="hdr-sep" />
-                <button
-                  className="dropdown-item"
-                  onClick={() => {
-                    const tpl = buildStudyNotesTemplate(new Date());
-                    handleInsertImageTemplate(tpl + '\n\n');
-                    setShowTemplatesDropdown(false);
-                    setTemplatesPos(null);
-                  }}
-                >
-                  <div className="hdr-title"><BsBook /> {t('templates.study_notes')}</div>
-                  <div className="hdr-desc">{t('templates.study_notes_desc')}</div>
-                </button>
-                <div className="hdr-sep" />
-                <button
-                  className="dropdown-item"
-                  onClick={() => {
-                    const tpl = buildTravelLogsTemplate(new Date());
-                    handleInsertImageTemplate(tpl + '\n\n');
-                    setShowTemplatesDropdown(false);
-                    setTemplatesPos(null);
-                  }}
-                >
-                  <div className="hdr-title"><BsMap /> {t('templates.travel_log')}</div>
-                  <div className="hdr-desc">{t('templates.travel_log_desc')}</div>
-                </button>
-                <div className="hdr-sep" />
-                <button
-                  className="dropdown-item"
-                  onClick={() => {
-                    const tpl = buildWorkoutLogTemplate(new Date());
-                    handleInsertImageTemplate(tpl + '\n\n');
-                    setShowTemplatesDropdown(false);
-                    setTemplatesPos(null);
-                  }}
-                >
-                  <div className="hdr-title"><BsActivity /> {t('templates.workout_log')}</div>
-                  <div className="hdr-desc">{t('templates.workout_log_desc')}</div>
-                </button>
-                <div className="hdr-sep" />
-                <button
-                  className="dropdown-item"
-                  onClick={() => {
-                    const tpl = buildBugReportTemplate(new Date());
-                    handleInsertImageTemplate(tpl + '\n\n');
-                    setShowTemplatesDropdown(false);
-                    setTemplatesPos(null);
-                  }}
-                >
-                  <div className="hdr-title"><BsBug /> {t('templates.bug_report')}</div>
-                  <div className="hdr-desc">{t('templates.bug_report_desc')}</div>
-                </button>
-                <div className="hdr-sep" />
-                <button
-                  className="dropdown-item"
-                  onClick={() => {
-                    const tpl = buildDiagramExamplesTemplate();
-                    handleInsertImageTemplate(tpl + '\n\n');
-                    setShowTemplatesDropdown(false);
-                    setTemplatesPos(null);
-                  }}
-                >
-                  <div className="hdr-title"><BsDiagram3 /> {t('templates.diagram_examples')}</div>
-                  <div className="hdr-desc">{t('templates.diagram_examples_desc')}</div>
-                </button>
-                <div className="hdr-sep" />
-                <button
-                  className="dropdown-item"
-                  onClick={() => {
-                    const tpl = buildDiagramASCIITemplate();
-                    handleInsertImageTemplate(tpl + '\n\n');
-                    setShowTemplatesDropdown(false);
-                    setTemplatesPos(null);
-                  }}
-                >
-                  <div className="hdr-title"><BsCodeSquare /> {t('templates.ascii_diagram')}</div>
-                  <div className="hdr-desc">{t('templates.ascii_diagram_desc')}</div>
-                </button>
-
-              </div>,
-              document.body
-            )}
           </div>
           &#8741;
           <div className="dropdown-container">

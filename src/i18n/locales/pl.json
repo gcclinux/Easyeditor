@@ -417,6 +417,8 @@
         "diagram_examples_desc": "Typy diagramów Mermaid",
         "ascii_diagram": "Diagram ASCII",
         "ascii_diagram_desc": "Schemat blokowy tekstowy",
+        "kanban_diagram": "Diagram Kanban",
+        "kanban_diagram_desc": "Tablica Kanban Mermaid",
         "import_md": "Importuj MD",
         "import_md_desc": "Importuj Markdown z URL",
         "tasks": {

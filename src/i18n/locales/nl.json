@@ -417,6 +417,8 @@
         "diagram_examples_desc": "Mermaid diagram types",
         "ascii_diagram": "ASCII Diagram",
         "ascii_diagram_desc": "Flowchart met tekst",
+        "kanban_diagram": "Kanban-diagram",
+        "kanban_diagram_desc": "Mermaid Kanban-bord",
         "import_md": "Importeer MD",
         "import_md_desc": "Importeer Markdown van URL",
         "tasks": {
