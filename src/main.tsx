@@ -45,8 +45,9 @@ const isCustom = isCurrentThemeCustom();
 if (savedTheme !== 'default' || isCustom) {
   loadTheme(savedTheme, isCustom);
 } else {
-  // Set data attribute for default theme
+  // Set data attribute and load the default theme file
   document.body.setAttribute('data-theme', 'default');
+  loadTheme('default');
 }
 
 const root = ReactDOM.createRoot(document.getElementById('root') as HTMLElement);
