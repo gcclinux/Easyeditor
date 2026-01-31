@@ -1,0 +1,100 @@
+.insert-modal {
+    min-width: 400px;
+    max-width: 500px;
+    padding: 16px 20px;
+    height: auto;
+    max-height: 85vh;
+    overflow-y: auto;
+}
+
+.insert-modal h2 {
+    margin: 0 0 4px 0;
+    text-align: center;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    font-size: 18px;
+}
+
+.insert-modal-subtitle {
+    text-align: center;
+    color: var(--color-text-secondary);
+    margin-bottom: 12px;
+    font-style: italic;
+    font-size: 13px;
+}
+
+.insert-tiles-section {
+    margin-bottom: 12px;
+}
+
+.insert-tiles-section-title {
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: var(--color-text-muted);
+    margin-bottom: 8px;
+    padding-bottom: 4px;
+    border-bottom: 1px solid var(--border-card);
+}
+
+.insert-tiles-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 10px;
+}
+
+.insert-tile {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 14px 10px;
+    background: var(--bg-card);
+    border: 2px solid var(--border-card);
+    border-radius: 6px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    min-height: 80px;
+}
+
+.insert-tile:hover {
+    border-color: var(--btn-menu-gradient-start);
+    background: var(--bg-button-hover);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.insert-tile:active {
+    transform: translateY(0);
+}
+
+.insert-tile-icon {
+    font-size: 22px;
+    margin-bottom: 6px;
+    color: var(--btn-menu-gradient-start);
+}
+
+.insert-tile-title {
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--color-text-primary);
+    text-align: center;
+    margin-bottom: 3px;
+}
+
+.insert-tile-desc {
+    font-size: 10px;
+    font-weight: 300;
+    color: var(--color-text-muted);
+    text-align: center;
+    font-style: italic;
+}
+
+/* Modal actions */
+.insert-modal .modal-actions {
+    margin-top: 12px;
+    padding-top: 12px;
+    border-top: 1px solid var(--border-card);
+}

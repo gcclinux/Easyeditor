@@ -87,7 +87,7 @@ import HeadersModal from './components/HeadersModal';
 import FormattingModal from './components/FormattingModal';
 import MermaidDropdown from './components/MermaidDropdown';
 import UMLDropdown from './components/UMLDropdown';
-import InsertDropdown from './components/InsertDropdown';
+import InsertModal from './components/InsertModal';
 import ImagesDropdown from './components/ImagesDropdown';
 import LinksDropdown from './components/LinksDropdown';
 import TablesDropdown from './components/TablesDropdown';
@@ -193,7 +193,7 @@ const App = () => {
   const [showLinksDropdown, setShowLinksDropdown] = useState(false);
   const [showTablesDropdown, setShowTablesDropdown] = useState(false);
   const [showFooterDropdown, setShowFooterDropdown] = useState(false);
-  const [showInsertDropdown, setShowInsertDropdown] = useState(false);
+  const [showInsertModal, setShowInsertModal] = useState(false);
   const [showImagesDropdown, setShowImagesDropdown] = useState(false);
   const [showExportModal, setShowExportModal] = useState(false);
   const [showTemplatesDropdown, setShowTemplatesDropdown] = useState(false);
@@ -387,7 +387,7 @@ const App = () => {
     setShowLinksDropdown(false);
     setShowTablesDropdown(false);
     setShowFooterDropdown(false);
-    setShowInsertDropdown(false);
+
     setShowImagesDropdown(false);
 
     setShowTemplatesDropdown(false);
@@ -2316,6 +2316,19 @@ const App = () => {
             />
           )
         }
+        {
+          showInsertModal && (
+            <InsertModal
+              onRuler={handlerinsertRulerSyntax}
+              onIndent1={handlerinsertIndent1Syntax}
+              onIndent2={handlerinsertIndent2Syntax}
+              onList1={handlerinsertList1Syntax}
+              onList2={handlerinsertList2Syntax}
+              onInsertTemplate={handleInsertImageTemplate}
+              onClose={() => setShowInsertModal(false)}
+            />
+          )
+        }
         <ThemeModal
           open={themeOpen}
           onClose={() => setThemeOpen(false)}
@@ -2391,18 +2404,7 @@ const App = () => {
           </div>
           &#8741;
           <div className="dropdown-container">
-            <button className="button-mermaid" onMouseDown={() => { cacheSelection(); closeAllDropdowns(); setShowInsertDropdown(true); }} title={t('toolbar.insert')}><MdOutlineInsertChartOutlined />&nbsp;{t('toolbar.insert')}</button>
-            {showInsertDropdown && (
-              <InsertDropdown
-                onRuler={handlerinsertRulerSyntax}
-                onIndent1={handlerinsertIndent1Syntax}
-                onIndent2={handlerinsertIndent2Syntax}
-                onList1={handlerinsertList1Syntax}
-                onList2={handlerinsertList2Syntax}
-                onInsertTemplate={handleInsertImageTemplate}
-                onClose={() => setShowInsertDropdown(false)}
-              />
-            )}
+            <button className="button-mermaid" onMouseDown={() => { cacheSelection(); closeAllDropdowns(); setShowInsertModal(true); }} title={t('toolbar.insert')}><MdOutlineInsertChartOutlined />&nbsp;{t('toolbar.insert')}</button>
           </div>
           &#8741;
           <div className="dropdown-container">
