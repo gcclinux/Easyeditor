@@ -46,13 +46,15 @@
   --bg-modal: #000000;
   --bg-modal-overlay: rgba(0, 0, 0, 0.9);
   --color-text-primary: #ffffff;
+  --color-text-modal: #ffffff;
   --color-text-muted: #cccccc;
   --color-text-muted-dark: #aaaaaa;
-  --bg-card: rgba(255, 255, 255, 0.05);
+  --bg-card: #000000;
   --border-card: rgba(255, 255, 255, 0.3);
   --border-card-light: rgba(255, 255, 255, 0.2);
   --btn-primary-modal: #ffffff;
   --btn-primary-modal-text: #000000;
+  --bg-button-hover: #000000;
   --btn-cancel: #666666;
   --btn-submit: #ffffff;
 
@@ -107,4 +109,18 @@
 .preview-parallel,
 .preview-horizontal {
   border: 3px solid var(--border-dark) !important;
+}
+
+/* Generic overrides for Black & White theme to ensure all modal tiles/cards are black */
+.modal-content [class*="-tile"],
+.modal-content [class*="-card"] {
+  background-color: var(--bg-card) !important;
+  color: var(--color-text-primary) !important;
+}
+
+.modal-content [class*="-tile"]:hover,
+.modal-content [class*="-card"]:hover {
+  background-color: var(--bg-button-hover) !important;
+  border-color: var(--btn-menu-gradient-start) !important;
+  color: var(--color-text-primary) !important;
 }
