@@ -1,6 +1,7 @@
 import './featuresModal.css';
-import logo from '../assets/logo.png';
 import { createPortal } from 'react-dom';
+import { useLanguage } from '../i18n/LanguageContext';
+import icon from '../assets/logo.png';
 
 interface FeaturesModalProps {
   open: boolean;
@@ -8,6 +9,8 @@ interface FeaturesModalProps {
 }
 
 export function FeaturesModal({ open, onClose }: FeaturesModalProps) {
+  const { t } = useLanguage();
+
   if (!open) return null;
 
   const content = (
@@ -15,42 +18,42 @@ export function FeaturesModal({ open, onClose }: FeaturesModalProps) {
       <div className="modal-content features-modal">
         <div className="features-hero">
           <div className="features-hero-logo">
-            <img src={logo} alt="EasyEditor" />
+            <img src={icon} alt="EasyEditor" />
           </div>
           <div className="features-hero-text">
-            <h2 id="features-title" className="features-title">Features</h2>
-            <div className="features-subtitle">Everything you need to write, structure, and share notes—fast.</div>
+            <h2 id="features-title" className="features-title">{t('features_modal.title')}</h2>
+            <div className="features-subtitle">{t('features_modal.subtitle')}</div>
           </div>
         </div>
-        <button className="icon-btn about-close" aria-label="Close features" title="Close" onClick={onClose}>✕</button>
+        <button className="icon-btn about-close" aria-label={t('features_modal.close_button_label')} title={t('features_modal.close_text')} onClick={onClose}>✕</button>
         <div className="features-grid">
           <div className="feature-card">
-            <h3>Templates</h3>
-            <p>Kickstart with ready-made templates: Meeting Notes, Project Plan, Study Notes, Travel Log, Workout Log, and a Daily Journal & Diagrams </p>
+            <h3>{t('features_modal.cards.templates.title')}</h3>
+            <p>{t('features_modal.cards.templates.desc')}</p>
           </div>
           <div className="feature-card">
-            <h3>Formatting</h3>
-            <p>Bold, Italic, Strikethrough, Inline Code, Code Blocks, Blockquotes, Headers—apply, Icons in a click with live preview.</p>
+            <h3>{t('features_modal.cards.formatting.title')}</h3>
+            <p>{t('features_modal.cards.formatting.desc')}</p>
           </div>
           <div className="feature-card">
-            <h3>Tables & Media</h3>
-            <p>Manual or automatic insert tables, icons, images, links, tasks, and footnotes. Build rich notes that stay readable.</p>
+            <h3>{t('features_modal.cards.tables_media.title')}</h3>
+            <p>{t('features_modal.cards.tables_media.desc')}</p>
           </div>
           <div className="feature-card">
-            <h3>Diagrams</h3>
-            <p>Use Mermaid or UML or even both together to create flowcharts, sequence diagrams, ER diagrams, and more—right inside your notes.</p>
+            <h3>{t('features_modal.cards.diagrams.title')}</h3>
+            <p>{t('features_modal.cards.diagrams.desc')}</p>
           </div>
           <div className="feature-card">
-            <h3>Export & Security</h3>
-            <p>Export any note to Markdown (md) or (txt). Print a clean, styled preview whenever you need a hard copy, Encrypt your notes for added security (sstp).</p>
+            <h3>{t('features_modal.cards.export_security.title')}</h3>
+            <p>{t('features_modal.cards.export_security.desc')}</p>
           </div>
           <div className="feature-card">
-            <h3>Flexible Layout</h3>
-            <p>Resizable split view between editor and preview, with dark/light themes and an optional collapsible sidebar.</p>
+            <h3>{t('features_modal.cards.layout.title')}</h3>
+            <p>{t('features_modal.cards.layout.desc')}</p>
           </div>
         </div>
         <div className="modal-actions">
-          <button className="btn primary" onClick={onClose}>Close</button>
+          <button className="btn primary" onClick={onClose}>{t('features_modal.close_text')}</button>
         </div>
       </div>
     </div>

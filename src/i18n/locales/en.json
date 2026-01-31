@@ -502,5 +502,37 @@
     },
     "easynotes": {
         "continued": "continued"
+    },
+    "features_modal": {
+        "title": "Features",
+        "subtitle": "Everything you need to write, structure, and share notes—fast.",
+        "close_button_label": "Close features",
+        "close_text": "Close",
+        "cards": {
+            "templates": {
+                "title": "Templates",
+                "desc": "Kickstart with ready-made templates: Meeting Notes, Project Plan, Study Notes, Travel Log, Workout Log, and a Daily Journal & Diagrams"
+            },
+            "formatting": {
+                "title": "Formatting",
+                "desc": "Bold, Italic, Strikethrough, Inline Code, Code Blocks, Blockquotes, Headers—apply, Icons in a click with live preview."
+            },
+            "tables_media": {
+                "title": "Tables & Media",
+                "desc": "Manual or automatic insert tables, icons, images, links, tasks, and footnotes. Build rich notes that stay readable."
+            },
+            "diagrams": {
+                "title": "Diagrams",
+                "desc": "Use Mermaid or UML or even both together to create flowcharts, sequence diagrams, ER diagrams, and more—right inside your notes."
+            },
+            "export_security": {
+                "title": "Export & Security",
+                "desc": "Export any note to Markdown (md) or (txt). Print a clean, styled preview whenever you need a hard copy, Encrypt your notes for added security (sstp)."
+            },
+            "layout": {
+                "title": "Flexible Layout",
+                "desc": "Resizable split view between editor and preview, with dark/light themes and an optional collapsible sidebar."
+            }
+        }
     }
 }

@@ -500,5 +500,37 @@
     },
     "easynotes": {
         "continued": "Fortsetzung"
+    },
+    "features_modal": {
+        "title": "Funktionen",
+        "subtitle": "Alles, was Sie brauchen, um Notizen schnell zu schreiben, zu strukturieren und zu teilen.",
+        "close_button_label": "Funktionen schließen",
+        "close_text": "Schließen",
+        "cards": {
+            "templates": {
+                "title": "Vorlagen",
+                "desc": "Starten Sie mit vorgefertigten Vorlagen: Meeting-Notizen, Projektplan, Studiennotizen, Reisebericht, Trainingsprotokoll und ein tägliches Journal & Diagramme"
+            },
+            "formatting": {
+                "title": "Formatierung",
+                "desc": "Fett, Kursiv, Durchgestrichen, Inline-Code, Code-Blöcke, Zitate, Überschriften – anwenden, Symbole mit einem Klick in der Live-Vorschau."
+            },
+            "tables_media": {
+                "title": "Tabellen & Medien",
+                "desc": "Manuelles oder automatisches Einfügen von Tabellen, Symbolen, Bildern, Links, Aufgaben und Fußnoten. Erstellen Sie umfangreiche Notizen, die lesbar bleiben."
+            },
+            "diagrams": {
+                "title": "Diagramme",
+                "desc": "Verwenden Sie Mermaid oder UML oder beides zusammen, um Flussdiagramme, Sequenzdiagramme, ER-Diagramme und mehr zu erstellen – direkt in Ihren Notizen."
+            },
+            "export_security": {
+                "title": "Export & Sicherheit",
+                "desc": "Exportieren Sie jede Notiz als Markdown (md) oder (txt). Drucken Sie eine saubere, gestaltete Vorschau, wann immer Sie eine Kopie benötigen. Verschlüsseln Sie Ihre Notizen für zusätzliche Sicherheit (sstp)."
+            },
+            "layout": {
+                "title": "Flexibles Layout",
+                "desc": "Größenverstellbare geteilte Ansicht zwischen Editor und Vorschau, mit dunklen/hellen Themen und einer optional einklappbaren Seitenleiste."
+            }
+        }
     }
 }

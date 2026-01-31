@@ -500,5 +500,37 @@
     },
     "easynotes": {
         "continued": "kontynuacja"
+    },
+    "features_modal": {
+        "title": "Funkcje",
+        "subtitle": "Wszystko, czego potrzebujesz, aby pisać, organizować i udostępniać notatki – szybko.",
+        "close_button_label": "Zamknij funkcje",
+        "close_text": "Zamknij",
+        "cards": {
+            "templates": {
+                "title": "Szablony",
+                "desc": "Rozpocznij z gotowymi szablonami: Notatki ze spotkań, Plan projektu, Notatki ze studiów, Dziennik podróży, Dziennik treningowy oraz Codzienny dziennik i diagramy"
+            },
+            "formatting": {
+                "title": "Formatowanie",
+                "desc": "Pogrubienie, Kursywa, Przekreślenie, Kod w linii, Bloki kodu, Cytaty, Nagłówki – stosuj, Ikony jednym kliknięciem z podglądem na żywo."
+            },
+            "tables_media": {
+                "title": "Tabele i Media",
+                "desc": "Ręczne lub automatyczne wstawianie tabel, ikon, obrazów, linków, zadań i przypisów. Twórz bogate notatki, które pozostają czytelne."
+            },
+            "diagrams": {
+                "title": "Diagramy",
+                "desc": "Używaj Mermaid lub UML, a nawet obu razem, aby tworzyć schematy blokowe, diagramy sekwencji, diagramy ER i inne – bezpośrednio w notatkach."
+            },
+            "export_security": {
+                "title": "Eksport i Bezpieczeństwo",
+                "desc": "Eksportuj dowolną notatkę do Markdown (md) lub (txt). Drukuj czysty, stylizowany podgląd, kiedy potrzebujesz wersji papierowej. Szyfruj notatki dla dodatkowego bezpieczeństwa (sstp)."
+            },
+            "layout": {
+                "title": "Elastyczny Układ",
+                "desc": "Zmienny widok podzielony między edytor a podgląd, z ciemnymi/jasnymi motywami i opcjonalnym zwijanym paskiem bocznym."
+            }
+        }
     }
 }

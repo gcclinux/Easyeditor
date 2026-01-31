@@ -500,5 +500,37 @@
     },
     "easynotes": {
         "continued": "vervolg"
+    },
+    "features_modal": {
+        "title": "Functies",
+        "subtitle": "Alles wat je nodig hebt om snel notities te schrijven, structureren en delen.",
+        "close_button_label": "Functies sluiten",
+        "close_text": "Sluiten",
+        "cards": {
+            "templates": {
+                "title": "Sjablonen",
+                "desc": "Begin met kant-en-klare sjablonen: Vergadernotities, Projectplan, Studienotities, Reisverslag, Trainingslogboek en een Dagelijks Journaal & Diagrammen"
+            },
+            "formatting": {
+                "title": "Opmaak",
+                "desc": "Vet, Cursief, Doorhalen, Inline Code, Codeblokken, Blokcitaten, Koppen—toepassen, Iconen met één klik in live voorbeeld."
+            },
+            "tables_media": {
+                "title": "Tabellen & Media",
+                "desc": "Handmatig of automatisch tabellen, iconen, afbeeldingen, links, taken en voetnoten invoegen. Bouw rijke notities die leesbaar blijven."
+            },
+            "diagrams": {
+                "title": "Diagrammen",
+                "desc": "Gebruik Mermaid of UML of zelfs beide samen om stroomschema's, volgordediagrammen, ER-diagrammen en meer te maken—rechtstreeks in je notities."
+            },
+            "export_security": {
+                "title": "Export & Beveiliging",
+                "desc": "Exporteer elke notitie naar Markdown (md) of (txt). Druk een schone, gestileerde voorbeeldweergave af wanneer je een harde kopie nodig hebt, Versleutel je notities voor extra beveiliging (sstp)."
+            },
+            "layout": {
+                "title": "Flexibele Lay-out",
+                "desc": "Aanpasbare gesplitste weergave tussen editor en voorbeeld, met donkere/lichte thema's en een optioneel inklapbare zijbalk."
+            }
+        }
     }
 }

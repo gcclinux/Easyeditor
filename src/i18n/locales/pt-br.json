@@ -500,5 +500,37 @@
     },
     "easynotes": {
         "continued": "continuação"
+    },
+    "features_modal": {
+        "title": "Funcionalidades",
+        "subtitle": "Tudo o que você precisa para escrever, estruturar e compartilhar notas — rápido.",
+        "close_button_label": "Fechar funcionalidades",
+        "close_text": "Fechar",
+        "cards": {
+            "templates": {
+                "title": "Modelos",
+                "desc": "Comece com modelos prontos: Notas de Reunião, Plano de Projeto, Notas de Estudo, Diário de Viagem, Registro de Treino e um Diário Diário & Diagramas"
+            },
+            "formatting": {
+                "title": "Formatação",
+                "desc": "Negrito, Itálico, Tachado, Código Inline, Blocos de Código, Citações, Cabeçalhos — aplique, Ícones em um clique com pré-visualização ao vivo."
+            },
+            "tables_media": {
+                "title": "Tabelas & Mídia",
+                "desc": "Inserção manual ou automática de tabelas, ícones, imagens, links, tarefas e notas de rodapé. Crie notas ricas que permanecem legíveis."
+            },
+            "diagrams": {
+                "title": "Diagramas",
+                "desc": "Use Mermaid ou UML ou até ambos juntos para criar fluxogramas, diagramas de sequência, diagramas ER e mais — diretamente em suas notas."
+            },
+            "export_security": {
+                "title": "Exportação & Segurança",
+                "desc": "Exporte qualquer nota para Markdown (md) ou (txt). Imprima uma pré-visualização limpa e estilizada sempre que precisar de uma cópia física. Criptografe suas notas para segurança adicional (sstp)."
+            },
+            "layout": {
+                "title": "Layout Flexível",
+                "desc": "Visualização dividida redimensionável entre editor e pré-visualização, com temas claro/escuro e uma barra lateral colapsável opcional."
+            }
+        }
     }
 }
