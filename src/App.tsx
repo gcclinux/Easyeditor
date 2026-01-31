@@ -84,7 +84,7 @@ import {
 import TextareaComponent from './components/TextareaComponent.tsx';
 import PreviewComponent from './components/PreviewComponent.tsx';
 import HeadersModal from './components/HeadersModal';
-import FormatDropdown from './components/FormatDropdown';
+import FormattingModal from './components/FormattingModal';
 import MermaidDropdown from './components/MermaidDropdown';
 import UMLDropdown from './components/UMLDropdown';
 import InsertDropdown from './components/InsertDropdown';
@@ -184,7 +184,7 @@ const App = () => {
   const [ganttModalOpen, setGanttModalOpen] = useState(false);
   const [timelineModalOpen, setTimelineModalOpen] = useState(false);
   const [showHeaderModal, setShowHeaderModal] = useState(false);
-  const [showFormatDropdown, setShowFormatDropdown] = useState(false);
+  const [showFormattingModal, setShowFormattingModal] = useState(false);
   const [showMermaidDropdown, setShowMermaidDropdown] = useState(false);
   const [showUMLDropdown, setShowUMLDropdown] = useState(false);
   const [showSymbolsDropdown, setShowSymbolsDropdown] = useState(false);
@@ -378,7 +378,7 @@ const App = () => {
     // setShowHeaderModal(false); // Modals don't need to be closed by this fn usually, or if they do, use the new name.
     // However, existing modals like FileModal are NOT closed here. So I will just remove the line.
 
-    setShowFormatDropdown(false);
+
     setShowMermaidDropdown(false);
     setShowUMLDropdown(false);
     setShowSymbolsDropdown(false);
@@ -2303,6 +2303,19 @@ const App = () => {
             />
           )
         }
+        {
+          showFormattingModal && (
+            <FormattingModal
+              onBold={handleBoldSyntax}
+              onItalic={handlerItalicSyntax}
+              onStrike={handlerStrikethroughSyntax}
+              onCodeLine={handlerinsertCodeSyntax}
+              onCodeBlock={handlerinsertBlockCodeSyntax}
+              onNewLine={handleNewLineSyntax}
+              onClose={() => setShowFormattingModal(false)}
+            />
+          )
+        }
         <ThemeModal
           open={themeOpen}
           onClose={() => setThemeOpen(false)}
@@ -2374,18 +2387,7 @@ const App = () => {
           </div>
           &#8741;
           <div className="dropdown-container">
-            <button className="button-mermaid" onMouseDown={() => { cacheSelection(); closeAllDropdowns(); setShowFormatDropdown(true); }} title={t('toolbar.formatting')}><CgFormatText />&nbsp;{t('toolbar.formatting')}</button>
-            {showFormatDropdown && (
-              <FormatDropdown
-                onBold={handleBoldSyntax}
-                onItalic={handlerItalicSyntax}
-                onStrike={handlerStrikethroughSyntax}
-                onCodeLine={handlerinsertCodeSyntax}
-                onCodeBlock={handlerinsertBlockCodeSyntax}
-                onNewLine={handleNewLineSyntax}
-                onClose={() => setShowFormatDropdown(false)}
-              />
-            )}
+            <button className="button-mermaid" onMouseDown={() => { cacheSelection(); closeAllDropdowns(); setShowFormattingModal(true); }} title={t('toolbar.formatting')}><CgFormatText />&nbsp;{t('toolbar.formatting')}</button>
           </div>
           &#8741;
           <div className="dropdown-container">
