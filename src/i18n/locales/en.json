@@ -185,7 +185,7 @@
         "credits": "Credits",
         "built_by": "Built with care by Ricardo Wagemaker.",
         "last_updated": "Last updated:",
-        "license": "License: MIT",
+        "license": "License:",
         "running_version": "Running Version:",
         "available_version": "Available Version:",
         "native_languages": "Native Languages Integration",
@@ -386,6 +386,14 @@
         "tasks": {
             "subtitle": "Insert pre-defined task lists and trackers",
             "section_title": "Task Templates"
+        },
+        "update": {
+            "title": "Update Available",
+            "subtitle": "A new version of EasyEditor is available!",
+            "running_version": "Running Version",
+            "available_version": "Available Version",
+            "download": "Download Latest",
+            "close": "Close"
         },
         "exports": {
             "subtitle": "Choose a format to export your document",

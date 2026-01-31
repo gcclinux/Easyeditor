@@ -133,6 +133,8 @@ import { isFeatureEnabled } from './config/features';
 import { useLanguage } from './i18n/LanguageContext';
 import LanguageModal from './components/LanguageModal';
 import LicenseManager from './premium/LicenseManager';
+import UpdateModal from './components/UpdateModal';
+import { getRunningVersion, getAvailableVersion, compareVersions } from './utils/version';
 
 const App = () => {
   const { t, isLoading } = useLanguage();
@@ -144,6 +146,30 @@ const App = () => {
     return LicenseManager.subscribe(() => {
       setLicenseUpdate(prev => prev + 1);
     });
+  }, []);
+
+  // Update Modal state
+  const [updateModalOpen, setUpdateModalOpen] = useState(false);
+  const [runVersion, setRunVersion] = useState('');
+  const [availVersion, setAvailVersion] = useState('');
+
+  useEffect(() => {
+    const checkUpdate = async () => {
+      const current = await getRunningVersion();
+      setRunVersion(current);
+
+      const availableInfo = await getAvailableVersion();
+      const available = availableInfo.version;
+      setAvailVersion(available);
+
+      if (current && available && current !== 'unknown' && available !== 'unknown') {
+        if (compareVersions(current, available) < 0) {
+          setUpdateModalOpen(true);
+        }
+      }
+    };
+
+    checkUpdate();
   }, []);
   const [editorContent, setEditorContent] = useState<string>('');
   const [historyIndex, setHistoryIndex] = useState<number>(-1);
@@ -2245,6 +2271,12 @@ const App = () => {
         }
 
         {/* About & Features Modals */}
+        <UpdateModal
+          open={updateModalOpen}
+          onClose={() => setUpdateModalOpen(false)}
+          runVersion={runVersion}
+          availVersion={availVersion}
+        />
         <AboutModal
           open={aboutOpen}
           onClose={() => setAboutOpen(false)}

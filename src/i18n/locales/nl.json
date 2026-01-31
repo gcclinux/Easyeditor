@@ -185,7 +185,7 @@
         "credits": "Credits",
         "built_by": "Met zorg gebouwd door Ricardo Wagemaker.",
         "last_updated": "Laatst bijgewerkt:",
-        "license": "Licentie: MIT",
+        "license": "Licentie:",
         "running_version": "Draaiende Versie:",
         "available_version": "Beschikbare Versie:",
         "native_languages": "Native Languages Integration",
@@ -384,6 +384,14 @@
         "tasks": {
             "subtitle": "Voorgeconfigureerde takenlijsten en trackers invoegen",
             "section_title": "Taaksjablonen"
+        },
+        "update": {
+            "title": "Update beschikbaar",
+            "subtitle": "Een nieuwe versie van EasyEditor is beschikbaar!",
+            "running_version": "Draaiende Versie",
+            "available_version": "Beschikbare Versie",
+            "download": "Download de nieuwste",
+            "close": "Sluiten"
         },
         "exports": {
             "subtitle": "Kies een formaat om te exporteren",

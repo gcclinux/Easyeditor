@@ -5,6 +5,8 @@ import logo from '../assets/128x128@2x.png';
 import { useLanguage } from '../i18n/LanguageContext';
 import LicenseManager from '../premium/LicenseManager';
 
+import { getRunningVersion, getAvailableVersion, compareVersions } from '../utils/version';
+
 interface AboutModalProps {
   open: boolean;
   onClose: () => void;
@@ -13,7 +15,7 @@ interface AboutModalProps {
 export function AboutModal({ open, onClose }: AboutModalProps) {
   const { t } = useLanguage();
 
-  const lastUpdated = 'Sun Dec 7 2025';
+  const [lastUpdated, setLastUpdated] = React.useState<string>('Sun Dec 7 2025');
   const [version, setVersion] = React.useState<string>('');
   const [availableVersion, setAvailableVersion] = React.useState<string>('');
   const [name, setName] = React.useState('');
@@ -52,72 +54,14 @@ export function AboutModal({ open, onClose }: AboutModalProps) {
   };
 
   React.useEffect(() => {
-    // Try common sources for app version: injected env, fetch package.json, else unknown
-    try {
-      const envVersion = (window as any)?.process?.env?.npm_package_version;
-      if (envVersion) {
-        setVersion(envVersion);
-        return;
-      }
-    } catch (e) {
-      // ignore
-    }
-
-    // Web-only version detection
     (async () => {
+      const v = await getRunningVersion();
+      setVersion(v);
 
-      // Try fetching package.json (works if app serves it) and also try to fetch
-      // the latest available version info (local release/latest.json or remote fallback).
-
-      try {
-        const resp = await fetch('/package.json');
-        if (resp.ok) {
-          const pkg = await resp.json();
-          setVersion(pkg.version || 'unknown');
-        } else {
-          setVersion('unknown');
-        }
-      } catch (e) {
-        setVersion('unknown');
-      }
-      // get running version
-      try {
-        const resp = await fetch('/package.json');
-        if (resp.ok) {
-          const pkg = await resp.json();
-          setVersion(pkg.version || 'unknown');
-        } else {
-          setVersion('unknown');
-        }
-      } catch (e) {
-        setVersion('unknown');
-      }
-
-      // try local packaged latest.json first (some builds include this), then remote fallback
-      try {
-        // try a local path first
-        let remoteVer = '';
-        try {
-          const localResp = await fetch('/release/latest.json');
-          if (localResp.ok) {
-            const localData = await localResp.json();
-            remoteVer = localData.version || '';
-          }
-        } catch (e) {
-          // ignore local fetch error and try remote
-        }
-
-        if (!remoteVer) {
-          const ghResp = await fetch('https://raw.githubusercontent.com/gcclinux/EasyEditor/refs/heads/main/release/latest.json');
-          if (ghResp.ok) {
-            const ghData = await ghResp.json();
-            remoteVer = ghData.version || '';
-          }
-        }
-
-        setAvailableVersion(remoteVer || 'unknown');
-      } catch (e) {
-        setAvailableVersion('unknown');
+      const avInfo = await getAvailableVersion();
+      setAvailableVersion(avInfo.version);
+      if (avInfo.date) {
+        setLastUpdated(avInfo.date);
       }
     })();
   }, []);
@@ -190,7 +134,14 @@ export function AboutModal({ open, onClose }: AboutModalProps) {
             <p>{t('about.built_by')}<br />
               <span className="muted">{t('about.last_updated')} {lastUpdated}</span>
             </p>
-            <p>{t('about.license')}<br />{t('about.running_version')} <strong>{version || '...'}</strong><br />{t('about.available_version')} <strong>{availableVersion || '...'}</strong></p>
+            <p>{t('about.license')} <a href="https://easyeditor.co.uk/license" target="_blank" rel="noopener noreferrer">Core - Open Source (MIT)</a><br />{t('about.running_version')} <strong>{version || '...'}</strong><br />{t('about.available_version')} <strong>{availableVersion || '...'}</strong>
+              {version && availableVersion && compareVersions(version, availableVersion) < 0 && (
+                <>
+                  <br />
+                  Latest Version: <a href="https://github.com/gcclinux/Easyeditor/releases/latest" target="_blank" rel="noopener noreferrer">Download Latest</a>
+                </>
+              )}
+            </p>
           </div>
           <div className="about-card">
             <div style={{ display: 'flex', gap: '1rem' }}>

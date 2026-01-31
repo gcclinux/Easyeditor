@@ -185,7 +185,7 @@
         "credits": "Créditos",
         "built_by": "Feito com carinho por Ricardo Wagemaker.",
         "last_updated": "Última atualização:",
-        "license": "Licença: MIT",
+        "license": "Licença:",
         "running_version": "Versão em execução:",
         "available_version": "Versão disponível:",
         "native_languages": "Native Languages Integration",
@@ -384,6 +384,14 @@
         "tasks": {
             "subtitle": "Inserir listas de tarefas e rastreadores predefinidos",
             "section_title": "Modelos de Tarefas"
+        },
+        "update": {
+            "title": "Atualização disponível",
+            "subtitle": "Uma nova versão do EasyEditor está disponível!",
+            "running_version": "Versão em execução",
+            "available_version": "Versão disponível",
+            "download": "Baixar a mais recente",
+            "close": "Fechar"
         },
         "exports": {
             "subtitle": "Escolha um formato para exportar",
