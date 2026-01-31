@@ -91,7 +91,7 @@ import InsertModal from './components/InsertModal';
 import ImagesModal from './components/ImagesModal';
 import LinksModal from './components/LinksModal';
 import TablesModal from './components/TablesModal';
-import FooterDropdown from './components/FooterDropdown';
+import FootnoteModal from './components/FootnoteModal';
 import SymbolsDropdown from './components/SymbolsDropdown';
 import IconsDropdown from './components/IconsDropdown';
 import AutoDropdown from './components/AutoDropdown';
@@ -192,7 +192,7 @@ const App = () => {
   const [showAutoDropdown, setShowAutoDropdown] = useState(false);
   const [showLinksModal, setShowLinksModal] = useState(false);
   const [showTablesModal, setShowTablesModal] = useState(false);
-  const [showFooterDropdown, setShowFooterDropdown] = useState(false);
+  const [showFootnoteModal, setShowFootnoteModal] = useState(false);
   const [showInsertModal, setShowInsertModal] = useState(false);
   const [showImagesModal, setShowImagesModal] = useState(false);
   const [showExportModal, setShowExportModal] = useState(false);
@@ -385,7 +385,6 @@ const App = () => {
     setShowIconsDropdown(false);
     setShowAutoDropdown(false);
 
-    setShowFooterDropdown(false);
 
 
     setShowTemplatesDropdown(false);
@@ -2351,6 +2350,14 @@ const App = () => {
             />
           )
         }
+        {
+          showFootnoteModal && (
+            <FootnoteModal
+              onInsertTemplate={handleInsertImageTemplate}
+              onClose={() => setShowFootnoteModal(false)}
+            />
+          )
+        }
         <ThemeModal
           open={themeOpen}
           onClose={() => setThemeOpen(false)}
@@ -2442,13 +2449,7 @@ const App = () => {
           </div>
           &#8741;
           <div className="dropdown-container">
-            <button className="button-mermaid" onMouseDown={() => { cacheSelection(); closeAllDropdowns(); setShowFooterDropdown(true); }} title={t('toolbar.footnotes')}><FaStickyNote />&nbsp;{t('toolbar.footnotes')}</button>
-            {showFooterDropdown && (
-              <FooterDropdown
-                onInsertTemplate={handleInsertImageTemplate}
-                onClose={() => setShowFooterDropdown(false)}
-              />
-            )}
+            <button className="button-mermaid" onMouseDown={() => { cacheSelection(); closeAllDropdowns(); setShowFootnoteModal(true); }} title={t('toolbar.footnotes')}><FaStickyNote />&nbsp;{t('toolbar.footnotes')}</button>
           </div>
           &#8741;
           <div className="dropdown-container">
