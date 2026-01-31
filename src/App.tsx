@@ -94,7 +94,7 @@ import TablesModal from './components/TablesModal';
 import FootnoteModal from './components/FootnoteModal';
 import SymbolsDropdown from './components/SymbolsDropdown';
 import IconsDropdown from './components/IconsDropdown';
-import AutoDropdown from './components/AutoDropdown';
+import AutoModal from './components/AutoModal';
 import GitModal from './components/GitModal';
 import { buildDailyJournalTemplate } from './templates/dailyJournal';
 import { buildMeetingNotesTemplate } from './templates/meetingNotes';
@@ -189,7 +189,7 @@ const App = () => {
   const [showUMLDropdown, setShowUMLDropdown] = useState(false);
   const [showSymbolsDropdown, setShowSymbolsDropdown] = useState(false);
   const [showIconsDropdown, setShowIconsDropdown] = useState(false);
-  const [showAutoDropdown, setShowAutoDropdown] = useState(false);
+  const [showAutoModal, setShowAutoModal] = useState(false);
   const [showLinksModal, setShowLinksModal] = useState(false);
   const [showTablesModal, setShowTablesModal] = useState(false);
   const [showFootnoteModal, setShowFootnoteModal] = useState(false);
@@ -383,7 +383,6 @@ const App = () => {
     setShowUMLDropdown(false);
     setShowSymbolsDropdown(false);
     setShowIconsDropdown(false);
-    setShowAutoDropdown(false);
 
 
 
@@ -2358,6 +2357,17 @@ const App = () => {
             />
           )
         }
+        {
+          showAutoModal && (
+            <AutoModal
+              onAutoTable={() => setTableModalOpen(true)}
+              onAutoGantt={() => setGanttModalOpen(true)}
+              onAutoTimeline={() => setTimelineModalOpen(true)}
+              onImportMD={() => setImportMDModalOpen(true)}
+              onClose={() => setShowAutoModal(false)}
+            />
+          )
+        }
         <ThemeModal
           open={themeOpen}
           onClose={() => setThemeOpen(false)}
@@ -2459,21 +2469,12 @@ const App = () => {
                 e.preventDefault();
                 cacheSelection();
                 closeAllDropdowns();
-                setShowAutoDropdown(true);
+                setShowAutoModal(true);
               }}
               title={t('toolbar.auto')}
             >
-              <MdAutoAwesome /> &nbsp; {t('toolbar.auto')} ▾
+              <MdAutoAwesome /> &nbsp; {t('toolbar.auto')}
             </button>
-            {showAutoDropdown && (
-              <AutoDropdown
-                onAutoTable={() => setTableModalOpen(true)}
-                onAutoGantt={() => setGanttModalOpen(true)}
-                onAutoTimeline={() => setTimelineModalOpen(true)}
-                onImportMD={() => setImportMDModalOpen(true)}
-                onClose={() => setShowAutoDropdown(false)}
-              />
-            )}
           </div>
           &#8741;
           <div className="dropdown-container">
