@@ -1,4 +1,3 @@
-import React, { useEffect, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { useLanguage } from '../i18n/LanguageContext';
 import './aboutModal.css'; // Reusing styles
