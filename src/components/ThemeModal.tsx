@@ -3,7 +3,6 @@ import './themeModal.css';
 import { FaPalette, FaPlus, FaTrash, FaDownload } from 'react-icons/fa';
 import { getCustomThemes, deleteCustomTheme, CustomTheme } from '../customThemeManager';
 import { useLanguage } from '../i18n/LanguageContext';
-import defaultThemeCss from '../themes/default.css?inline';
 
 interface ThemeModalProps {
   open: boolean;
@@ -42,6 +41,21 @@ const ThemeModal: React.FC<ThemeModalProps> = ({ open, onClose, onSelectTheme, c
 
   const handleDownloadTemplate = async (e: React.MouseEvent) => {
     e.stopPropagation();
+
+    // Fetch the default theme content from the public directory
+    let defaultThemeCss = '';
+    try {
+      const response = await fetch('/themes/default.css');
+      if (response.ok) {
+        defaultThemeCss = await response.text();
+      } else {
+        throw new Error('Failed to fetch default theme');
+      }
+    } catch (err) {
+      console.error('Failed to load default theme template:', err);
+      // Fallback or alert if needed
+      defaultThemeCss = '/* Default theme not found */';
+    }
 
     // Check if running in Tauri
     const isTauri = typeof window !== 'undefined' && (window as any).__TAURI_INTERNALS__;

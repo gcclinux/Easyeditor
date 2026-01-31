@@ -35,7 +35,7 @@ if (typeof window !== 'undefined') {
 // Users can also import custom themes via File → Select Theme → Import
 // To create your own theme, see: THEMING.md and CUSTOM-THEMES.md
 // ============================================
-import './themes/default.css';
+// import './themes/default.css';
 
 import './index.css';
 

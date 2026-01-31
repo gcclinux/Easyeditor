@@ -124,3 +124,18 @@
   border-color: var(--btn-menu-gradient-start) !important;
   color: var(--color-text-primary) !important;
 }
+
+/* Specific fix for Import and Close Buttons to match tile aesthetic */
+.modal-content .btn-import,
+.modal-content .modal-actions .btn {
+  background-color: var(--bg-card) !important;
+  color: var(--color-text-primary) !important;
+  border: 2px solid var(--color-text-primary) !important;
+}
+
+.modal-content .btn-import:hover,
+.modal-content .modal-actions .btn:hover {
+  background-color: var(--bg-button-hover) !important;
+  border-color: var(--btn-menu-gradient-start) !important;
+  color: var(--color-text-primary) !important;
+}
