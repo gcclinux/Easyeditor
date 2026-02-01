@@ -91,7 +91,7 @@ import LinksModal from './components/LinksModal';
 import TablesModal from './components/TablesModal';
 import FootnoteModal from './components/FootnoteModal';
 import SymbolsModal from './components/SymbolsModal';
-import IconsDropdown from './components/IconsDropdown';
+import IconsModal from './components/IconsModal';
 import AutoModal from './components/AutoModal';
 import GitModal from './components/GitModal';
 import TemplatesModal from './components/TemplatesModal';
@@ -178,7 +178,7 @@ const App = () => {
   const [showMermaidModal, setShowMermaidModal] = useState(false);
   const [showUMLModal, setShowUMLModal] = useState(false);
   const [showSymbolsModal, setShowSymbolsModal] = useState(false);
-  const [showIconsDropdown, setShowIconsDropdown] = useState(false);
+  const [showIconsModal, setShowIconsModal] = useState(false);
   const [showAutoModal, setShowAutoModal] = useState(false);
   const [showLinksModal, setShowLinksModal] = useState(false);
   const [showTablesModal, setShowTablesModal] = useState(false);
@@ -368,8 +368,7 @@ const App = () => {
 
 
     // setShowMermaidDropdown(false); // Removed
-    // setShowUMLDropdown(false); // Removed
-    setShowIconsDropdown(false);
+
 
 
 
@@ -2357,6 +2356,14 @@ const App = () => {
             />
           )
         }
+        {
+          showIconsModal && (
+            <IconsModal
+              onInsertIcon={insertIcon}
+              onClose={() => setShowIconsModal(false)}
+            />
+          )
+        }
         <ThemeModal
           open={themeOpen}
           onClose={() => setThemeOpen(false)}
@@ -2533,18 +2540,12 @@ const App = () => {
                 e.preventDefault();
                 cacheSelection();
                 closeAllDropdowns();
-                setShowIconsDropdown(true);
+                setShowIconsModal(true);
               }}
               title="Icons"
             >
-              <FaImage /> &nbsp; Icons ▾
+              <FaImage /> &nbsp; Icons
             </button>
-            {showIconsDropdown && (
-              <IconsDropdown
-                onInsertIcon={(icon) => { insertIcon(icon); }}
-                onClose={() => setShowIconsDropdown(false)}
-              />
-            )}
           </div>
         </div>
 
