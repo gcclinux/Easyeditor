@@ -1,6 +1,6 @@
 {
   "productName": "easyeditor",
-  "version": "1.6.2",
+  "version": "1.6.3",
   "identifier": "com.easyeditor.editor",
   "build": {
     "beforeBuildCommand": "npm run build",
