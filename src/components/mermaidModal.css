@@ -1,4 +1,4 @@
-.templates-modal {
+.mermaid-modal {
     min-width: 650px;
     max-width: 800px;
     padding: 16px 20px;
@@ -7,7 +7,7 @@
     overflow-y: auto;
 }
 
-.templates-modal h2 {
+.mermaid-modal h2 {
     margin: 0 0 4px 0;
     text-align: center;
     display: flex;
@@ -17,7 +17,7 @@
     font-size: 18px;
 }
 
-.templates-modal-subtitle {
+.mermaid-modal-subtitle {
     text-align: center;
     color: var(--color-text-secondary);
     margin-bottom: 12px;
@@ -25,11 +25,11 @@
     font-size: 13px;
 }
 
-.templates-tiles-section {
+.mermaid-tiles-section {
     margin-bottom: 12px;
 }
 
-.templates-tiles-section-title {
+.mermaid-tiles-section-title {
     font-size: 11px;
     text-transform: uppercase;
     letter-spacing: 1px;
@@ -39,13 +39,13 @@
     border-bottom: 1px solid var(--border-card);
 }
 
-.templates-tiles-grid {
+.mermaid-tiles-grid {
     display: grid;
     grid-template-columns: repeat(3, 1fr);
     gap: 10px;
 }
 
-.templates-tile {
+.mermaid-tile {
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -59,24 +59,24 @@
     min-height: 80px;
 }
 
-.templates-tile:hover {
+.mermaid-tile:hover {
     border-color: var(--btn-menu-gradient-start);
     background: var(--bg-button-hover);
     transform: translateY(-2px);
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
 }
 
-.templates-tile:active {
+.mermaid-tile:active {
     transform: translateY(0);
 }
 
-.templates-tile-icon {
+.mermaid-tile-icon {
     font-size: 22px;
     margin-bottom: 6px;
     color: var(--btn-menu-gradient-start);
 }
 
-.templates-tile-title {
+.mermaid-tile-title {
     font-size: 12px;
     font-weight: 600;
     color: var(--color-text-primary);
@@ -84,7 +84,7 @@
     margin-bottom: 3px;
 }
 
-.templates-tile-desc {
+.mermaid-tile-desc {
     font-size: 10px;
     font-weight: 300;
     color: var(--color-text-muted);
@@ -93,7 +93,7 @@
 }
 
 /* Modal actions */
-.templates-modal .modal-actions {
+.mermaid-modal .modal-actions {
     margin-top: 12px;
     padding-top: 12px;
     border-top: 1px solid var(--border-card);

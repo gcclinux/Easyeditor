@@ -85,7 +85,7 @@ import TextareaComponent from './components/TextareaComponent.tsx';
 import PreviewComponent from './components/PreviewComponent.tsx';
 import HeadersModal from './components/HeadersModal';
 import FormattingModal from './components/FormattingModal';
-import MermaidDropdown from './components/MermaidDropdown';
+import MermaidModal from './components/MermaidModal';
 import UMLDropdown from './components/UMLDropdown';
 import InsertModal from './components/InsertModal';
 import ImagesModal from './components/ImagesModal';
@@ -177,7 +177,7 @@ const App = () => {
   const [timelineModalOpen, setTimelineModalOpen] = useState(false);
   const [showHeaderModal, setShowHeaderModal] = useState(false);
   const [showFormattingModal, setShowFormattingModal] = useState(false);
-  const [showMermaidDropdown, setShowMermaidDropdown] = useState(false);
+  const [showMermaidModal, setShowMermaidModal] = useState(false);
   const [showUMLDropdown, setShowUMLDropdown] = useState(false);
   const [showSymbolsDropdown, setShowSymbolsDropdown] = useState(false);
   const [showIconsDropdown, setShowIconsDropdown] = useState(false);
@@ -369,7 +369,7 @@ const App = () => {
     // However, existing modals like FileModal are NOT closed here. So I will just remove the line.
 
 
-    setShowMermaidDropdown(false);
+    // setShowMermaidDropdown(false); // Removed
     setShowUMLDropdown(false);
     setShowSymbolsDropdown(false);
     setShowIconsDropdown(false);
@@ -2362,6 +2362,22 @@ const App = () => {
             />
           )
         }
+        {
+          showMermaidModal && (
+            <MermaidModal
+              onJourney={handleJourneyInsert}
+              onFlowchart={handleFlowchartRLInsert}
+              onGantt={handleGanttInsert}
+              onGraphTD={handleGraphTDInsert}
+              onErDiag={handleErDiagramInsert}
+              onTimeLine={handleTimeLineSyntax}
+              onClassDiag={handleInsertClass}
+              onGitGraph={handleGitInsert}
+              onBlock={handleBlockInsert}
+              onClose={() => setShowMermaidModal(false)}
+            />
+          )
+        }
         <ThemeModal
           open={themeOpen}
           onClose={() => setThemeOpen(false)}
@@ -2493,26 +2509,12 @@ const App = () => {
                 e.preventDefault();
                 cacheSelection();
                 closeAllDropdowns();
-                setShowMermaidDropdown(true);
+                setShowMermaidModal(true);
               }}
               title="Mermaid Options"
             >
-              <SiMermaid /> &nbsp; Mermaid ▾
+              <SiMermaid /> &nbsp; Mermaid
             </button>
-            {showMermaidDropdown && (
-              <MermaidDropdown
-                onJourney={handleJourneyInsert}
-                onFlowchart={handleFlowchartRLInsert}
-                onGantt={handleGanttInsert}
-                onGraphTD={handleGraphTDInsert}
-                onErDiag={handleErDiagramInsert}
-                onTimeLine={handleTimeLineSyntax}
-                onClassDiag={handleInsertClass}
-                onGitGraph={handleGitInsert}
-                onBlock={handleBlockInsert}
-                onClose={() => setShowMermaidDropdown(false)}
-              />
-            )}
           </div>
           &#8741;
           <div className="dropdown-container">
