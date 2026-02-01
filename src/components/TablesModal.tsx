@@ -1,5 +1,5 @@
 import React from 'react';
-import { FaTable, FaTasks, FaColumns, FaTimes } from 'react-icons/fa';
+import { FaTable, FaTasks, FaColumns, FaTimes, FaRoad, FaGem } from 'react-icons/fa';
 import { BsGrid3X3 } from "react-icons/bs";
 import { useLanguage } from '../i18n/LanguageContext';
 import './tablesModal.css';
@@ -67,6 +67,18 @@ export default function TablesModal({ onInsertTemplate, onClose }: Props) {
                             'tables.comparison',
                             'tables.comparison_desc',
                             `| Feature | Option A | Option B | Option C |\n|---------|----------|----------|----------|\n| Price | $10 | $15 | $20 |\n| Quality | Good | Better | Best |\n| Support | Basic | Standard | Premium |\n\n`
+                        )}
+                        {renderTile(
+                            <FaRoad />,
+                            'tables.roadmap',
+                            'tables.roadmap_desc',
+                            `## 🚀 Q1 Product Development Roadmap\n\n| Status | Feature | Priority | Progress | Lead | Docs |\n| :--- | :--- | :---: | :--- | :---: | :---: |\n| 🟢 **Live** | AI Search Integration | \`High\` | 100% | 👩💻 | [📄](https://easyeditor.uk) |\n| 🟡 **Testing** | Biometric Auth | \`Med\` | 75% | 👨💻 | [📄](https://easyeditor.uk) |\n| 🔵 **Design** | Dark Mode 2.0 | \`Low\` | 30% | 🎨 | [🏗️](https://easyeditor.uk) |\n| 🔴 **Backlog** | Voice Commands | \`Low\` | 0% | 🎙️ | [🚫](https://easyeditor.uk) |\n\n`
+                        )}
+                        {renderTile(
+                            <FaGem />,
+                            'tables.premium',
+                            'tables.premium_desc',
+                            `## 💎 Premium Service Comparison\n\n| Capability | **Standard Plan** | **Enterprise Pro** | **Infrastructure** |\n| :--- | :--- | :--- | :--- |\n| **Global Reach** | 📍 5 Regions | 🌐 24+ Regions | \`High Availability\` |\n| **Uptime SLA** | \`99.9%\` | \`99.99%\` | 🛡️ Gold Standard |\n| **Key Features** | • SSO Integration<br>• Basic API<br>• Email Support | • Custom Tokens<br>• Webhooks<br>• 24/7 Phone | ⚡ Full Access |\n| **Monthly Cost** | **$49.00** | **$199.00** | [Contact Sales](https://easyeditor.co.uk) |\n| **Reliability** | ★★★★☆ | ★★★★★ | 📈 Unmatched |\n`
                         )}
                     </div>
                 </div>

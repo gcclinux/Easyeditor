@@ -247,7 +247,11 @@
         "task_list": "☑ Aufgabenliste",
         "task_list_desc": "Aufgabenliste einfügen",
         "comparison": "▤ Vergleich",
-        "comparison_desc": "Vergleichstabelle einfügen"
+        "comparison_desc": "Vergleichstabelle einfügen",
+        "roadmap": "🚀 Produkt-Roadmap",
+        "roadmap_desc": "Produkt-Roadmap-Tabelle einfügen",
+        "premium": "💎 Premium-Dienste",
+        "premium_desc": "Vergleich der Premium-Dienste einfügen"
     },
     "footer": {
         "simple": "Einfache Fußzeile",

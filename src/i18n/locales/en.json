@@ -249,7 +249,11 @@
         "task_list": "☑ Task List",
         "task_list_desc": "Insert task list table",
         "comparison": "▤ Comparison",
-        "comparison_desc": "Insert comparison table"
+        "comparison_desc": "Insert comparison table",
+        "roadmap": "🚀 Product Roadmap",
+        "roadmap_desc": "Insert product roadmap table",
+        "premium": "💎 Premium Services",
+        "premium_desc": "Insert premium services comparison"
     },
     "footer": {
         "simple": "Simple Footnote",

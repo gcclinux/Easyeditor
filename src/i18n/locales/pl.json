@@ -247,7 +247,11 @@
         "task_list": "☑ Lista Zadań",
         "task_list_desc": "Wstaw tabelę listy zadań",
         "comparison": "▤ Porównanie",
-        "comparison_desc": "Wstaw tabelę porównawczą"
+        "comparison_desc": "Wstaw tabelę porównawczą",
+        "roadmap": "🚀 Harmonogram Produktu",
+        "roadmap_desc": "Wstaw tabelę harmonogramu",
+        "premium": "💎 Usługi Premium",
+        "premium_desc": "Wstaw tabelę usług premium"
     },
     "footer": {
         "simple": "Prosta Stopka",

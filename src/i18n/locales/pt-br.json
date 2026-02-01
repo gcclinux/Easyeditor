@@ -247,7 +247,11 @@
         "task_list": "☑ Lista de Tarefas",
         "task_list_desc": "Inserir tabela de lista de tarefas",
         "comparison": "▤ Comparação",
-        "comparison_desc": "Inserir tabela de comparação"
+        "comparison_desc": "Inserir tabela de comparação",
+        "roadmap": "🚀 Roadmap do Produto",
+        "roadmap_desc": "Inserir tabela de roadmap",
+        "premium": "💎 Serviços Premium",
+        "premium_desc": "Inserir comparação de serviços premium"
     },
     "footer": {
         "simple": "Rodapé Simples",

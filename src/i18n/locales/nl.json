@@ -247,7 +247,11 @@
         "task_list": "☑ Takenlijst",
         "task_list_desc": "Voeg takenlijst tabel in",
         "comparison": "▤ Vergelijking",
-        "comparison_desc": "Voeg vergelijkingstabel in"
+        "comparison_desc": "Voeg vergelijkingstabel in",
+        "roadmap": "🚀 Product Roadmap",
+        "roadmap_desc": "Product roadmap tabel invoegen",
+        "premium": "💎 Premium Diensten",
+        "premium_desc": "Premium diensten vergelijking invoegen"
     },
     "footer": {
         "simple": "Simpele Voettekst",
