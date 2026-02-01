@@ -1,5 +1,4 @@
 import React, { useRef, useState, useEffect, useCallback } from 'react';
-import { createPortal } from 'react-dom';
 import {
   FaUndo,
   FaRedo,
@@ -16,7 +15,6 @@ import { VscSymbolKeyword } from "react-icons/vsc";
 import { GoTasklist } from "react-icons/go";
 import { GrDocumentText } from "react-icons/gr";
 import { AiOutlineLayout } from "react-icons/ai";
-import { BsJournalBookmarkFill, BsKanban, BsClipboard2Check, BsDiagram3, BsBook, BsMap, BsActivity, BsBug, BsCodeSquare } from "react-icons/bs";
 import { SiMermaid } from "react-icons/si";
 import { CgFormatText, CgFormatHeading } from "react-icons/cg";
 import { MdAutoAwesome, MdOutlineInsertChartOutlined } from "react-icons/md";

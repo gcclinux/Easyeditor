@@ -65,7 +65,7 @@ export const taskTemplates: TaskTemplate[] = [
     id: 'habits',
     label: 'Weekly Habits',
     markdown:
-      '### 📅 Weekly Habits\n**Exercise**\n- [ ] Mon - [ ] Tue - [ ] Wed - [ ] Thu - [ ] Fri - [ ] Sat - [ ] Sun\n**Reading (30m)**\n- [ ] Mon - [ ] Tue - [ ] Wed - [ ] Thu - [ ] Fri - [ ] Sat - [ ] Sun',
+      '### 📅 Weekly Habits \n**Exercise** \n```\n- [x] Mon - [ ] Tue - [x] Wed - [ ] Thu - [ ] Fri - [ ] Sat - [ ] Sun  \n```\n**Reading (30m)**\n```\n- [x] Mon - [ ] Tue - [ ] Wed - [ ] Thu - [ ] Fri - [ ] Sat - [ ] Sun\n```',
     description: 'Track recurring habits',
   },
 ];
