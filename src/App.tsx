@@ -84,7 +84,7 @@ import PreviewComponent from './components/PreviewComponent.tsx';
 import HeadersModal from './components/HeadersModal';
 import FormattingModal from './components/FormattingModal';
 import MermaidModal from './components/MermaidModal';
-import UMLDropdown from './components/UMLDropdown';
+import UMLModal from './components/UMLModal';
 import InsertModal from './components/InsertModal';
 import ImagesModal from './components/ImagesModal';
 import LinksModal from './components/LinksModal';
@@ -176,7 +176,7 @@ const App = () => {
   const [showHeaderModal, setShowHeaderModal] = useState(false);
   const [showFormattingModal, setShowFormattingModal] = useState(false);
   const [showMermaidModal, setShowMermaidModal] = useState(false);
-  const [showUMLDropdown, setShowUMLDropdown] = useState(false);
+  const [showUMLModal, setShowUMLModal] = useState(false);
   const [showSymbolsDropdown, setShowSymbolsDropdown] = useState(false);
   const [showIconsDropdown, setShowIconsDropdown] = useState(false);
   const [showAutoModal, setShowAutoModal] = useState(false);
@@ -368,7 +368,7 @@ const App = () => {
 
 
     // setShowMermaidDropdown(false); // Removed
-    setShowUMLDropdown(false);
+    // setShowUMLDropdown(false); // Removed
     setShowSymbolsDropdown(false);
     setShowIconsDropdown(false);
 
@@ -2376,6 +2376,19 @@ const App = () => {
             />
           )
         }
+        {
+          showUMLModal && (
+            <UMLModal
+              onClassDiagram={handleUMLClassDiagram}
+              onSequenceDiagram={handleUMLSequenceDiagram}
+              onUseCaseDiagram={handleUMLUseCaseDiagram}
+              onActivityDiagram={handleUMLActivityDiagram}
+              onComponentDiagram={handleUMLComponentDiagram}
+              onStateDiagram={handleUMLStateDiagram}
+              onClose={() => setShowUMLModal(false)}
+            />
+          )
+        }
         <ThemeModal
           open={themeOpen}
           onClose={() => setThemeOpen(false)}
@@ -2522,23 +2535,12 @@ const App = () => {
                 e.preventDefault();
                 cacheSelection();
                 closeAllDropdowns();
-                setShowUMLDropdown(true);
+                setShowUMLModal(true);
               }}
               title="UML Diagram Options"
             >
-              <AiOutlineLayout /> &nbsp; UML ▾
+              <AiOutlineLayout /> &nbsp; UML
             </button>
-            {showUMLDropdown && (
-              <UMLDropdown
-                onClassDiagram={handleUMLClassDiagram}
-                onSequenceDiagram={handleUMLSequenceDiagram}
-                onUseCaseDiagram={handleUMLUseCaseDiagram}
-                onActivityDiagram={handleUMLActivityDiagram}
-                onComponentDiagram={handleUMLComponentDiagram}
-                onStateDiagram={handleUMLStateDiagram}
-                onClose={() => setShowUMLDropdown(false)}
-              />
-            )}
           </div>
           &#8741;
           <div className="dropdown-container">
