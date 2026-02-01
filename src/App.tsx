@@ -90,7 +90,7 @@ import ImagesModal from './components/ImagesModal';
 import LinksModal from './components/LinksModal';
 import TablesModal from './components/TablesModal';
 import FootnoteModal from './components/FootnoteModal';
-import SymbolsDropdown from './components/SymbolsDropdown';
+import SymbolsModal from './components/SymbolsModal';
 import IconsDropdown from './components/IconsDropdown';
 import AutoModal from './components/AutoModal';
 import GitModal from './components/GitModal';
@@ -177,7 +177,7 @@ const App = () => {
   const [showFormattingModal, setShowFormattingModal] = useState(false);
   const [showMermaidModal, setShowMermaidModal] = useState(false);
   const [showUMLModal, setShowUMLModal] = useState(false);
-  const [showSymbolsDropdown, setShowSymbolsDropdown] = useState(false);
+  const [showSymbolsModal, setShowSymbolsModal] = useState(false);
   const [showIconsDropdown, setShowIconsDropdown] = useState(false);
   const [showAutoModal, setShowAutoModal] = useState(false);
   const [showLinksModal, setShowLinksModal] = useState(false);
@@ -369,7 +369,6 @@ const App = () => {
 
     // setShowMermaidDropdown(false); // Removed
     // setShowUMLDropdown(false); // Removed
-    setShowSymbolsDropdown(false);
     setShowIconsDropdown(false);
 
 
@@ -637,46 +636,7 @@ const App = () => {
 
 
   // insertSymbol function inserts a symbol into the textarea
-  const insertSymbol3 = () => insertSymbol("∆");
-  const insertSymbol4 = () => insertSymbol("∇");
-  const insertSymbol5 = () => insertSymbol("∑");
-  const insertSymbol6 = () => insertSymbol("√");
-  const insertSymbol7 = () => insertSymbol("∞");
-  const insertSymbol8 = () => insertSymbol("№");
-  const insertSymbol9 = () => insertSymbol("∠");
-  const insertSymbol11 = () => insertSymbol("∧");
-  const insertSymbol12 = () => insertSymbol("∨");
-  const insertSymbol17 = () => insertSymbol("∴");
-  const insertSymbol18 = () => insertSymbol("∵");
-  const insertSymbol19 = () => insertSymbol("∶");
-  const insertSymbol20 = () => insertSymbol("∷");
-  const insertSymbol21 = () => insertSymbol("∸");
-  const insertSymbol22 = () => insertSymbol("∹");
-  const insertSymbol23 = () => insertSymbol("⊢");
-  const insertSymbol24 = () => insertSymbol("⊣");
-  const insertSymbol25 = () => insertSymbol("⊤");
-  const insertSymbol26 = () => insertSymbol("⊥");
-  const insertSymbol27 = () => insertSymbol("™");
-  const insertSymbol28 = () => insertSymbol("←");
-  const insertSymbol29 = () => insertSymbol("↑");
-  const insertSymbol30 = () => insertSymbol("→");
-  const insertSymbol31 = () => insertSymbol("↓");
-  const insertSymbol32 = () => insertSymbol("↔");
-  const insertSymbol33 = () => insertSymbol("↕");
-  const insertSymbol34 = () => insertSymbol("↖");
-  const insertSymbol35 = () => insertSymbol("↗");
-  const insertSymbol36 = () => insertSymbol("↘");
-  const insertSymbol37 = () => insertSymbol("↙");
-  const insertSymbol38 = () => insertSymbol("⇄");
-  const insertSymbol39 = () => insertSymbol("⇅");
-  const insertSymbol40 = () => insertSymbol("⇇");
-  const insertSymbol41 = () => insertSymbol("⇈");
-  const insertSymbol42 = () => insertSymbol("⇉");
-  const insertSymbol43 = () => insertSymbol("⇊");
-  const insertSymbol44 = () => insertSymbol("⇐");
-  const insertSymbol45 = () => insertSymbol("⇑");
-  const insertSymbol46 = () => insertSymbol("⇒");
-  const insertSymbol47 = () => insertSymbol("⇓");
+
   // insertIcon inserts an emoji/icon into the editor
   const insertIcon = (icon: string) => insertSymbol(icon);
 
@@ -2389,6 +2349,14 @@ const App = () => {
             />
           )
         }
+        {
+          showSymbolsModal && (
+            <SymbolsModal
+              onInsertSymbol={insertSymbol}
+              onClose={() => setShowSymbolsModal(false)}
+            />
+          )
+        }
         <ThemeModal
           open={themeOpen}
           onClose={() => setThemeOpen(false)}
@@ -2550,57 +2518,12 @@ const App = () => {
                 e.preventDefault();
                 cacheSelection();
                 closeAllDropdowns();
-                setShowSymbolsDropdown(true);
+                setShowSymbolsModal(true);
               }}
               title="Symbol Options"
             >
-              <VscSymbolKeyword /> &nbsp; Symbols ▾
+              <VscSymbolKeyword /> &nbsp; Symbols
             </button>
-            {showSymbolsDropdown && (
-              <SymbolsDropdown
-                onSymbol3={insertSymbol3}
-                onSymbol4={insertSymbol4}
-                onSymbol5={insertSymbol5}
-                onSymbol6={insertSymbol6}
-                onSymbol7={insertSymbol7}
-                onSymbol8={insertSymbol8}
-                onSymbol9={insertSymbol9}
-                onSymbol11={insertSymbol11}
-                onSymbol12={insertSymbol12}
-                onSymbol17={insertSymbol17}
-                onSymbol18={insertSymbol18}
-                onSymbol19={insertSymbol19}
-                onSymbol20={insertSymbol20}
-                onSymbol21={insertSymbol21}
-                onSymbol22={insertSymbol22}
-                onSymbol23={insertSymbol23}
-                onSymbol24={insertSymbol24}
-                onSymbol25={insertSymbol25}
-                onSymbol26={insertSymbol26}
-                onSymbol27={insertSymbol27}
-                onSymbol28={insertSymbol28}
-                onSymbol29={insertSymbol29}
-                onSymbol30={insertSymbol30}
-                onSymbol31={insertSymbol31}
-                onSymbol32={insertSymbol32}
-                onSymbol33={insertSymbol33}
-                onSymbol34={insertSymbol34}
-                onSymbol35={insertSymbol35}
-                onSymbol36={insertSymbol36}
-                onSymbol37={insertSymbol37}
-                onSymbol38={insertSymbol38}
-                onSymbol39={insertSymbol39}
-                onSymbol40={insertSymbol40}
-                onSymbol41={insertSymbol41}
-                onSymbol42={insertSymbol42}
-                onSymbol43={insertSymbol43}
-                onSymbol44={insertSymbol44}
-                onSymbol45={insertSymbol45}
-                onSymbol46={insertSymbol46}
-                onSymbol47={insertSymbol47}
-                onClose={() => setShowSymbolsDropdown(false)}
-              />
-            )}
           </div>
           &#8741;
           <div className="dropdown-container">
