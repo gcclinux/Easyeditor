@@ -135,7 +135,9 @@
         "process_elimination": "Metoda Eliminacji",
         "process_elimination_desc": "Schemat blokowy rozwiązywania problemów",
         "db_replication": "Replikacja Bazy Danych",
-        "db_replication_desc": "Architektura Master-Slave"
+        "db_replication_desc": "Architektura Master-Slave",
+        "llm_training": "LLM Training",
+        "llm_training_desc": "Training Pipeline & Checklist"
     },
     "insert": {
         "date": "Data",

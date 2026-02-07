@@ -9,7 +9,8 @@ import {
     BsPuzzle,
     BsLightningCharge,
     BsSearch,
-    BsDatabase
+    BsDatabase,
+    BsRobot
 } from 'react-icons/bs';
 import { useLanguage } from '../i18n/LanguageContext';
 import './umlModal.css';
@@ -23,6 +24,7 @@ type Props = {
     onStateDiagram: () => void;
     onProcessEliminationDiagram: () => void;
     onDatabaseReplicationDiagram: () => void;
+    onLLMTrainingDiagram: () => void;
     onClose: () => void;
 };
 
@@ -35,6 +37,7 @@ export default function UMLModal({
     onStateDiagram,
     onProcessEliminationDiagram,
     onDatabaseReplicationDiagram,
+    onLLMTrainingDiagram,
     onClose
 }: Props) {
     const { t } = useLanguage();
@@ -118,6 +121,12 @@ export default function UMLModal({
                             'uml.db_replication',
                             'uml.db_replication_desc',
                             onDatabaseReplicationDiagram
+                        )}
+                        {renderTile(
+                            <BsRobot />,
+                            'uml.llm_training',
+                            'uml.llm_training_desc',
+                            onLLMTrainingDiagram
                         )}
                     </div>
                 </div>

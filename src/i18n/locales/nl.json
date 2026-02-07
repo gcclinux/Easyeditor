@@ -135,7 +135,9 @@
         "process_elimination": "Eliminatieproces",
         "process_elimination_desc": "Stroomdiagram voor probleemoplossing",
         "db_replication": "DB Replicatie",
-        "db_replication_desc": "Master-Slave Architectuur"
+        "db_replication_desc": "Master-Slave Architectuur",
+        "llm_training": "LLM Training",
+        "llm_training_desc": "Training Pipeline & Checklist"
     },
     "insert": {
         "date": "Datum",

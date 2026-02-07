@@ -45,6 +45,7 @@ import {
 } from './insertUML.ts';
 import { insertUMLProcessOfEliminationDiagram } from './templates/processEliminationUML.ts';
 import { insertUMLDatabaseReplicationDiagram } from './templates/databaseReplicationUML.ts';
+import { insertUMLLLMTrainingDiagram } from './templates/llmTrainingUML.ts';
 import { TableGenerator } from './autoGenerator/TableGenerator.tsx';
 import { GanttGenerator } from './autoGenerator/GanttGenerator.tsx';
 import { TimelineGenerator } from './autoGenerator/TimelineGenerator.tsx';
@@ -2035,6 +2036,11 @@ const App = () => {
     insertUMLDatabaseReplicationDiagram(textareaRef, editorContent, setEditorContent, cursorPositionRef);
   };
 
+  // Insert LLM Training Diagram Syntax
+  const handleUMLLLMTrainingInsert = () => {
+    insertUMLLLMTrainingDiagram(textareaRef, editorContent, setEditorContent, cursorPositionRef);
+  };
+
   return (
     <div className="container">
       <div className="menubar">
@@ -2358,6 +2364,7 @@ const App = () => {
               onStateDiagram={handleUMLStateDiagram}
               onProcessEliminationDiagram={handleProcessEliminationInsert}
               onDatabaseReplicationDiagram={handleDatabaseReplicationInsert}
+              onLLMTrainingDiagram={handleUMLLLMTrainingInsert}
               onClose={() => setShowUMLModal(false)}
             />
           )

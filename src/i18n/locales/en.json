@@ -135,7 +135,9 @@
         "process_elimination": "Process of Elimination",
         "process_elimination_desc": "Troubleshooting Flowchart",
         "db_replication": "DB Replication",
-        "db_replication_desc": "Master-Slave Architecture"
+        "db_replication_desc": "Master-Slave Architecture",
+        "llm_training": "LLM Training",
+        "llm_training_desc": "Training Pipeline & Checklist"
     },
     "insert": {
         "date": "Date",

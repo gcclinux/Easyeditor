@@ -135,7 +135,9 @@
         "process_elimination": "Ausschlussverfahren",
         "process_elimination_desc": "Fehlersuch-Flussdiagramm",
         "db_replication": "DB Replikation",
-        "db_replication_desc": "Master-Slave Architektur"
+        "db_replication_desc": "Master-Slave Architektur",
+        "llm_training": "LLM Training",
+        "llm_training_desc": "Training Pipeline & Checklist"
     },
     "insert": {
         "date": "Datum",

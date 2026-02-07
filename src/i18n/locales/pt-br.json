@@ -135,7 +135,9 @@
         "process_elimination": "Processo de Eliminação",
         "process_elimination_desc": "Fluxograma de Solução de Problemas",
         "db_replication": "Replicação de BD",
-        "db_replication_desc": "Arquitetura Mestre-Escravo"
+        "db_replication_desc": "Arquitetura Mestre-Escravo",
+        "llm_training": "Treinamento LLM",
+        "llm_training_desc": "Pipeline de Treinamento & Checklist"
     },
     "insert": {
         "date": "Data",
