@@ -131,7 +131,9 @@
         "component": "Diagram Komponentów",
         "component_desc": "Diagram Komponentów UML",
         "state": "Diagram Stanów",
-        "state_desc": "Diagram Stanów UML"
+        "state_desc": "Diagram Stanów UML",
+        "process_elimination": "Metoda Eliminacji",
+        "process_elimination_desc": "Schemat blokowy rozwiązywania problemów"
     },
     "insert": {
         "date": "Data",

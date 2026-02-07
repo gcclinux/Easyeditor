@@ -7,7 +7,8 @@ import {
     BsDiagram3,
     BsArrowsMove,
     BsPuzzle,
-    BsLightningCharge
+    BsLightningCharge,
+    BsSearch
 } from 'react-icons/bs';
 import { useLanguage } from '../i18n/LanguageContext';
 import './umlModal.css';
@@ -19,6 +20,7 @@ type Props = {
     onActivityDiagram: () => void;
     onComponentDiagram: () => void;
     onStateDiagram: () => void;
+    onProcessEliminationDiagram: () => void;
     onClose: () => void;
 };
 
@@ -29,6 +31,7 @@ export default function UMLModal({
     onActivityDiagram,
     onComponentDiagram,
     onStateDiagram,
+    onProcessEliminationDiagram,
     onClose
 }: Props) {
     const { t } = useLanguage();
@@ -100,6 +103,12 @@ export default function UMLModal({
                             'uml.state',
                             'uml.state_desc',
                             onStateDiagram
+                        )}
+                        {renderTile(
+                            <BsSearch />,
+                            'uml.process_elimination',
+                            'uml.process_elimination_desc',
+                            onProcessEliminationDiagram
                         )}
                     </div>
                 </div>

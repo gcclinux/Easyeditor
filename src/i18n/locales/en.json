@@ -131,7 +131,9 @@
         "component": "Component Diagram",
         "component_desc": "UML Component Diagram",
         "state": "State Diagram",
-        "state_desc": "UML State Diagram"
+        "state_desc": "UML State Diagram",
+        "process_elimination": "Process of Elimination",
+        "process_elimination_desc": "Troubleshooting Flowchart"
     },
     "insert": {
         "date": "Date",

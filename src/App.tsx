@@ -43,6 +43,7 @@ import {
   insertUMLComponentDiagram,
   insertUMLStateDiagram
 } from './insertUML.ts';
+import { insertUMLProcessOfEliminationDiagram } from './templates/processEliminationUML.ts';
 import { TableGenerator } from './autoGenerator/TableGenerator.tsx';
 import { GanttGenerator } from './autoGenerator/GanttGenerator.tsx';
 import { TimelineGenerator } from './autoGenerator/TimelineGenerator.tsx';
@@ -2023,6 +2024,11 @@ const App = () => {
       : "editor-preview-container-parallel";
   };
 
+  // Insert Process of Elimination Diagram Syntax
+  const handleProcessEliminationInsert = () => {
+    insertUMLProcessOfEliminationDiagram(textareaRef, editorContent, setEditorContent, cursorPositionRef);
+  };
+
   return (
     <div className="container">
       <div className="menubar">
@@ -2344,6 +2350,7 @@ const App = () => {
               onActivityDiagram={handleUMLActivityDiagram}
               onComponentDiagram={handleUMLComponentDiagram}
               onStateDiagram={handleUMLStateDiagram}
+              onProcessEliminationDiagram={handleProcessEliminationInsert}
               onClose={() => setShowUMLModal(false)}
             />
           )
@@ -2678,45 +2685,38 @@ const App = () => {
           )
         }
 
-        {/* Toast Notifications */}
-        <ToastContainer toasts={toasts} onRemove={removeToast} />
-
-        {/* Confirmation Modal */}
-        {
-          confirmModalConfig.open && (
-            <div className="modal-overlay">
-              <div className="modal-dialog">
-                <h2>{confirmModalConfig.title}</h2>
-                <p style={{ whiteSpace: 'pre-wrap' }}>{confirmModalConfig.message}</p>
-                <div className="modal-actions">
-                  {confirmModalConfig.cancelLabel !== null && (
-                    <button
-                      className="modal-button cancel"
-                      onClick={() => setConfirmModalConfig(prev => ({ ...prev, open: false }))}
-                    >
-                      {confirmModalConfig.cancelLabel || 'Cancel'}
-                    </button>
-                  )}
+        {confirmModalConfig.open && (
+          <div className="modal-overlay">
+            <div className="modal-dialog">
+              <h2>{confirmModalConfig.title}</h2>
+              <p style={{ whiteSpace: 'pre-wrap' }}>{confirmModalConfig.message}</p>
+              <div className="modal-actions">
+                {confirmModalConfig.cancelLabel !== null && (
                   <button
-                    className="modal-button primary"
-                    onClick={async () => {
-                      const action = confirmModalConfig.onConfirm;
-                      setConfirmModalConfig(prev => ({ ...prev, open: false }));
-                      if (action) {
-                        await action();
-                      }
-                    }}
+                    className="modal-button cancel"
+                    onClick={() => setConfirmModalConfig(prev => ({ ...prev, open: false }))}
                   >
-                    {confirmModalConfig.confirmLabel || 'Confirm'}
+                    {confirmModalConfig.cancelLabel || 'Cancel'}
                   </button>
-                </div>
+                )}
+                <button
+                  className="modal-button primary"
+                  onClick={async () => {
+                    const action = confirmModalConfig.onConfirm;
+                    setConfirmModalConfig(prev => ({ ...prev, open: false }));
+                    if (action) {
+                      await action();
+                    }
+                  }}
+                >
+                  {confirmModalConfig.confirmLabel || 'Confirm'}
+                </button>
               </div>
             </div>
-          )
-        }
-
-      </div >
-    </div >
+          </div>
+        )}
+      </div>
+    </div>
   );
 };
 

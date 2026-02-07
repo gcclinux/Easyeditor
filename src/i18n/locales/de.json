@@ -131,7 +131,9 @@
         "component": "Komponentendiagramm",
         "component_desc": "UML Komponentendiagramm",
         "state": "Zustandsdiagramm",
-        "state_desc": "UML Zustandsdiagramm"
+        "state_desc": "UML Zustandsdiagramm",
+        "process_elimination": "Ausschlussverfahren",
+        "process_elimination_desc": "Fehlersuch-Flussdiagramm"
     },
     "insert": {
         "date": "Datum",

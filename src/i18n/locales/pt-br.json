@@ -131,7 +131,9 @@
         "component": "Diagrama de Componentes",
         "component_desc": "Diagrama de Componentes UML",
         "state": "Diagrama de Estados",
-        "state_desc": "Diagrama de Estados UML"
+        "state_desc": "Diagrama de Estados UML",
+        "process_elimination": "Processo de Eliminação",
+        "process_elimination_desc": "Fluxograma de Solução de Problemas"
     },
     "insert": {
         "date": "Data",

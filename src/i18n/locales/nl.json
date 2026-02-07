@@ -131,7 +131,9 @@
         "component": "Componentdiagram",
         "component_desc": "UML Componentdiagram",
         "state": "Toestandsdiagram",
-        "state_desc": "UML Toestandsdiagram"
+        "state_desc": "UML Toestandsdiagram",
+        "process_elimination": "Eliminatieproces",
+        "process_elimination_desc": "Stroomdiagram voor probleemoplossing"
     },
     "insert": {
         "date": "Datum",
