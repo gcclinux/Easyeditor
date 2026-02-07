@@ -10,7 +10,8 @@ import {
     BsBug,
     BsDiagram3,
     BsCodeSquare,
-    BsCloud
+    BsCloud,
+    BsTools
 } from "react-icons/bs";
 import { useLanguage } from '../i18n/LanguageContext';
 import { buildDailyJournalTemplate } from '../templates/dailyJournal';
@@ -24,6 +25,7 @@ import { buildDiagramExamplesTemplate } from '../templates/diagramExamples';
 import { buildDiagramASCIITemplate } from '../templates/diagramASCII';
 import { buildKanbanDiagramTemplate } from '../templates/kanbanDiagram';
 import { buildAppDevAwsPostgresTemplate } from '../templates/appDevAwsPostgres';
+import { buildDevOpsPatchingTemplate } from '../templates/devOpsPatching';
 import './templatesModal.css';
 
 type Props = {
@@ -132,6 +134,12 @@ export default function TemplatesModal({ onInsertTemplate, onClose }: Props) {
                             'templates.app_dev_aws_postgres',
                             'templates.app_dev_aws_postgres_desc',
                             () => buildAppDevAwsPostgresTemplate()
+                        )}
+                        {renderTile(
+                            <BsTools />,
+                            'templates.devops_patching',
+                            'templates.devops_patching_desc',
+                            () => buildDevOpsPatchingTemplate()
                         )}
                     </div>
                 </div>

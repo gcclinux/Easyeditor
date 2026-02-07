@@ -427,6 +427,8 @@
         "import_md_desc": "Importuj Markdown z URL",
         "app_dev_aws_postgres": "Tworzenie Aplikacji (AWS + PG)",
         "app_dev_aws_postgres_desc": "Plan Projektu AWS i Postgres",
+        "devops_patching": "Plan Łatania DevOps",
+        "devops_patching_desc": "Przepływ pracy i Kanban",
         "tasks": {
             "basic": "Lista Podstawowa",
             "basic_desc": "Elementy zaznaczone/niezaznaczone",
