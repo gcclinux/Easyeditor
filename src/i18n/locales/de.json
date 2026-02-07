@@ -424,7 +424,9 @@
         "kanban_diagram": "Kanban-Diagramm",
         "kanban_diagram_desc": "Mermaid Kanban-Board",
         "import_md": "MD Importieren",
-        "import_md_desc": "Markdown von URL importieren",
+        "import_md_desc": "Markdown importieren von URL",
+        "app_dev_aws_postgres": "App-Entwicklung (AWS + PG)",
+        "app_dev_aws_postgres_desc": "Projektplan für AWS & Postgres",
         "tasks": {
             "basic": "Einfache Liste",
             "basic_desc": "Markierte/Unmarkierte Elemente",

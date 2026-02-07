@@ -425,6 +425,8 @@
         "kanban_diagram_desc": "Quadro Kanban Mermaid",
         "import_md": "Importar MD",
         "import_md_desc": "Importar Markdown da URL",
+        "app_dev_aws_postgres": "Desenv. de App (AWS + PG)",
+        "app_dev_aws_postgres_desc": "Plano de Projeto AWS & Postgres",
         "tasks": {
             "basic": "Lista Básica",
             "basic_desc": "Itens marcados/desmarcados",

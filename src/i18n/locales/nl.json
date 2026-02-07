@@ -425,6 +425,8 @@
         "kanban_diagram_desc": "Mermaid Kanban-bord",
         "import_md": "Importeer MD",
         "import_md_desc": "Importeer Markdown van URL",
+        "app_dev_aws_postgres": "App-ontwikkeling (AWS + PG)",
+        "app_dev_aws_postgres_desc": "Projectplan voor AWS & Postgres",
         "tasks": {
             "basic": "Basislijst",
             "basic_desc": "Aangevinkte/niet-aangevinkte items",

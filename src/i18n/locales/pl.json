@@ -425,6 +425,8 @@
         "kanban_diagram_desc": "Tablica Kanban Mermaid",
         "import_md": "Importuj MD",
         "import_md_desc": "Importuj Markdown z URL",
+        "app_dev_aws_postgres": "Tworzenie Aplikacji (AWS + PG)",
+        "app_dev_aws_postgres_desc": "Plan Projektu AWS i Postgres",
         "tasks": {
             "basic": "Lista Podstawowa",
             "basic_desc": "Elementy zaznaczone/niezaznaczone",

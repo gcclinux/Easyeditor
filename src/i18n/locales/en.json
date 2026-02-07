@@ -427,6 +427,8 @@
         "kanban_diagram_desc": "Mermaid Kanban Board",
         "import_md": "Import MD",
         "import_md_desc": "Import Markdown from URL",
+        "app_dev_aws_postgres": "App Dev (AWS + PG)",
+        "app_dev_aws_postgres_desc": "AWS & Postgres Project Plan",
         "tasks": {
             "basic": "Basic Task List",
             "basic_desc": "Simple checked/unchecked items",
