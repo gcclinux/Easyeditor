@@ -133,7 +133,9 @@
         "state": "Diagrama de Estados",
         "state_desc": "Diagrama de Estados UML",
         "process_elimination": "Processo de Eliminação",
-        "process_elimination_desc": "Fluxograma de Solução de Problemas"
+        "process_elimination_desc": "Fluxograma de Solução de Problemas",
+        "db_replication": "Replicação de BD",
+        "db_replication_desc": "Arquitetura Mestre-Escravo"
     },
     "insert": {
         "date": "Data",

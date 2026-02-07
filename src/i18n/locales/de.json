@@ -133,7 +133,9 @@
         "state": "Zustandsdiagramm",
         "state_desc": "UML Zustandsdiagramm",
         "process_elimination": "Ausschlussverfahren",
-        "process_elimination_desc": "Fehlersuch-Flussdiagramm"
+        "process_elimination_desc": "Fehlersuch-Flussdiagramm",
+        "db_replication": "DB Replikation",
+        "db_replication_desc": "Master-Slave Architektur"
     },
     "insert": {
         "date": "Datum",

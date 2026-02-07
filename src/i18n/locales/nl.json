@@ -133,7 +133,9 @@
         "state": "Toestandsdiagram",
         "state_desc": "UML Toestandsdiagram",
         "process_elimination": "Eliminatieproces",
-        "process_elimination_desc": "Stroomdiagram voor probleemoplossing"
+        "process_elimination_desc": "Stroomdiagram voor probleemoplossing",
+        "db_replication": "DB Replicatie",
+        "db_replication_desc": "Master-Slave Architectuur"
     },
     "insert": {
         "date": "Datum",
