@@ -130,18 +130,30 @@ export function AboutModal({ open, onClose }: AboutModalProps) {
             </p>
           </div>
           <div className="about-card">
-            <h3>{t('about.credits')}</h3>
-            <p>{t('about.built_by')}<br />
-              <span className="muted">{t('about.last_updated')} {lastUpdated}</span>
-            </p>
-            <p>{t('about.license')} <a href="https://easyeditor.co.uk/license" target="_blank" rel="noopener noreferrer">Core - Open Source (MIT)</a><br />{t('about.running_version')} <strong>{version || '...'}</strong><br />{t('about.available_version')} <strong>{availableVersion || '...'}</strong>
-              {version && availableVersion && compareVersions(version, availableVersion) < 0 && (
-                <>
-                  <br />
-                  Latest Version: <a href="https://github.com/gcclinux/Easyeditor/releases/latest" target="_blank" rel="noopener noreferrer">Download Latest</a>
-                </>
-              )}
-            </p>
+            <div style={{ display: 'flex', gap: '1rem' }}>
+              <div style={{ flex: 1 }}>
+                <h3>{t('about.credits')}</h3>
+                <p>{t('about.built_by')}<br />
+                  <span className="muted">{t('about.last_updated')} {lastUpdated}</span>
+                </p>
+                <p>{t('about.license')} <a href="https://easyeditor.co.uk/license" target="_blank" rel="noopener noreferrer">Core - Open Source (MIT)</a><br />{t('about.running_version')} <strong>{version || '...'}</strong><br />{t('about.available_version')} <strong>{availableVersion || '...'}</strong>
+                  {version && availableVersion && compareVersions(version, availableVersion) < 0 && (
+                    <>
+                      <br />
+                      Latest Version: <a href="https://github.com/gcclinux/Easyeditor/releases/latest" target="_blank" rel="noopener noreferrer">Download Latest</a>
+                    </>
+                  )}
+                </p>
+              </div>
+              <div style={{ flex: 1, borderLeft: '1px solid var(--border-color, #eee)', paddingLeft: '1rem' }}>
+                <h3>{t('about.powered_by')}</h3>
+                <p>
+                  <a href="https://mermaid.js.org/" target="_blank" rel="noopener noreferrer"><b>Mermaid</b></a> - {t('about.official_module')}<br />
+                  <a href="https://daringfireball.net/projects/markdown/" target="_blank" rel="noopener noreferrer"><b>Markdown</b></a> - {t('about.official_module')}<br />
+                  <a href="https://plantuml.com/" target="_blank" rel="noopener noreferrer"><b>PlantUML</b></a> - {t('about.official_module')}
+                </p>
+              </div>
+            </div>
           </div>
           <div className="about-card">
             <div style={{ display: 'flex', gap: '1rem' }}>

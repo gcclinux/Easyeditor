@@ -189,6 +189,8 @@
         "license_free": "Gratis",
         "license_premium": "Premium",
         "credits": "Credits",
+        "powered_by": "Mogelijk gemaakt door / Kernmodules",
+        "official_module": "Officiële codeontwikkelaar",
         "built_by": "Met zorg gebouwd door Ricardo Wagemaker.",
         "last_updated": "Laatst bijgewerkt:",
         "license": "Licentie:",

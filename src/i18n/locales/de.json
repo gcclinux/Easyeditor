@@ -189,6 +189,8 @@
         "license_free": "Kostenlos",
         "license_premium": "Premium",
         "credits": "Credits",
+        "powered_by": "Unterstützt durch / Kernmodule",
+        "official_module": "Offizieller Code-Entwickler",
         "built_by": "Mit Sorgfalt erstellt von Ricardo Wagemaker.",
         "last_updated": "Zuletzt aktualisiert:",
         "license": "Lizenz:",
