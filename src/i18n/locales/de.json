@@ -131,7 +131,13 @@
         "component": "Komponentendiagramm",
         "component_desc": "UML Komponentendiagramm",
         "state": "Zustandsdiagramm",
-        "state_desc": "UML Zustandsdiagramm"
+        "state_desc": "UML Zustandsdiagramm",
+        "process_elimination": "Ausschlussverfahren",
+        "process_elimination_desc": "Fehlersuch-Flussdiagramm",
+        "db_replication": "DB Replikation",
+        "db_replication_desc": "Master-Slave Architektur",
+        "llm_training": "LLM Training",
+        "llm_training_desc": "Training Pipeline & Checklist"
     },
     "insert": {
         "date": "Datum",
@@ -183,6 +189,8 @@
         "license_free": "Kostenlos",
         "license_premium": "Premium",
         "credits": "Credits",
+        "powered_by": "Unterstützt durch / Kernmodule",
+        "official_module": "Offizieller Code-Entwickler",
         "built_by": "Mit Sorgfalt erstellt von Ricardo Wagemaker.",
         "last_updated": "Zuletzt aktualisiert:",
         "license": "Lizenz:",
@@ -424,7 +432,11 @@
         "kanban_diagram": "Kanban-Diagramm",
         "kanban_diagram_desc": "Mermaid Kanban-Board",
         "import_md": "MD Importieren",
-        "import_md_desc": "Markdown von URL importieren",
+        "import_md_desc": "Markdown importieren von URL",
+        "app_dev_aws_postgres": "App-Entwicklung (AWS + PG)",
+        "app_dev_aws_postgres_desc": "Projektplan für AWS & Postgres",
+        "devops_patching": "DevOps Patch-Plan",
+        "devops_patching_desc": "Patch-Workflow & Kanban",
         "tasks": {
             "basic": "Einfache Liste",
             "basic_desc": "Markierte/Unmarkierte Elemente",

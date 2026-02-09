@@ -131,7 +131,13 @@
         "component": "Diagram Komponentów",
         "component_desc": "Diagram Komponentów UML",
         "state": "Diagram Stanów",
-        "state_desc": "Diagram Stanów UML"
+        "state_desc": "Diagram Stanów UML",
+        "process_elimination": "Metoda Eliminacji",
+        "process_elimination_desc": "Schemat blokowy rozwiązywania problemów",
+        "db_replication": "Replikacja Bazy Danych",
+        "db_replication_desc": "Architektura Master-Slave",
+        "llm_training": "LLM Training",
+        "llm_training_desc": "Training Pipeline & Checklist"
     },
     "insert": {
         "date": "Data",
@@ -183,6 +189,8 @@
         "license_free": "Darmowa",
         "license_premium": "Premium",
         "credits": "Twórcy",
+        "powered_by": "Wspierane przez / Główne Moduły",
+        "official_module": "Oficjalny twórca kodu",
         "built_by": "Stworzone z dbałością przez Ricardo Wagemaker.",
         "last_updated": "Ostatnia aktualizacja:",
         "license": "Licencja:",
@@ -425,6 +433,10 @@
         "kanban_diagram_desc": "Tablica Kanban Mermaid",
         "import_md": "Importuj MD",
         "import_md_desc": "Importuj Markdown z URL",
+        "app_dev_aws_postgres": "Tworzenie Aplikacji (AWS + PG)",
+        "app_dev_aws_postgres_desc": "Plan Projektu AWS i Postgres",
+        "devops_patching": "Plan Łatania DevOps",
+        "devops_patching_desc": "Przepływ pracy i Kanban",
         "tasks": {
             "basic": "Lista Podstawowa",
             "basic_desc": "Elementy zaznaczone/niezaznaczone",

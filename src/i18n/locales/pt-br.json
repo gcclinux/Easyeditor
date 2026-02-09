@@ -131,7 +131,13 @@
         "component": "Diagrama de Componentes",
         "component_desc": "Diagrama de Componentes UML",
         "state": "Diagrama de Estados",
-        "state_desc": "Diagrama de Estados UML"
+        "state_desc": "Diagrama de Estados UML",
+        "process_elimination": "Processo de Eliminação",
+        "process_elimination_desc": "Fluxograma de Solução de Problemas",
+        "db_replication": "Replicação de BD",
+        "db_replication_desc": "Arquitetura Mestre-Escravo",
+        "llm_training": "Treinamento LLM",
+        "llm_training_desc": "Pipeline de Treinamento & Checklist"
     },
     "insert": {
         "date": "Data",
@@ -183,6 +189,8 @@
         "license_free": "Gratuito",
         "license_premium": "Premium",
         "credits": "Créditos",
+        "powered_by": "Desenvolvido com / Módulos Principais",
+        "official_module": "Desenvolvedor Oficial do Código",
         "built_by": "Feito com carinho por Ricardo Wagemaker.",
         "last_updated": "Última atualização:",
         "license": "Licença:",
@@ -425,6 +433,10 @@
         "kanban_diagram_desc": "Quadro Kanban Mermaid",
         "import_md": "Importar MD",
         "import_md_desc": "Importar Markdown da URL",
+        "app_dev_aws_postgres": "Desenv. de App (AWS + PG)",
+        "app_dev_aws_postgres_desc": "Plano de Projeto AWS & Postgres",
+        "devops_patching": "Plano de Patch DevOps",
+        "devops_patching_desc": "Fluxo de patch e Kanban",
         "tasks": {
             "basic": "Lista Básica",
             "basic_desc": "Itens marcados/desmarcados",

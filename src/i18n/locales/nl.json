@@ -131,7 +131,13 @@
         "component": "Componentdiagram",
         "component_desc": "UML Componentdiagram",
         "state": "Toestandsdiagram",
-        "state_desc": "UML Toestandsdiagram"
+        "state_desc": "UML Toestandsdiagram",
+        "process_elimination": "Eliminatieproces",
+        "process_elimination_desc": "Stroomdiagram voor probleemoplossing",
+        "db_replication": "DB Replicatie",
+        "db_replication_desc": "Master-Slave Architectuur",
+        "llm_training": "LLM Training",
+        "llm_training_desc": "Training Pipeline & Checklist"
     },
     "insert": {
         "date": "Datum",
@@ -183,6 +189,8 @@
         "license_free": "Gratis",
         "license_premium": "Premium",
         "credits": "Credits",
+        "powered_by": "Mogelijk gemaakt door / Kernmodules",
+        "official_module": "Officiële codeontwikkelaar",
         "built_by": "Met zorg gebouwd door Ricardo Wagemaker.",
         "last_updated": "Laatst bijgewerkt:",
         "license": "Licentie:",
@@ -425,6 +433,10 @@
         "kanban_diagram_desc": "Mermaid Kanban-bord",
         "import_md": "Importeer MD",
         "import_md_desc": "Importeer Markdown van URL",
+        "app_dev_aws_postgres": "App-ontwikkeling (AWS + PG)",
+        "app_dev_aws_postgres_desc": "Projectplan voor AWS & Postgres",
+        "devops_patching": "DevOps Patchplan",
+        "devops_patching_desc": "Patch-workflow & Kanban",
         "tasks": {
             "basic": "Basislijst",
             "basic_desc": "Aangevinkte/niet-aangevinkte items",
