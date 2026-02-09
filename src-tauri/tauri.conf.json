@@ -1,7 +1,7 @@
 {
   "productName": "easyeditor",
   "version": "1.6.3",
-  "identifier": "com.easyeditor.editor",
+  "identifier": "RicardoWagemaker.Easyeditor",
   "build": {
     "beforeBuildCommand": "npm run build",
     "beforeDevCommand": "npm run dev",
@@ -35,6 +35,10 @@
   },
   "bundle": {
     "active": true,
+    "publisher": "CN=7D07D8D6-4667-4F92-BB01-B2772404F8E8",
+    "windows": {
+      "certificateThumbprint": "A9D97675327F7BF344BA308A357E91141A1DDE50"
+    },
     "category": "DeveloperTool",
     "copyright": "",
     "shortDescription": "Easy Markdown Editor",

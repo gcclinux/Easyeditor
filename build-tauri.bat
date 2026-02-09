@@ -1,8 +1,15 @@
 @echo off
 echo Setting up build environment...
 
+@REM [Environment]::SetEnvironmentVariable("Path", $env:Path + ";C:\Program Files (x86)\Windows Kits\10\bin\10.0.26100.0\x64", "User")
 REM Add Rust to PATH
 set PATH=%PATH%;%USERPROFILE%\.cargo\bin
+
+REM Add Windows SDK (SignTool) to PATH
+set PATH=%PATH%;C:\Program Files (x86)\Windows Kits\10\bin\10.0.26100.0\x64
+
+REM Tell Tauri where to find SignTool
+set TAURI_WINDOWS_SIGNTOOL_PATH=C:\Program Files (x86)\Windows Kits\10\bin\10.0.26100.0\x64\signtool.exe
 
 if "%1"=="" goto usage
 if "%1"=="dev" goto dev
