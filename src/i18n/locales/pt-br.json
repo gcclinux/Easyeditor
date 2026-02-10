@@ -517,7 +517,10 @@
         "cloud_desc": "Salvar em"
     },
     "easynotes": {
-        "continued": "continuação"
+        "continued": "continuação",
+        "premium_sync_message": "Atualize para o Premium para sincronizar suas Notas na Nuvem.",
+        "enable_premium": "Ativar Assinatura Premium",
+        "connect_cloud_provider": "Conecte-se a um provedor de nuvem para começar a criar notas!"
     },
     "features_modal": {
         "title": "Funcionalidades",

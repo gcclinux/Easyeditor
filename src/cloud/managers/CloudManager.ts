@@ -615,9 +615,12 @@ export class CloudManager {
             // PHASE 1: Discover new files from cloud storage
             console.log(`[CloudManager] Discovering files from ${pName}...`);
 
+            let foundCloudFileIds: Set<string> | null = null;
+
             if (providerMetadata.applicationFolderId) {
               try {
                 const cloudFiles = await provider.listFiles(providerMetadata.applicationFolderId);
+                foundCloudFileIds = new Set(cloudFiles.map(f => f.id));
                 console.log(`[CloudManager] Found ${cloudFiles.length} files in cloud storage`);
 
                 // Get existing local notes for comparison
@@ -665,6 +668,16 @@ export class CloudManager {
 
             for (const note of notes) {
               try {
+                // Check if file exists in cloud (if discovery was successful)
+                // This handles cases where files were deleted directly in Google Drive
+                if (foundCloudFileIds && !foundCloudFileIds.has(note.cloudFileId)) {
+                  console.log(`[CloudManager] Note ${note.title} (${note.cloudFileId}) no longer exists in cloud. Removing local metadata.`);
+                  await this.metadataManager.removeNote(note.id);
+                  // Consider this a processed file since we reconciled the state
+                  filesProcessed++;
+                  continue;
+                }
+
                 console.log(`[CloudManager] Syncing note: ${note.title} (${note.id})`);
                 // Sync each note with individual error handling
                 const syncResult = await ErrorHandler.withRetry(

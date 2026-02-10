@@ -517,7 +517,10 @@
         "cloud_desc": "Speichern in"
     },
     "easynotes": {
-        "continued": "Fortsetzung"
+        "continued": "Fortsetzung",
+        "premium_sync_message": "Upgraden Sie auf Premium, um Ihre Cloud-Notizen zu synchronisieren.",
+        "enable_premium": "Premium-Abonnement aktivieren",
+        "connect_cloud_provider": "Verbinden Sie sich mit einem Cloud-Anbieter, um Notizen zu erstellen!"
     },
     "features_modal": {
         "title": "Funktionen",

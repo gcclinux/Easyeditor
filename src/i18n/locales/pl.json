@@ -517,7 +517,10 @@
         "cloud_desc": "Zapisz w"
     },
     "easynotes": {
-        "continued": "kontynuacja"
+        "continued": "kontynuacja",
+        "premium_sync_message": "Ulepsz do Premium, aby zsynchronizować Notatki w Chmurze.",
+        "enable_premium": "Włącz subskrypcję Premium",
+        "connect_cloud_provider": "Połącz się z dostawcą chmury, aby zacząć tworzyć notatki!"
     },
     "features_modal": {
         "title": "Funkcje",

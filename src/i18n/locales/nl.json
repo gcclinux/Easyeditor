@@ -517,7 +517,10 @@
         "cloud_desc": "Opslaan in"
     },
     "easynotes": {
-        "continued": "vervolg"
+        "continued": "vervolg",
+        "premium_sync_message": "Upgrade naar Premium om je Cloud-notities te synchroniseren.",
+        "enable_premium": "Activeer Premium-abonnement",
+        "connect_cloud_provider": "Verbind met een cloudprovider om notities te maken!"
     },
     "features_modal": {
         "title": "Functies",

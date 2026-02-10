@@ -519,7 +519,10 @@
         "cloud_desc": "Save to"
     },
     "easynotes": {
-        "continued": "continued"
+        "continued": "continued",
+        "premium_sync_message": "Upgrade to Premium to sync your Cloud Notes.",
+        "enable_premium": "Enable Premium Subscription",
+        "connect_cloud_provider": "Connect to a cloud provider to start creating notes!"
     },
     "features_modal": {
         "title": "Features",

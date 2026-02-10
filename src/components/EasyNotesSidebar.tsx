@@ -19,6 +19,7 @@ interface EasyNotesSidebarProps {
   onNoteDelete?: (noteId: string) => void;
   currentCloudNote?: { noteId: string; title: string } | null;
   refreshTrigger?: number; // Add refresh trigger prop
+  onUpgradeClick?: () => void;
 }
 
 const EasyNotesSidebar: React.FC<EasyNotesSidebarProps> = ({
@@ -28,7 +29,8 @@ const EasyNotesSidebar: React.FC<EasyNotesSidebarProps> = ({
   onNoteSelect,
   onNoteDelete,
   currentCloudNote,
-  refreshTrigger
+  refreshTrigger,
+  onUpgradeClick
 }) => {
   const { t } = useLanguage();
   // Use singleton CloudManager instance
@@ -463,6 +465,10 @@ const EasyNotesSidebar: React.FC<EasyNotesSidebarProps> = ({
 
   const handleUpgradeClick = async (e: React.MouseEvent) => {
     e.preventDefault();
+    if (onUpgradeClick) {
+      onUpgradeClick();
+      return;
+    }
     const url = 'https://easyeditor.co.uk/#pricing';
 
     if (isTauriEnvironment()) {
@@ -485,16 +491,16 @@ const EasyNotesSidebar: React.FC<EasyNotesSidebarProps> = ({
     const noteItemHeight = 75; // Height per note item including margin
     const availableHeight = window.innerHeight - 120 - headerHeight; // 120px is top offset
     const notesPerColumn = Math.max(1, Math.floor(availableHeight / noteItemHeight));
-    
+
     if (noteCount === 0) return 1;
-    
+
     const columnsNeeded = Math.ceil(noteCount / notesPerColumn);
     const maxColumns = Math.min(columnsNeeded, 3); // Cap at 3 columns
-    
+
     // Check if screen can fit the columns
     const screenWidth = window.innerWidth;
     const maxPossibleColumns = Math.floor(screenWidth * 0.8 / baseColumnWidth); // Use max 80% of screen
-    
+
     return Math.min(maxColumns, Math.max(1, maxPossibleColumns));
   };
 
@@ -513,10 +519,10 @@ const EasyNotesSidebar: React.FC<EasyNotesSidebarProps> = ({
     const updateColumns = () => {
       if (showEasyNotesSidebar) {
         const newColumnCount = calculateColumns(notes.length);
-        console.log('[EasyNotesSidebar] Column calculation:', { 
-          notesCount: notes.length, 
+        console.log('[EasyNotesSidebar] Column calculation:', {
+          notesCount: notes.length,
           notesPerColumn: getNotesPerColumn(),
-          calculatedColumns: newColumnCount 
+          calculatedColumns: newColumnCount
         });
         setColumnCount(newColumnCount);
       }
@@ -701,7 +707,7 @@ const EasyNotesSidebar: React.FC<EasyNotesSidebarProps> = ({
               textAlign: 'center'
             }}>
               <p style={{ marginBottom: '10px', fontSize: '14px', color: 'var(--color-text-dropdown)' }}>
-                Upgrade to Premium to sync your notes with Google Drive.
+                {t('easynotes.premium_sync_message')}
               </p>
               <button
                 onClick={handleUpgradeClick}
@@ -721,7 +727,7 @@ const EasyNotesSidebar: React.FC<EasyNotesSidebarProps> = ({
                   gap: '5px'
                 }}
               >
-                Enable Premium Subscription
+                {t('easynotes.enable_premium')}
               </button>
             </div>
           ) : (
@@ -851,7 +857,7 @@ const EasyNotesSidebar: React.FC<EasyNotesSidebarProps> = ({
           {!loading && notes.length === 0 && (
             <p style={{ color: 'var(--color-text-light)', fontSize: '14px', textAlign: 'center', padding: '20px' }}>
               {getConnectedProviders().length === 0
-                ? 'Connect to a cloud provider to start creating notes!'
+                ? t('easynotes.connect_cloud_provider')
                 : 'No notes yet. Create your first note!'
               }
             </p>
@@ -869,7 +875,7 @@ const EasyNotesSidebar: React.FC<EasyNotesSidebarProps> = ({
       {columnCount > 1 && Array.from({ length: columnCount - 1 }, (_, i) => i + 1).map((colIndex) => {
         const columnNotes = getNotesForColumn(colIndex);
         if (columnNotes.length === 0) return null;
-        
+
         return (
           <div
             key={`column-${colIndex}`}

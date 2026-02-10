@@ -2649,6 +2649,10 @@ const App = () => {
                 // Add to history for undo/redo functionality
                 addToHistory(content, cursorPositionRef.current, documentHistory, historyIndex, setDocumentHistory, setHistoryIndex);
               }}
+              onUpgradeClick={() => {
+                setShowEasyNotesSidebar(false);
+                setAboutOpen(true);
+              }}
             />
           )
         }
