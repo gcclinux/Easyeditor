@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Dropbox Authentication</title>
+  <style>
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      height: 100vh;
+      margin: 0;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+    }
+    .container {
+      text-align: center;
+      padding: 2rem;
+      background: rgba(255, 255, 255, 0.1);
+      border-radius: 12px;
+      backdrop-filter: blur(10px);
+    }
+    .spinner {
+      border: 4px solid rgba(255, 255, 255, 0.3);
+      border-top: 4px solid white;
+      border-radius: 50%;
+      width: 40px;
+      height: 40px;
+      animation: spin 1s linear infinite;
+      margin: 0 auto 1rem;
+    }
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+    .error {
+      color: #ff6b6b;
+      background: rgba(255, 255, 255, 0.9);
+      padding: 1rem;
+      border-radius: 8px;
+      margin-top: 1rem;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="spinner"></div>
+    <h2>Connecting to Dropbox...</h2>
+    <p>Please wait while we complete the authentication.</p>
+    <div id="error" class="error" style="display: none;"></div>
+  </div>
+
+  <script>
+    (function() {
+      try {
+        // Parse URL parameters
+        const urlParams = new URLSearchParams(window.location.search);
+        const code = urlParams.get('code');
+        const error = urlParams.get('error');
+        const errorDescription = urlParams.get('error_description');
+
+        if (error) {
+          // Show error to user
+          const errorDiv = document.getElementById('error');
+          errorDiv.textContent = `Authentication failed: ${errorDescription || error}`;
+          errorDiv.style.display = 'block';
+
+          // Send error to parent window
+          if (window.opener) {
+            window.opener.postMessage({
+              type: 'dropbox_oauth_callback',
+              error: errorDescription || error
+            }, window.location.origin);
+          }
+
+          // Close window after 3 seconds
+          setTimeout(() => {
+            window.close();
+          }, 3000);
+          return;
+        }
+
+        if (code) {
+          // Send authorization code to parent window
+          if (window.opener) {
+            window.opener.postMessage({
+              type: 'dropbox_oauth_callback',
+              code: code
+            }, window.location.origin);
+
+            // Close this window
+            setTimeout(() => {
+              window.close();
+            }, 1000);
+          } else {
+            throw new Error('Parent window not found. Please try again.');
+          }
+        } else {
+          throw new Error('No authorization code received from Dropbox.');
+        }
+      } catch (err) {
+        console.error('OAuth callback error:', err);
+        const errorDiv = document.getElementById('error');
+        errorDiv.textContent = `Error: ${err.message}`;
+        errorDiv.style.display = 'block';
+
+        // Try to send error to parent
+        if (window.opener) {
+          window.opener.postMessage({
+            type: 'dropbox_oauth_callback',
+            error: err.message
+          }, window.location.origin);
+        }
+
+        // Close window after 5 seconds
+        setTimeout(() => {
+          window.close();
+        }, 5000);
+      }
+    })();
+  </script>
+</body>
+</html>

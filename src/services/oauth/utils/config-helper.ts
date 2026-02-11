@@ -13,7 +13,7 @@ export function createDefaultOAuthConfig(): OAuthConfig {
     providers: {},
     callbackServer: {
       host: '127.0.0.1',
-      portRange: [8080, 8090],
+      portRange: [8080, 8082],
       timeout: 300000, // 5 minutes
       maxRetries: 3,
       useHttps: false

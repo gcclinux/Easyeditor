@@ -5,6 +5,7 @@
 
 export { TauriOAuthBridge, tauriOAuthBridge } from './TauriOAuthBridge';
 export { TauriOAuthManager, createOAuthManager } from './TauriOAuthManager';
+export { getSharedOAuthManager, resetSharedOAuthManager } from './SharedOAuthManager';
 export { 
   TauriOAuthNotifications, 
   tauriOAuthNotifications,

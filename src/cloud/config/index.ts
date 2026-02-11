@@ -14,6 +14,15 @@ export {
   getDebugConfiguration
 } from './google-credentials';
 
+export {
+  DROPBOX_CONFIG,
+  isDropboxConfigured,
+  getConfigurationStatus as getDropboxConfigurationStatus,
+  getConfigurationErrorMessage as getDropboxConfigurationErrorMessage,
+  validateConfiguration as validateDropboxConfiguration,
+  getDebugConfiguration as getDropboxDebugConfiguration
+} from './dropbox-credentials';
+
 // Configuration validation
 export {
   validateGoogleDriveConfiguration,
@@ -32,6 +41,7 @@ export type { ValidationResult, SetupInstructions } from './config-validator';
  */
 export function initializeCloudConfiguration(): void {
   validateConfiguration();
+  validateDropboxConfiguration();
   
   // Log configuration status in development
   if (!import.meta.env.PROD) {
@@ -46,6 +56,15 @@ export function initializeCloudConfiguration(): void {
     } else {
       console.info('✅ Google Drive configuration is valid');
     }
+
+    const dropboxStatus = getDropboxConfigurationStatus();
+    if (!dropboxStatus.configured) {
+      console.group('🔧 Dropbox Configuration');
+      console.warn('Configuration issues detected:', dropboxStatus.issues);
+      console.groupEnd();
+    } else {
+      console.info('✅ Dropbox configuration is valid');
+    }
   }
 }
 
@@ -53,7 +72,7 @@ export function initializeCloudConfiguration(): void {
  * Check if any cloud provider is configured and ready
  */
 export function isAnyCloudProviderReady(): boolean {
-  return isGoogleDriveConfigured();
+  return isGoogleDriveConfigured() || isDropboxConfigured();
 }
 
 /**
@@ -67,6 +86,7 @@ export function getAvailableProviders(): Array<{
   message: string;
 }> {
   const googleStatus = getQuickStatus();
+  const dropboxStatus = getDropboxConfigurationStatus();
   
   return [
     {
@@ -75,7 +95,15 @@ export function getAvailableProviders(): Array<{
       configured: isGoogleDriveConfigured(),
       status: googleStatus.status,
       message: googleStatus.message
+    },
+    {
+      name: 'dropbox',
+      displayName: 'Dropbox',
+      configured: isDropboxConfigured(),
+      status: dropboxStatus.configured ? 'ready' : 'needs-setup',
+      message: dropboxStatus.configured 
+        ? `Configured for ${dropboxStatus.environment}` 
+        : dropboxStatus.issues.join(', ')
     }
-    // Future providers can be added here
   ];
 }

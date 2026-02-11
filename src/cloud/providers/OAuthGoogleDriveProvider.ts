@@ -5,7 +5,7 @@
 
 import type { CloudProvider, CloudFile, AuthResult } from '../interfaces';
 import { OAuthManager } from '../../services/oauth/core/OAuthManager';
-import { createOAuthManager } from '../../services/oauth/tauri/TauriOAuthManager';
+import { getSharedOAuthManager } from '../../services/oauth/tauri/SharedOAuthManager';
 import { GoogleOAuthProvider } from '../../services/oauth/providers/GoogleOAuthProvider';
 import {
   GOOGLE_DRIVE_CONFIG,
@@ -54,20 +54,15 @@ export class OAuthGoogleDriveProvider implements CloudProvider {
       }
     }
 
-    // Initialize OAuth components
-    this.oauthManager = createOAuthManager({
-      providers: {
-        google: {
-          enabled: true,
-          clientId: GOOGLE_DRIVE_CONFIG.CLIENT_ID,
-          clientSecret: GOOGLE_DRIVE_CONFIG.CLIENT_SECRET,
-          scope: GOOGLE_DRIVE_CONFIG.SCOPES
-        }
-      }
-    });
+    // Get shared OAuth manager (creates it if first provider)
+    this.oauthManager = getSharedOAuthManager();
+    
+    // Create and register Google OAuth provider
     // Pass client secret - Google requires it even for Desktop apps with PKCE (deviation from RFC 7636)
     this.googleProvider = new GoogleOAuthProvider(GOOGLE_DRIVE_CONFIG.CLIENT_ID, GOOGLE_DRIVE_CONFIG.CLIENT_SECRET);
     this.oauthManager.registerProvider(this.googleProvider);
+    
+    console.log('[OAuthGoogleDriveProvider] Initialized with shared OAuth manager');
   }
 
   async authenticate(): Promise<AuthResult> {

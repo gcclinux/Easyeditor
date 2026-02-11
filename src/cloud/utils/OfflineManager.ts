@@ -27,13 +27,16 @@ export class OfflineManager {
   }
 
   constructor() {
+    console.log('[OfflineManager] Initializing, navigator.onLine:', navigator.onLine);
     this.setupEventListeners();
     this.startPeriodicCheck();
     
     if (this.isOnline) {
       this.lastOnlineTime = new Date();
+      console.log('[OfflineManager] Starting in online mode');
     } else {
       this.offlineStartTime = new Date();
+      console.log('[OfflineManager] Starting in offline mode');
     }
   }
 
@@ -77,19 +80,49 @@ export class OfflineManager {
    */
   async checkConnectivity(): Promise<boolean> {
     try {
-      // Try to fetch a small resource to verify actual connectivity
-      const response = await fetch('https://www.google.com/favicon.ico', {
-        method: 'HEAD',
-        mode: 'no-cors',
-        cache: 'no-cache'
-      });
+      console.log('[OfflineManager] Checking connectivity, navigator.onLine:', navigator.onLine);
       
-      const isConnected = true; // If fetch doesn't throw, we're connected
-      this.updateOnlineStatus(isConnected);
-      return isConnected;
+      // In Tauri environment, trust navigator.onLine more
+      const isTauri = typeof window !== 'undefined' && 
+        ((window as any).__TAURI__ !== undefined || 
+         (window as any).__TAURI_INTERNALS__ !== undefined);
+      
+      if (isTauri) {
+        // For Tauri, primarily trust navigator.onLine
+        // Only do network check if navigator says we're online
+        if (!navigator.onLine) {
+          console.log('[OfflineManager] Tauri: navigator.onLine is false, setting offline');
+          this.updateOnlineStatus(false);
+          return false;
+        }
+        
+        // Navigator says online, assume we are (Tauri's navigator.onLine is reliable)
+        console.log('[OfflineManager] Tauri: navigator.onLine is true, setting online');
+        this.updateOnlineStatus(true);
+        return true;
+      }
+      
+      // For web environment, do actual connectivity check
+      try {
+        const response = await fetch('https://www.google.com/favicon.ico', {
+          method: 'HEAD',
+          mode: 'no-cors',
+          cache: 'no-cache'
+        });
+        
+        console.log('[OfflineManager] Web: Connectivity check succeeded, setting online');
+        this.updateOnlineStatus(true);
+        return true;
+      } catch (fetchError) {
+        console.warn('[OfflineManager] Web: Connectivity check failed:', fetchError);
+        this.updateOnlineStatus(false);
+        return false;
+      }
     } catch (error) {
-      this.updateOnlineStatus(false);
-      return false;
+      console.warn('[OfflineManager] Connectivity check error:', error);
+      // On error, trust navigator.onLine
+      this.updateOnlineStatus(navigator.onLine);
+      return navigator.onLine;
     }
   }
 
@@ -102,7 +135,7 @@ export class OfflineManager {
     operationName: string = 'operation'
   ): Promise<T> {
     if (!this.isOnline) {
-      console.warn(`${operationName} attempted while offline, using fallback`);
+      console.warn(`[OfflineManager] ${operationName} attempted while offline (isOnline=${this.isOnline}, navigator.onLine=${navigator.onLine}), using fallback`);
       return Promise.resolve(offlineFallback());
     }
 
@@ -111,7 +144,7 @@ export class OfflineManager {
     } catch (error) {
       // Check if error is network-related
       if (this.isNetworkError(error)) {
-        console.warn(`${operationName} failed due to network error, using fallback`);
+        console.warn(`[OfflineManager] ${operationName} failed due to network error, using fallback`);
         this.updateOnlineStatus(false);
         return Promise.resolve(offlineFallback());
       }

@@ -16,7 +16,7 @@ export class CallbackServer {
   constructor(config?: Partial<CallbackServerConfig>) {
     this.config = {
       host: '127.0.0.1',
-      portRange: [8080, 8090],
+      portRange: [8080, 8082],
       timeout: 300000, // 5 minutes
       maxRetries: 3,
       ...config

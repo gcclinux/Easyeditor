@@ -45,12 +45,14 @@ export class CloudManager {
     try {
       // Register providers based on environment
       if (isTauriEnvironment()) {
-        console.log('[CloudManager] Detected Tauri environment, using OAuth provider');
-        // Dynamically import OAuth provider to avoid loading OAuth system in web environment
+        console.log('[CloudManager] Detected Tauri environment, using OAuth providers');
+        // Dynamically import OAuth providers to avoid loading OAuth system in web environment
         try {
           const { OAuthGoogleDriveProvider } = await import('../providers/OAuthGoogleDriveProvider');
+          const { OAuthDropboxProvider } = await import('../providers/OAuthDropboxProvider');
           this.registerProvider(new OAuthGoogleDriveProvider());
-          console.log('[CloudManager] OAuth provider registered successfully');
+          this.registerProvider(new OAuthDropboxProvider());
+          console.log('[CloudManager] OAuth providers registered successfully');
         } catch (error) {
           console.error('[CloudManager] Failed to load OAuth provider, falling back to Tauri provider:', error);
           const { TauriGoogleDriveProvider } = await import('../providers/TauriGoogleDriveProvider');
@@ -58,10 +60,12 @@ export class CloudManager {
           console.log('[CloudManager] Tauri provider registered as fallback');
         }
       } else {
-        console.log('[CloudManager] Detected web environment, using GIS provider');
+        console.log('[CloudManager] Detected web environment, using web providers');
         const { GISGoogleDriveProvider } = await import('../providers/GISGoogleDriveProvider');
+        const { DropboxProvider } = await import('../providers/DropboxProvider');
         this.registerProvider(new GISGoogleDriveProvider());
-        console.log('[CloudManager] GIS provider registered successfully');
+        this.registerProvider(new DropboxProvider());
+        console.log('[CloudManager] Web providers registered successfully');
       }
     } catch (error) {
       console.error('[CloudManager] Failed to initialize providers:', error);

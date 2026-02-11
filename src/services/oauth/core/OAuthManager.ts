@@ -88,16 +88,9 @@ export class OAuthManager {
       throw error;
     }
     
-    // Check if provider is enabled in configuration
-    if (!this.configManager.isProviderEnabled(provider.name)) {
-      this.logger.warn(
-        OAuthOperation.PROVIDER_REGISTERED,
-        'Provider is disabled in configuration',
-        { enabledProviders: this.configManager.getEnabledProviders() },
-        provider.name
-      );
-      return;
-    }
+    // Note: Removed config check to allow dynamic provider registration
+    // This is necessary for shared OAuth manager pattern where providers
+    // register themselves after manager creation
     
     this.providers.set(provider.name, provider);
     
