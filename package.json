@@ -12,6 +12,8 @@
     "build:web": "tsc && vite build --outDir dist-web",
     "postbuild": "node scripts/copy-metadata.js",
     "preview": "vite preview --port 3024",
+    "serve:prod": "node serve-dist.js",
+    "build:serve": "npm run build && npm run serve:prod",
     "test": "jest",
     "test:watch": "jest --watch",
     "test:coverage": "jest --coverage",

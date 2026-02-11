@@ -25,7 +25,24 @@ if (isElectronMode) {
 }
 
 export default defineConfig({
-  plugins: [react()],
+  plugins: [
+    react(),
+    // Custom plugin to handle OAuth callback without URL rewriting
+    {
+      name: 'oauth-callback-handler',
+      configureServer(server) {
+        server.middlewares.use((req, res, next) => {
+          // Prevent URL rewriting for OAuth callback
+          if (req.url?.includes('dropbox-oauth-callback.html') || 
+              req.url?.includes('google-oauth-callback.html')) {
+            // Don't let Vite rewrite these URLs
+            return next();
+          }
+          next();
+        });
+      },
+    },
+  ],
   base: './',
   define: {
     global: 'globalThis',
@@ -70,7 +87,9 @@ export default defineConfig({
     headers: {
       // Allow Google OAuth iframe and popup
       'X-Frame-Options': 'SAMEORIGIN',
-      'Cross-Origin-Opener-Policy': 'same-origin-allow-popups',
+      // IMPORTANT: Use 'unsafe-none' to allow OAuth popups to maintain
+      // window.opener relationship after navigating to external OAuth providers
+      'Cross-Origin-Opener-Policy': 'unsafe-none',
       'Cross-Origin-Embedder-Policy': 'unsafe-none',
       // Remove restrictive CSP in development
       'Content-Security-Policy': ''

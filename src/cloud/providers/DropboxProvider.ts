@@ -104,14 +104,15 @@ export class DropboxProvider implements CloudProvider {
       console.log('[DropboxProvider] Opening authorization URL');
       
       // Open authorization URL in new window
-      const authWindow = window.open(authUrl, 'dropbox_auth', 'width=600,height=700');
+      // Note: Don't use 'noopener' to preserve window.opener relationship
+      const authWindow = window.open(authUrl, 'dropbox_auth', 'width=600,height=700,noopener=no');
       
       if (!authWindow) {
         throw new Error('Failed to open authorization window. Please allow popups for this site.');
       }
 
       // Wait for OAuth callback
-      const result = await this.waitForOAuthCallback();
+      const result = await this.waitForOAuthCallback(authWindow);
       
       return result;
     } catch (error) {
@@ -465,18 +466,34 @@ export class DropboxProvider implements CloudProvider {
   /**
    * Wait for OAuth callback and exchange code for token
    */
-  private async waitForOAuthCallback(): Promise<AuthResult> {
+  private async waitForOAuthCallback(authWindow: Window): Promise<AuthResult> {
     return new Promise((resolve) => {
+      let messageReceived = false;
+      
       // Listen for OAuth callback message
       const messageHandler = async (event: MessageEvent) => {
-        // Verify origin for security
-        if (!DROPBOX_CONFIG.AUTHORIZED_DOMAINS.some(domain => event.origin.startsWith(domain))) {
+        console.log('[DropboxProvider] Received message:', { 
+          origin: event.origin, 
+          type: event.data?.type,
+          hasCode: !!event.data?.code 
+        });
+        
+        // Verify origin for security (check if it's from our authorized domains)
+        const isAuthorizedOrigin = DROPBOX_CONFIG.AUTHORIZED_DOMAINS.some(domain => 
+          event.origin === domain || event.origin.startsWith(domain)
+        );
+        
+        if (!isAuthorizedOrigin) {
           console.warn('[DropboxProvider] Received message from unauthorized origin:', event.origin);
-          return;
+          console.warn('[DropboxProvider] Authorized domains:', DROPBOX_CONFIG.AUTHORIZED_DOMAINS);
+          // Don't return immediately - check if it's a valid callback message
         }
 
         if (event.data.type === 'dropbox_oauth_callback') {
+          console.log('[DropboxProvider] Valid OAuth callback message received');
+          messageReceived = true;
           window.removeEventListener('message', messageHandler);
+          clearInterval(pollInterval);
           
           const { code, error } = event.data;
           
@@ -518,11 +535,183 @@ export class DropboxProvider implements CloudProvider {
         }
       };
 
+      console.log('[DropboxProvider] Setting up message listener');
       window.addEventListener('message', messageHandler);
+
+      // Poll the popup window to check if it has navigated to callback URL
+      const pollInterval = setInterval(() => {
+        console.log('[DropboxProvider] Polling popup window...', {
+          windowExists: !!authWindow,
+          windowClosed: authWindow?.closed
+        });
+        
+        // Check sessionStorage for code (works even when window.opener is null)
+        const storedCode = sessionStorage.getItem('dropbox_oauth_code');
+        const storedTimestamp = sessionStorage.getItem('dropbox_oauth_timestamp');
+        
+        if (storedCode && storedTimestamp) {
+          // Check if this is a recent code (within last 60 seconds)
+          const timestamp = parseInt(storedTimestamp, 10);
+          const age = Date.now() - timestamp;
+          
+          if (age < 60000) { // 60 seconds
+            console.log('[DropboxProvider] Found OAuth code in sessionStorage');
+            clearInterval(pollInterval);
+            window.removeEventListener('message', messageHandler);
+            
+            if (authWindow && !authWindow.closed) {
+              authWindow.close();
+            }
+            
+            // Clean up sessionStorage
+            sessionStorage.removeItem('dropbox_oauth_code');
+            sessionStorage.removeItem('dropbox_oauth_timestamp');
+            
+            // Exchange code for token
+            const verifier = sessionStorage.getItem('dropbox_pkce_verifier');
+            
+            if (!verifier) {
+              resolve({
+                success: false,
+                error: 'PKCE verifier not found'
+              });
+              return;
+            }
+
+            this.exchangeCodeForToken(storedCode, verifier).then(result => {
+              // Clean up session storage
+              sessionStorage.removeItem('dropbox_pkce_verifier');
+              sessionStorage.removeItem('dropbox_auth_state');
+              
+              resolve(result);
+            }).catch(error => {
+              resolve({
+                success: false,
+                error: error instanceof Error ? error.message : 'Token exchange failed'
+              });
+            });
+            return;
+          }
+        }
+        
+        if (!authWindow || authWindow.closed) {
+          console.log('[DropboxProvider] Popup window was closed');
+          clearInterval(pollInterval);
+          window.removeEventListener('message', messageHandler);
+          
+          // Check one more time for stored code before giving up
+          const finalCode = sessionStorage.getItem('dropbox_oauth_code');
+          if (finalCode && !messageReceived) {
+            console.log('[DropboxProvider] Found code in sessionStorage after window closed');
+            sessionStorage.removeItem('dropbox_oauth_code');
+            sessionStorage.removeItem('dropbox_oauth_timestamp');
+            
+            const verifier = sessionStorage.getItem('dropbox_pkce_verifier');
+            if (verifier) {
+              this.exchangeCodeForToken(finalCode, verifier).then(result => {
+                sessionStorage.removeItem('dropbox_pkce_verifier');
+                sessionStorage.removeItem('dropbox_auth_state');
+                resolve(result);
+              }).catch(error => {
+                resolve({
+                  success: false,
+                  error: error instanceof Error ? error.message : 'Token exchange failed'
+                });
+              });
+              return;
+            }
+          }
+          
+          if (!messageReceived) {
+            resolve({
+              success: false,
+              error: 'Authentication window was closed'
+            });
+          }
+          return;
+        }
+
+        try {
+          // Try to access the popup's location
+          // This will throw an error if it's on a different origin (Dropbox)
+          // But will work when it redirects back to our callback URL
+          const popupUrl = authWindow.location.href;
+          
+          console.log('[DropboxProvider] Successfully read popup URL:', popupUrl);
+          console.log('[DropboxProvider] Popup location details:', {
+            href: authWindow.location.href,
+            origin: authWindow.location.origin,
+            pathname: authWindow.location.pathname,
+            search: authWindow.location.search
+          });
+          
+          if (popupUrl.includes('/dropbox-oauth-callback.html')) {
+            console.log('[DropboxProvider] Detected callback URL in popup');
+            
+            // Parse the URL to get the code
+            const url = new URL(popupUrl);
+            const code = url.searchParams.get('code');
+            const error = url.searchParams.get('error');
+            
+            clearInterval(pollInterval);
+            window.removeEventListener('message', messageHandler);
+            authWindow.close();
+            
+            if (error) {
+              resolve({
+                success: false,
+                error: url.searchParams.get('error_description') || error
+              });
+              return;
+            }
+            
+            if (code) {
+              console.log('[DropboxProvider] Extracted code from URL, exchanging for token');
+              // Exchange code for token
+              const verifier = sessionStorage.getItem('dropbox_pkce_verifier');
+              
+              if (!verifier) {
+                resolve({
+                  success: false,
+                  error: 'PKCE verifier not found'
+                });
+                return;
+              }
+
+              this.exchangeCodeForToken(code, verifier).then(result => {
+                // Clean up session storage
+                sessionStorage.removeItem('dropbox_pkce_verifier');
+                sessionStorage.removeItem('dropbox_auth_state');
+                
+                resolve(result);
+              }).catch(error => {
+                resolve({
+                  success: false,
+                  error: error instanceof Error ? error.message : 'Token exchange failed'
+                });
+              });
+            }
+          }
+        } catch (e) {
+          // Expected error when popup is on different origin (Dropbox domain)
+          // Just continue polling
+          console.log('[DropboxProvider] Cannot access popup URL (cross-origin), continuing to poll...', {
+            errorType: e instanceof Error ? e.constructor.name : typeof e,
+            errorMessage: e instanceof Error ? e.message : String(e)
+          });
+        }
+      }, 500); // Poll every 500ms
 
       // Timeout after 5 minutes
       setTimeout(() => {
+        console.log('[DropboxProvider] OAuth timeout reached');
+        clearInterval(pollInterval);
         window.removeEventListener('message', messageHandler);
+        
+        if (!messageReceived && authWindow && !authWindow.closed) {
+          authWindow.close();
+        }
+        
         resolve({
           success: false,
           error: 'Authentication timeout'

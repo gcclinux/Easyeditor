@@ -788,7 +788,14 @@ const EasyNotesSidebar: React.FC<EasyNotesSidebarProps> = ({
         <div style={{ marginBottom: '20px' }}>
           <div style={{ display: 'flex', gap: '8px', marginBottom: '10px' }}>
             <button
-              onClick={() => setShowNewNoteDialog(true)}
+              onClick={() => {
+                // Auto-select first connected provider when opening dialog
+                const connected = getConnectedProviders();
+                if (connected.length > 0 && !providers[selectedProvider]?.connected) {
+                  setSelectedProvider(connected[0][0]);
+                }
+                setShowNewNoteDialog(true);
+              }}
               disabled={loading || operationStates.creatingNote || getConnectedProviders().length === 0}
               style={{
                 flex: 1,

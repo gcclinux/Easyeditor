@@ -54,12 +54,18 @@
 
   <script>
     (function() {
+      console.log('[Dropbox Callback] Starting OAuth callback processing');
+      console.log('[Dropbox Callback] window.opener exists:', !!window.opener);
+      console.log('[Dropbox Callback] window.location.origin:', window.location.origin);
+      
       try {
         // Parse URL parameters
         const urlParams = new URLSearchParams(window.location.search);
         const code = urlParams.get('code');
         const error = urlParams.get('error');
         const errorDescription = urlParams.get('error_description');
+
+        console.log('[Dropbox Callback] Parsed params:', { hasCode: !!code, hasError: !!error });
 
         if (error) {
           // Show error to user
@@ -68,11 +74,14 @@
           errorDiv.style.display = 'block';
 
           // Send error to parent window
-          if (window.opener) {
+          if (window.opener && !window.opener.closed) {
+            console.log('[Dropbox Callback] Sending error to parent');
             window.opener.postMessage({
               type: 'dropbox_oauth_callback',
               error: errorDescription || error
             }, window.location.origin);
+          } else {
+            console.error('[Dropbox Callback] Parent window not available');
           }
 
           // Close window after 3 seconds
@@ -83,20 +92,41 @@
         }
 
         if (code) {
-          // Send authorization code to parent window
-          if (window.opener) {
-            window.opener.postMessage({
-              type: 'dropbox_oauth_callback',
-              code: code
-            }, window.location.origin);
-
-            // Close this window
-            setTimeout(() => {
-              window.close();
-            }, 1000);
+          console.log('[Dropbox Callback] Authorization code received');
+          console.log('[Dropbox Callback] Waiting for parent window to read the URL...');
+          
+          // Update UI to show success
+          document.querySelector('h2').textContent = 'Authentication Successful!';
+          document.querySelector('p').textContent = 'Completing authentication...';
+          document.querySelector('.spinner').style.display = 'none';
+          
+          // Store the code in sessionStorage for parent to read
+          // This works even when window.opener is null
+          console.log('[Dropbox Callback] Storing code in sessionStorage for parent');
+          sessionStorage.setItem('dropbox_oauth_code', code);
+          sessionStorage.setItem('dropbox_oauth_timestamp', Date.now().toString());
+          
+          // Try to send message to parent (fallback method)
+          if (window.opener && !window.opener.closed) {
+            console.log('[Dropbox Callback] Sending code via window.opener.postMessage');
+            try {
+              window.opener.postMessage({
+                type: 'dropbox_oauth_callback',
+                code: code
+              }, window.location.origin);
+              console.log('[Dropbox Callback] Message sent successfully');
+            } catch (err) {
+              console.error('[Dropbox Callback] Failed to send message:', err);
+            }
           } else {
-            throw new Error('Parent window not found. Please try again.');
+            console.warn('[Dropbox Callback] window.opener not available, parent must read from sessionStorage');
           }
+          
+          // Close window after a short delay to ensure sessionStorage is written
+          setTimeout(() => {
+            console.log('[Dropbox Callback] Closing window');
+            window.close();
+          }, 1000);
         } else {
           throw new Error('No authorization code received from Dropbox.');
         }
@@ -107,7 +137,7 @@
         errorDiv.style.display = 'block';
 
         // Try to send error to parent
-        if (window.opener) {
+        if (window.opener && !window.opener.closed) {
           window.opener.postMessage({
             type: 'dropbox_oauth_callback',
             error: err.message
