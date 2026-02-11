@@ -1,0 +1,128 @@
+.save-location-modal {
+  min-width: 450px;
+  max-width: 600px;
+  padding: 24px;
+  background-color: var(--modal-bg);
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+  overflow: hidden;
+  border: 1px solid var(--border-color);
+}
+
+.save-location-modal h2 {
+  margin: 0 0 12px 0;
+  text-align: center;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  font-size: 1.25rem;
+}
+
+.save-location-subtitle {
+  text-align: center;
+  color: var(--text-color);
+  opacity: 0.7;
+  margin-bottom: 20px;
+  font-style: italic;
+  font-size: 13px;
+}
+
+.save-location-body {
+  margin-bottom: 24px;
+  display: flex;
+  justify-content: center;
+}
+
+.save-location-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 16px;
+  width: 100%;
+}
+
+.save-location-tile {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 20px 16px;
+  background: var(--input-bg);
+  border: 2px solid var(--border-color);
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  min-height: 120px;
+  text-align: center;
+}
+
+.save-location-tile:hover {
+  border-color: var(--primary-color);
+  background: var(--hover-color);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.save-location-tile:active {
+  transform: translateY(0);
+}
+
+.save-location-tile-icon {
+  font-size: 32px;
+  margin-bottom: 12px;
+  color: var(--primary-color);
+}
+
+/* Provider specific colors */
+.save-location-tile-icon.googledrive {
+  color: #4285F4;
+}
+
+.save-location-tile-icon.dropbox {
+  color: #0061FE;
+}
+
+.save-location-tile-icon.local {
+  color: #FBC02D;
+}
+
+.save-location-tile-title {
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--text-color);
+  margin-bottom: 4px;
+}
+
+.save-location-tile-desc {
+  font-size: 12px;
+  font-weight: 300;
+  color: var(--text-color);
+  opacity: 0.7;
+  font-style: italic;
+}
+
+/* Modal actions - Close button right aligned */
+.save-location-modal .modal-actions {
+  display: flex;
+  justify-content: flex-end;
+  padding-top: 16px;
+  border-top: 1px solid var(--border-color);
+}
+
+.modal-button.cancel-button {
+  background-color: transparent;
+  color: var(--text-color);
+  border: 1px solid var(--border-color);
+  padding: 8px 16px;
+  border-radius: 6px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  transition: all 0.2s ease;
+}
+
+.modal-button.cancel-button:hover {
+  background-color: var(--hover-bg);
+  border-color: var(--text-color);
+}

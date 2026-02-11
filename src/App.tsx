@@ -113,6 +113,8 @@ import ImportMDModal from './components/ImportMDModal';
 import FileBrowserModal from './components/FileBrowserModal';
 import GitCredentialsModal from './components/GitCredentialsModal';
 import MasterPasswordModal from './components/MasterPasswordModal';
+import SaveLocationModal from './components/SaveLocationModal';
+import FileNameModal from './components/FileNameModal';
 import CommitModal from './components/CommitModal';
 import FileModal from './components/FileModal';
 import TaskModal from './components/TaskModal';
@@ -1931,8 +1933,113 @@ const App = () => {
 
 
 
-  // Save to Markdown wrapper
+  // State for Save Location Modal (Cloud vs Local)
+  const [saveLocationModalOpen, setSaveLocationModalOpen] = useState(false);
+  const [saveLocationProviders, setSaveLocationProviders] = useState<{ name: string; displayName: string; icon?: string }[]>([]);
+  const [fileNameModalOpen, setFileNameModalOpen] = useState(false);
+  const [pendingSaveProvider, setPendingSaveProvider] = useState<string | null>(null);
+
+  const handleSaveLocationProviderSelect = (providerName: string) => {
+    setSaveLocationModalOpen(false);
+    setPendingSaveProvider(providerName);
+    setFileNameModalOpen(true);
+  };
+
+  const handleFileNameSubmit = async (fileName: string) => {
+    setFileNameModalOpen(false);
+    const providerName = pendingSaveProvider;
+    if (!providerName) return;
+
+    try {
+      showToast("Creating cloud note...", "info");
+      const { cloudManager } = await import('./cloud/managers/CloudManager');
+
+      if (!cloudManager) {
+        throw new Error("Cloud manager not available");
+      }
+
+      const note = await cloudManager.createNote(providerName, fileName);
+
+      // Update current cloud note state to switch to cloud mode
+      // We need to fetch provider metadata first for consistency
+      const providerMetadata = await cloudManager.getProviderMetadata(providerName);
+
+      setCurrentCloudNote({
+        noteId: note.id,
+        title: note.title,
+        provider: note.provider,
+        providerDisplayName: providerMetadata?.displayName || note.provider,
+        providerIcon: providerMetadata?.icon || '☁️',
+        lastSaved: new Date(note.lastSynced),
+        hasUnsavedChanges: false
+      });
+
+      // Save initial content (which is just title + date from createNote)
+      // Wait, createNote creates file with initial content.
+      // But we have editorContent which might have content.
+      // We should save the current editor content to the new note immediately.
+
+      await cloudManager.saveNote(note.id, editorContent);
+
+      // Clear file path as we are now in cloud mode
+      setCurrentFilePath(null);
+
+      showToast(`Saved to ${providerMetadata?.displayName || providerName} successfully!`, "success");
+
+    } catch (error) {
+      console.error("Failed to create cloud note:", error);
+      showToast(`Failed to save to cloud: ${(error as Error).message}`, "error");
+    } finally {
+      setPendingSaveProvider(null);
+    }
+  };
+
+  // Save to Markdown wrapper - Enhanced with Cloud Save options
   const handleSaveToMarkdown = async () => {
+    // 1. If we are already editing a cloud note, save to it directly
+    if (currentCloudNote) {
+      await handleCloudNoteSave();
+      return;
+    }
+
+    // 2. If we are already editing a Git file or Local file (via path), suggest local save first?
+    // User request: "if select Save As for a new file... provide an option to save file directly into GoogleDrive or Dropbox"
+    // So if it's a new file (no currentFilePath), check cloud.
+    // Or if "Save As" is explicitly clicked, maybe we should ALWAYS offer cloud if available?
+    // "Select SaveAs (Save as Markdown) currently the only option is to save locally... what I want is if select Save As for a new file..."
+
+    // Logic:
+    // If currentFilePath is NULL (new file) OR user explicitly wants "Save As" behavior (which this handler is for),
+    // and cloud features are enabled + connected.
+
+    // Check if cloud features are enabled
+    if (isFeatureEnabled('EASY_NOTES')) {
+      try {
+        const { cloudManager } = await import('./cloud/managers/CloudManager');
+        if (cloudManager) {
+          const providers = await cloudManager.getAvailableProviders();
+          const connected: { name: string; displayName: string; icon?: string }[] = [];
+
+          for (const p of providers) {
+            if (await cloudManager.isProviderConnected(p.name)) {
+              connected.push({ name: p.name, displayName: p.displayName, icon: p.icon });
+            }
+          }
+
+          if (connected.length > 0) {
+            // If we have connected providers, show the modal
+            setSaveLocationProviders(connected);
+            setSaveLocationModalOpen(true);
+            return;
+          }
+        }
+      } catch (e) {
+        console.error('Failed to check cloud providers', e);
+        // Continue to local save on error
+      }
+    }
+
+    // Default: Local save (Save As dialog)
     await saveToFile(editorContent, setCurrentFilePath);
   };
 
@@ -2396,6 +2503,31 @@ const App = () => {
           open={importThemeOpen}
           onClose={() => setImportThemeOpen(false)}
           onImport={handleImportTheme}
+        />
+        <SaveLocationModal
+          open={saveLocationModalOpen}
+          onClose={() => setSaveLocationModalOpen(false)}
+          onSelectLocal={async () => {
+            setSaveLocationModalOpen(false);
+            await saveToFile(editorContent, setCurrentFilePath);
+          }}
+          onSelectProvider={handleSaveLocationProviderSelect}
+          connectedProviders={saveLocationProviders}
+        />
+        <FileNameModal
+          open={fileNameModalOpen}
+          onClose={() => {
+            setFileNameModalOpen(false);
+            setPendingSaveProvider(null);
+          }}
+          onSubmit={handleFileNameSubmit}
+          title={t('modal.enter_note_title') || "Enter note title"}
+          placeholder="My New Note"
+          submitLabel="Create Note"
+        />
+        <ToastContainer
+          toasts={toasts}
+          onRemove={removeToast}
         />
         <PasswordModal
           open={passwordModalConfig.open}

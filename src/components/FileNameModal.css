@@ -1,0 +1,113 @@
+.file-name-modal {
+    min-width: 450px;
+    max-width: 600px;
+    padding: 24px;
+    background-color: var(--modal-bg);
+    border-radius: 12px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+    overflow: hidden;
+    border: 1px solid var(--border-color);
+}
+
+.file-name-modal .modal-header h2 {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    margin: 0 0 20px 0;
+    font-size: 1.25rem;
+    text-align: center;
+}
+
+.file-name-modal .modal-body {
+    padding: 0 0 24px 0;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 100%;
+}
+
+.file-name-modal form {
+    width: 100%;
+    display: flex;
+    justify-content: center;
+}
+
+.input-group {
+    width: 100%;
+    display: flex;
+    justify-content: center;
+}
+
+.file-name-input {
+    width: 100%;
+    min-width: 450px;
+    padding: 12px 16px;
+    border: 1px solid var(--border-color);
+    border-radius: 6px;
+    background-color: var(--input-bg);
+    color: var(--text-color);
+    font-size: 1.1rem;
+    transition: all 0.2s ease;
+    text-align: left;
+}
+
+.file-name-input:focus {
+    outline: none;
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 2px rgba(var(--primary-rgb), 0.2);
+}
+
+/* Modal actions - Buttons right aligned */
+.file-name-modal .modal-footer {
+    display: flex;
+    justify-content: flex-end;
+    gap: 12px;
+    padding-top: 16px;
+    border-top: 1px solid var(--border-color);
+    background-color: transparent;
+    /* Override any inherited bg */
+}
+
+.modal-button {
+    padding: 10px 20px;
+    border-radius: 6px;
+    font-size: 0.95rem;
+    cursor: pointer;
+    border: none;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    transition: all 0.2s ease;
+}
+
+.modal-button.primary {
+    background-color: var(--primary-color);
+    color: white;
+    font-weight: 600;
+}
+
+.modal-button.primary:hover {
+    background-color: var(--primary-hover);
+    transform: translateY(-1px);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+.modal-button.primary:disabled {
+    background-color: var(--disabled-bg);
+    color: var(--disabled-text);
+    cursor: not-allowed;
+    transform: none;
+    box-shadow: none;
+}
+
+.modal-button.secondary {
+    background-color: transparent;
+    color: var(--text-color);
+    border: 1px solid var(--border-color);
+}
+
+.modal-button.secondary:hover {
+    background-color: var(--hover-bg);
+    border-color: var(--text-color);
+}
