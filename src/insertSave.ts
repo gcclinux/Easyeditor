@@ -436,6 +436,27 @@ export const saveAsFile = async (editorContent: string, defaultName: string = "e
 export const saveToFile = async (editorContent: string, setCurrentFilePath?: (path: string) => void): Promise<void> => {
   console.log('saveToFile called with content length:', editorContent.length);
 
+  // Check for Tauri environment
+  const isTauri = typeof window !== 'undefined' &&
+    ((window as any).__TAURI__ || (window as any).__TAURI_INTERNALS__ ||
+      typeof (window as any).__TAURI_INVOKE__ === 'function');
+
+  if (isTauri) {
+    try {
+      // Use Tauri file handler
+      const { handleTauriSaveAs } = await import('./tauriFileHandler');
+      const savedPath = await handleTauriSaveAs(editorContent);
+
+      if (savedPath && setCurrentFilePath) {
+        setCurrentFilePath(savedPath);
+      }
+      return;
+    } catch (error) {
+      console.error('Tauri save failed:', error);
+      // Fall through to existing web fallbacks if Tauri save fails physically
+    }
+  }
+
   // Try File System Access API first (modern browsers)
   if (hasFileSystemAccess()) {
     try {
