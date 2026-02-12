@@ -4,6 +4,9 @@ import { Buffer } from 'buffer';
 import fs from 'fs';
 import path from 'path';
 
+// Read package.json to get version
+const pkg = JSON.parse(fs.readFileSync(path.resolve(__dirname, 'package.json'), 'utf-8'));
+
 const port = process.env.PORT ? parseInt(process.env.PORT) : 3024;
 
 // Check if HTTPS certificates exist
@@ -33,8 +36,8 @@ export default defineConfig({
       configureServer(server) {
         server.middlewares.use((req, res, next) => {
           // Prevent URL rewriting for OAuth callback
-          if (req.url?.includes('dropbox-oauth-callback.html') || 
-              req.url?.includes('google-oauth-callback.html')) {
+          if (req.url?.includes('dropbox-oauth-callback.html') ||
+            req.url?.includes('google-oauth-callback.html')) {
             // Don't let Vite rewrite these URLs
             return next();
           }
@@ -46,6 +49,7 @@ export default defineConfig({
   base: './',
   define: {
     global: 'globalThis',
+    __APP_VERSION__: JSON.stringify(pkg.version),
   },
   resolve: {
     alias: {

@@ -22,7 +22,14 @@ export const compareVersions = (v1: string, v2: string) => {
 };
 
 export const getRunningVersion = async (): Promise<string> => {
-    // Try common sources for app version: injected env, fetch package.json, else unknown
+    // 1. Try build-time injected version (Vite define)
+    try {
+        if (typeof __APP_VERSION__ !== 'undefined') {
+            return __APP_VERSION__;
+        }
+    } catch (e) { /* ignore */ }
+
+    // 2. Try common sources for app version: injected env, fetch package.json, else unknown
     try {
         const envVersion = (window as any)?.process?.env?.npm_package_version;
         if (envVersion) {
