@@ -17,7 +17,7 @@ export class TauriBrowserLauncher {
         }
 
         try {
-            console.log(`[TauriBrowserLauncher] Opening URL: ${url}`);
+            // console.log(`[TauriBrowserLauncher] Opening URL: ${url}`);
             await open(url);
         } catch (error) {
             console.error('[TauriBrowserLauncher] Failed to open URL:', error);

@@ -45,7 +45,7 @@ export class TauriCallbackServer {
                 const url = await invoke('oauth_start_server', { port });
                 this.config.port = port;
                 this.isRunning = true;
-                console.log('[TauriCallbackServer] Server started at:', url);
+                // console.log('[TauriCallbackServer] Server started at:', url);
                 return url as string;
             } catch (error) {
                 console.warn(`[TauriCallbackServer] Failed to start server on port ${port}:`, error);
@@ -94,7 +94,7 @@ export class TauriCallbackServer {
             // Listen for callback event
             listen('oauth-server-callback', (event: any) => {
                 cleanup();
-                console.log('[TauriCallbackServer] Received callback event:', event.payload);
+                // console.log('[TauriCallbackServer] Received callback event:', event.payload);
 
                 const params = event.payload;
                 if (params.code) {

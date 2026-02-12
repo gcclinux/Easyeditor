@@ -23,7 +23,7 @@ export class DropboxOAuthProvider implements OAuthProvider {
   constructor(config?: OAuthProviderConfig | string, clientSecret?: string) {
     // Check if any arguments were provided
     const hasArguments = arguments.length > 0;
-    
+
     // Support both new config object and legacy string clientId
     if (typeof config === 'string') {
       // Legacy constructor for backward compatibility
@@ -78,8 +78,8 @@ export class DropboxOAuthProvider implements OAuthProvider {
    * Requirements: 2.5, 3.1
    */
   buildAuthUrl(redirectUri: string, state: string, codeChallenge: string): string {
-    console.log('[DropboxOAuthProvider] Building auth URL with redirectUri:', redirectUri);
-    
+    // console.log('[DropboxOAuthProvider] Building auth URL with redirectUri:', redirectUri);
+
     const params = {
       client_id: this.clientId,
       redirect_uri: redirectUri,
@@ -91,8 +91,8 @@ export class DropboxOAuthProvider implements OAuthProvider {
     };
 
     const authUrl = `${this.authorizationUrl}?${this.buildQueryParams(params)}`;
-    console.log('[DropboxOAuthProvider] Full auth URL:', authUrl);
-    
+    // console.log('[DropboxOAuthProvider] Full auth URL:', authUrl);
+
     return authUrl;
   }
 

@@ -20,7 +20,7 @@ export enum OAuthOperation {
   TOKEN_EXCHANGE = 'token_exchange',
   AUTHENTICATION_SUCCESS = 'authentication_success',
   AUTHENTICATION_FAILED = 'authentication_failed',
-  
+
   // Token management operations
   TOKEN_STORED = 'token_stored',
   TOKEN_RETRIEVED = 'token_retrieved',
@@ -29,28 +29,28 @@ export enum OAuthOperation {
   TOKEN_VALIDATED = 'token_validated',
   TOKEN_EXPIRED = 'token_expired',
   TOKEN_DELETED = 'token_deleted',
-  
+
   // Server operations
   CALLBACK_SERVER_STARTED = 'callback_server_started',
   CALLBACK_SERVER_STOPPED = 'callback_server_stopped',
   CALLBACK_SERVER_ERROR = 'callback_server_error',
-  
+
   // Security operations
   STATE_GENERATED = 'state_generated',
   STATE_VALIDATED = 'state_validated',
   PKCE_GENERATED = 'pkce_generated',
   CSRF_DETECTED = 'csrf_detected',
   INVALID_CALLBACK = 'invalid_callback',
-  
+
   // Provider operations
   PROVIDER_REGISTERED = 'provider_registered',
   PROVIDER_CONFIG_UPDATED = 'provider_config_updated',
-  
+
   // Error and cleanup operations
   CLEANUP_STARTED = 'cleanup_started',
   CLEANUP_COMPLETED = 'cleanup_completed',
   RESOURCE_LEAK_DETECTED = 'resource_leak_detected',
-  
+
   // Performance operations
   OPERATION_TIMED = 'operation_timed',
   RETRY_ATTEMPTED = 'retry_attempted'
@@ -279,7 +279,7 @@ export class OAuthLogger {
 
     const endTime = Date.now();
     const duration = endTime - activeOp.startTime;
-    
+
     // Remove from active operations
     this.activeOperations.delete(operationId);
 
@@ -419,16 +419,16 @@ export class OAuthLogger {
 
     for (const [key, value] of Object.entries(metadata)) {
       const lowerKey = key.toLowerCase();
-      
+
       // Check if key contains sensitive information
-      const isSensitive = this.config.sensitiveFields.some(field => 
+      const isSensitive = this.config.sensitiveFields.some(field =>
         lowerKey.includes(field.toLowerCase())
       );
 
       if (isSensitive) {
         if (typeof value === 'string') {
           // Show only first and last 4 characters for strings
-          sanitized[key] = value.length > 8 
+          sanitized[key] = value.length > 8
             ? `${value.substring(0, 4)}...${value.substring(value.length - 4)}`
             : '[REDACTED]';
         } else {
@@ -466,7 +466,7 @@ export class OAuthLogger {
 
     // Update operation counts by provider
     if (entry.provider) {
-      this.metrics.operationsByProvider[entry.provider] = 
+      this.metrics.operationsByProvider[entry.provider] =
         (this.metrics.operationsByProvider[entry.provider] || 0) + 1;
     }
 
@@ -478,15 +478,15 @@ export class OAuthLogger {
           this.updateAverageAuthTime(entry.performance.duration);
         }
         break;
-      
+
       case OAuthOperation.AUTHENTICATION_FAILED:
         this.metrics.failedAuthentications++;
         break;
-      
+
       case OAuthOperation.TOKEN_REFRESHED:
         this.metrics.tokenRefreshes++;
         break;
-      
+
       case OAuthOperation.CSRF_DETECTED:
       case OAuthOperation.INVALID_CALLBACK:
         this.metrics.securityEvents++;
@@ -495,7 +495,7 @@ export class OAuthLogger {
 
     // Update error counts
     if (entry.error) {
-      this.metrics.errorsByType[entry.error.type] = 
+      this.metrics.errorsByType[entry.error.type] =
         (this.metrics.errorsByType[entry.error.type] || 0) + 1;
     }
   }
@@ -506,7 +506,7 @@ export class OAuthLogger {
   private updateAverageAuthTime(duration: number): void {
     const currentAvg = this.metrics.averageAuthTime;
     const count = this.metrics.successfulAuthentications;
-    
+
     // Calculate running average
     this.metrics.averageAuthTime = ((currentAvg * (count - 1)) + duration) / count;
   }
@@ -519,7 +519,7 @@ export class OAuthLogger {
     const level = LogLevel[entry.level];
     const provider = entry.provider ? `[${entry.provider}]` : '';
     const flowId = entry.flowId ? `[${entry.flowId}]` : '';
-    
+
     const prefix = `[${timestamp}] [${level}] [OAuth${provider}${flowId}]`;
     const message = `${prefix} ${entry.operation}: ${entry.message}`;
 
@@ -528,7 +528,7 @@ export class OAuthLogger {
         console.debug(message, entry.metadata);
         break;
       case LogLevel.INFO:
-        console.info(message, entry.metadata);
+        // console.info(message, entry.metadata);
         break;
       case LogLevel.WARN:
         console.warn(message, entry.metadata);
@@ -558,7 +558,7 @@ export class OAuthLogger {
         metadata: entry.metadata,
         error: entry.error
       });
-      
+
       // In a real implementation, this would append to the log file
       // fs.appendFileSync(this.config.logFilePath!, logLine + '\n');
     }
@@ -573,14 +573,14 @@ export class OAuthLogger {
       case OAuthOperation.AUTHENTICATION_SUCCESS:
       case OAuthOperation.AUTHENTICATION_FAILED:
         return this.config.performanceThresholds.authFlow;
-      
+
       case OAuthOperation.TOKEN_REFRESHED:
       case OAuthOperation.TOKEN_REFRESH_FAILED:
         return this.config.performanceThresholds.tokenRefresh;
-      
+
       case OAuthOperation.CALLBACK_RECEIVED:
         return this.config.performanceThresholds.callbackResponse;
-      
+
       default:
         return undefined;
     }
