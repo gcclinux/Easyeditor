@@ -6,7 +6,7 @@
 
 export class BrowserLauncher {
   constructor() {
-    console.warn('[BrowserLauncher] Browser stub - OAuth should use Tauri backend');
+    // console.warn('[BrowserLauncher] Browser stub - OAuth should use Tauri backend');
   }
 
   /**

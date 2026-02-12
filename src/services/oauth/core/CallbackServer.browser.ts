@@ -17,8 +17,8 @@ export class CallbackServer {
       maxRetries: 3,
       ...config
     };
-    
-    console.warn('[CallbackServer] Browser stub - OAuth should use Tauri backend');
+
+    // console.warn('[CallbackServer] Browser stub - OAuth should use Tauri backend');
   }
 
   /**

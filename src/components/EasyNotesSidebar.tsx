@@ -519,11 +519,11 @@ const EasyNotesSidebar: React.FC<EasyNotesSidebarProps> = ({
     const updateColumns = () => {
       if (showEasyNotesSidebar) {
         const newColumnCount = calculateColumns(notes.length);
-        console.log('[EasyNotesSidebar] Column calculation:', {
+        /* console.log('[EasyNotesSidebar] Column calculation:', {
           notesCount: notes.length,
           notesPerColumn: getNotesPerColumn(),
           calculatedColumns: newColumnCount
-        });
+        }); */
         setColumnCount(newColumnCount);
       }
     };

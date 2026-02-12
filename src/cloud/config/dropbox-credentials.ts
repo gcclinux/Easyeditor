@@ -12,18 +12,18 @@ function getEnvVar(key: string): string | undefined {
   // In Vite environment (browser) - import.meta.env is available at build time
   if (typeof window !== 'undefined' && typeof import.meta !== 'undefined' && import.meta.env) {
     const value = import.meta.env[key];
-    console.log(`[dropbox-credentials] getEnvVar(${key}) from import.meta.env:`, value ? value.substring(0, 10) + '...' : 'NOT SET');
+    // console.log(`[dropbox-credentials] getEnvVar(${key}) from import.meta.env:`, value ? value.substring(0, 10) + '...' : 'NOT SET');
     return value;
   }
 
   // In Node.js/Jest environment
   if (typeof process !== 'undefined' && process.env) {
     const value = process.env[key];
-    console.log(`[dropbox-credentials] getEnvVar(${key}) from process.env:`, value ? value.substring(0, 10) + '...' : 'NOT SET');
+    // console.log(`[dropbox-credentials] getEnvVar(${key}) from process.env:`, value ? value.substring(0, 10) + '...' : 'NOT SET');
     return value;
   }
 
-  console.log(`[dropbox-credentials] getEnvVar(${key}): NO ENV AVAILABLE`);
+  // console.log(`[dropbox-credentials] getEnvVar(${key}): NO ENV AVAILABLE`);
   return undefined;
 }
 
@@ -64,7 +64,7 @@ export function isTauriEnvironment(): boolean {
  */
 function getDropboxClientId(): string {
   const clientId = getEnvVar('VITE_DROPBOX_CLIENT_ID') || 'your-development-client-id';
-  console.log('[dropbox-credentials] getDropboxClientId:', clientId ? clientId.substring(0, 10) + '...' : 'NOT SET');
+  // console.log('[dropbox-credentials] getDropboxClientId:', clientId ? clientId.substring(0, 10) + '...' : 'NOT SET');
   return clientId;
 }
 
