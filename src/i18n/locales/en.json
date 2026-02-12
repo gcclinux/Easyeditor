@@ -59,7 +59,8 @@
     "settings_app": "Settings & App",
     "community_support": "Community & Support",
     "website": "Website",
-    "website_desc": "Visit easyeditor.co.uk"
+    "website_desc": "Visit easyeditor.co.uk",
+    "climate": "Climate"
   },
   "toolbar": {
     "headers": "Headers",
@@ -204,7 +205,7 @@
     "premium_features_li3": "Dropbox Sync",
     "premium_features_li4": "Premium Support",
     "premium_features_li5": "Custom Features Requests",
-    "premium_features_li6": "Direct Developer Access",
+    "premium_features_li6": "Commitment to Support Climate",
     "license_info": "License Information",
     "license_name": "Name",
     "license_name_placeholder": "Your Name",

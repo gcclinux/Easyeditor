@@ -1,5 +1,5 @@
 import React from 'react';
-import { FaFileImport, FaSave, FaStar, FaGithub, FaHeart, FaPalette, FaGlobe, FaInfoCircle, FaTimes, FaFileAlt } from 'react-icons/fa';
+import { FaFileImport, FaSave, FaStar, FaGithub, FaHeart, FaPalette, FaGlobe, FaInfoCircle, FaTimes, FaFileAlt, FaLeaf } from 'react-icons/fa';
 import { BsFileEarmarkLockFill } from "react-icons/bs";
 import { useLanguage } from '../i18n/LanguageContext';
 import './fileModal.css';
@@ -97,6 +97,24 @@ export default function FileModal({
                         {renderTile(<FaHeart />, 'menu.buy_coffee', 'menu.sponsor', onBuyCoffee)}
                         {renderTile(<FaGlobe />, 'menu.website', 'menu.website_desc', async () => {
                             const url = 'https://easyeditor.co.uk';
+                            const isTauri = typeof window !== 'undefined' &&
+                                ((window as any).__TAURI__ || (window as any).__TAURI_INTERNALS__ ||
+                                    typeof (window as any).__TAURI_INVOKE__ === 'function');
+
+                            if (isTauri) {
+                                try {
+                                    const { open } = await import('@tauri-apps/plugin-shell');
+                                    await open(url);
+                                } catch (e) {
+                                    console.error('Tauri shell open failed:', e);
+                                    window.open(url, '_blank');
+                                }
+                            } else {
+                                window.open(url, '_blank');
+                            }
+                        })}
+                        {renderTile(<FaLeaf />, 'menu.climate', 'about.premium_features_li6', async () => {
+                            const url = 'https://climate.stripe.com/cVP4Y7';
                             const isTauri = typeof window !== 'undefined' &&
                                 ((window as any).__TAURI__ || (window as any).__TAURI_INTERNALS__ ||
                                     typeof (window as any).__TAURI_INVOKE__ === 'function');

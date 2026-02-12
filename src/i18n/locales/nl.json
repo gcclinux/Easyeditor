@@ -59,7 +59,8 @@
     "settings_app": "Instellingen & App",
     "community_support": "Gemeenschap & Ondersteuning",
     "website": "Website",
-    "website_desc": "Bezoek easyeditor.co.uk"
+    "website_desc": "Bezoek easyeditor.co.uk",
+    "climate": "Klimaat"
   },
   "toolbar": {
     "headers": "Koppen",
@@ -204,7 +205,7 @@
     "premium_features_li3": "Dropbox Synchronisatie",
     "premium_features_li4": "Premium Ondersteuning",
     "premium_features_li5": "Aanvragen voor Aangepaste Functies",
-    "premium_features_li6": "Directe Toegang tot Ontwikkelaar",
+    "premium_features_li6": "Commitment to Support Climate",
     "license_info": "Licentie-informatie",
     "license_name": "Naam",
     "license_name_placeholder": "Uw naam",

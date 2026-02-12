@@ -165,7 +165,11 @@ export function AboutModal({ open, onClose }: AboutModalProps) {
                   <li>{t('about.premium_features_li3')}</li>
                   <li>{t('about.premium_features_li4')}</li>
                   <li>{t('about.premium_features_li5')}</li>
-                  <li>{t('about.premium_features_li6')}</li>
+                  <li>
+                    <a href="https://climate.stripe.com/cVP4Y7" target="_blank" rel="noopener noreferrer" style={{ color: 'inherit', textDecoration: 'none' }}>
+                      {t('about.premium_features_li6')} <span style={{ fontSize: '0.8em' }}>↗</span>
+                    </a>
+                  </li>
                 </ul>
                 <a
                   href="https://www.easyeditor.co.uk/#pricing"
