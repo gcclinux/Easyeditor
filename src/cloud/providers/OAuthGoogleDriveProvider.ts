@@ -56,12 +56,12 @@ export class OAuthGoogleDriveProvider implements CloudProvider {
 
     // Get shared OAuth manager (creates it if first provider)
     this.oauthManager = getSharedOAuthManager();
-    
+
     // Create and register Google OAuth provider
     // Pass client secret - Google requires it even for Desktop apps with PKCE (deviation from RFC 7636)
     this.googleProvider = new GoogleOAuthProvider(GOOGLE_DRIVE_CONFIG.CLIENT_ID, GOOGLE_DRIVE_CONFIG.CLIENT_SECRET);
     this.oauthManager.registerProvider(this.googleProvider);
-    
+
     console.log('[OAuthGoogleDriveProvider] Initialized with shared OAuth manager');
   }
 
@@ -208,7 +208,7 @@ export class OAuthGoogleDriveProvider implements CloudProvider {
       const accessToken = await this.getValidAccessToken();
 
       const response: GoogleDriveResponse = await this.makeApiCall(
-        `/drive/v3/files?q=parents in '${folderId}' and mimeType='text/markdown' and trashed=false&fields=files(id,name,modifiedTime,size,mimeType,webContentLink)`,
+        `/drive/v3/files?q=parents in '${folderId}' and (mimeType='text/markdown' or mimeType='application/octet-stream') and trashed=false&fields=files(id,name,modifiedTime,size,mimeType,webContentLink)`,
         {
           headers: {
             'Authorization': `Bearer ${accessToken}`,
@@ -230,7 +230,7 @@ export class OAuthGoogleDriveProvider implements CloudProvider {
     }
   }
 
-  async downloadFile(fileId: string): Promise<string> {
+  async downloadFile(fileId: string): Promise<string | Uint8Array> {
     try {
       const accessToken = await this.getValidAccessToken();
 
@@ -240,8 +240,8 @@ export class OAuthGoogleDriveProvider implements CloudProvider {
         }
       });
 
-      // Response should be text content for markdown files
-      if (typeof response === 'string') {
+      // Response should be text content for markdown files or Uint8Array for binary
+      if (typeof response === 'string' || response instanceof Uint8Array) {
         return response;
       }
 
@@ -252,62 +252,113 @@ export class OAuthGoogleDriveProvider implements CloudProvider {
     }
   }
 
-  async uploadFile(folderId: string, fileName: string, content: string): Promise<CloudFile> {
+  async uploadFile(folderId: string, fileName: string, content: string | Uint8Array): Promise<CloudFile> {
     try {
       const accessToken = await this.getValidAccessToken();
+      const isBinary = content instanceof Uint8Array;
+      const mimeType = isBinary ? 'application/octet-stream' : 'text/markdown';
+      let finalFileName = fileName;
 
-      // Ensure filename has .md extension
-      const finalFileName = fileName.endsWith('.md') ? fileName : `${fileName}.md`;
+      if (!isBinary && !fileName.includes('.')) {
+        finalFileName = `${fileName}.md`;
+      }
 
       const metadata = {
         name: finalFileName,
         parents: [folderId],
-        mimeType: 'text/markdown'
+        mimeType: mimeType
       };
 
-      const form = new FormData();
-      form.append('metadata', new Blob([JSON.stringify(metadata)], { type: 'application/json' }));
-      form.append('file', new Blob([content], { type: 'text/markdown' }));
+      const boundary = '-------314159265358979323846';
+      const delimiter = "\r\n--" + boundary + "\r\n";
+      const close_delim = "\r\n--" + boundary + "--";
 
-      const response = await this.makeApiCall('/upload/drive/v3/files?uploadType=multipart&fields=id,name,modifiedTime,size,mimeType', {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${accessToken}`,
-        },
-        body: form
-      });
+      // Manual multipart construction to ensure order
+      // Part 1: Metadata
+      let body = delimiter +
+        'Content-Type: application/json\r\n\r\n' +
+        JSON.stringify(metadata);
 
-      return {
-        id: response.id,
-        name: response.name,
-        modifiedTime: new Date(response.modifiedTime),
-        size: parseInt(response.size) || content.length,
-        mimeType: response.mimeType
-      };
+      // Part 2: Content
+      body += delimiter +
+        `Content-Type: ${mimeType}\r\n\r\n`;
+
+      if (isBinary) {
+        // For binary content, we need a different approach because we can't just append Uint8Array to string
+        // We'll use Blob to combine parts
+        const headerEncoder = new TextEncoder();
+        const part1 = headerEncoder.encode(body);
+        const part3 = headerEncoder.encode(close_delim);
+
+        const combined = new Uint8Array(part1.length + content.length + part3.length);
+        combined.set(part1);
+        combined.set(content, part1.length);
+        combined.set(part3, part1.length + content.length);
+
+        const response = await this.makeApiCall('/upload/drive/v3/files?uploadType=multipart&fields=id,name,modifiedTime,size,mimeType', {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${accessToken}`,
+            'Content-Type': `multipart/related; boundary=${boundary}`
+          },
+          body: combined
+        });
+
+        return {
+          id: response.id,
+          name: response.name,
+          modifiedTime: new Date(response.modifiedTime),
+          size: parseInt(response.size) || content.byteLength,
+          mimeType: response.mimeType
+        };
+      } else {
+        // string content
+        body += content;
+        body += close_delim;
+
+        const response = await this.makeApiCall('/upload/drive/v3/files?uploadType=multipart&fields=id,name,modifiedTime,size,mimeType', {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${accessToken}`,
+            'Content-Type': `multipart/related; boundary=${boundary}`
+          },
+          body: body
+        });
+
+        return {
+          id: response.id,
+          name: response.name,
+          modifiedTime: new Date(response.modifiedTime),
+          size: parseInt(response.size) || (content as string).length,
+          mimeType: response.mimeType
+        };
+      }
 
     } catch (error) {
       throw new Error(`Failed to upload file: ${(error as Error).message}`);
     }
   }
 
-  async updateFile(fileId: string, content: string): Promise<CloudFile> {
+  async updateFile(fileId: string, content: string | Uint8Array): Promise<CloudFile> {
     try {
       const accessToken = await this.getValidAccessToken();
+      const isBinary = content instanceof Uint8Array;
+      const mimeType = isBinary ? 'application/octet-stream' : 'text/markdown';
 
       const response = await this.makeApiCall(`/upload/drive/v3/files/${fileId}?uploadType=media&fields=id,name,modifiedTime,size,mimeType`, {
         method: 'PATCH',
         headers: {
           'Authorization': `Bearer ${accessToken}`,
-          'Content-Type': 'text/markdown',
+          'Content-Type': mimeType,
         },
-        body: content
+        body: content as BodyInit
       });
 
       return {
         id: response.id,
         name: response.name,
         modifiedTime: new Date(response.modifiedTime),
-        size: parseInt(response.size) || content.length,
+        size: parseInt(response.size) || (typeof content === 'string' ? content.length : content.byteLength),
         mimeType: response.mimeType
       };
 
@@ -375,6 +426,8 @@ export class OAuthGoogleDriveProvider implements CloudProvider {
     const contentType = response.headers.get('content-type');
     if (contentType && contentType.includes('application/json')) {
       return await response.json();
+    } else if (contentType && contentType.includes('application/octet-stream')) {
+      return new Uint8Array(await response.arrayBuffer());
     } else {
       return await response.text();
     }

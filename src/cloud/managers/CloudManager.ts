@@ -326,6 +326,67 @@ export class CloudManager {
   }
 
   /**
+   * Upload a generic file (e.g., encrypted file) to cloud storage
+   */
+  /**
+   * Upload a generic file (e.g., encrypted file) to cloud storage
+   * Returns metadata if available
+   */
+  async uploadFile(providerName: string, fileName: string, content: string | Uint8Array): Promise<NoteMetadata | null> {
+    await this.ensureProvidersReady();
+    const provider = this.providers.get(providerName);
+    if (!provider) throw new Error(`Provider ${providerName} not found`);
+
+    const operationId = `upload_file_${Date.now()}`;
+    cloudToastService.showLoading(operationId, `Uploading "${fileName}"...`, { showProgress: true });
+
+    try {
+      const providerMetadata = await this.metadataManager.getProviderMetadata(providerName);
+      if (!providerMetadata?.connected || !providerMetadata.applicationFolderId) {
+        throw new Error(`Provider ${providerName} is not connected`);
+      }
+
+      cloudToastService.updateProgress(operationId, 30, `Uploading to ${provider.displayName}...`);
+
+      const cloudFile = await this.fileSynchronizer.uploadNote(
+        provider,
+        providerMetadata.applicationFolderId,
+        fileName, // Pass filename directly, extension should be handled by caller for generic files
+        content
+      );
+
+      // Create and save metadata for the uploaded file so it appears in the list immediately
+      // Extract title from filename (remove extension)
+      let title = fileName;
+      const lastDotIndex = fileName.lastIndexOf('.');
+      if (lastDotIndex > 0) {
+        title = fileName.substring(0, lastDotIndex);
+      }
+
+      const noteMetadata: NoteMetadata = {
+        id: this.generateNoteId(),
+        title: title,
+        fileName: cloudFile.name,
+        provider: providerName,
+        cloudFileId: cloudFile.id,
+        lastModified: cloudFile.modifiedTime,
+        lastSynced: new Date(),
+        size: cloudFile.size,
+        checksum: this.calculateChecksum(content)
+      };
+
+      await this.metadataManager.addNote(noteMetadata);
+
+      cloudToastService.completeOperation(operationId, `Uploaded "${fileName}" successfully`, 'success');
+      return noteMetadata;
+    } catch (error) {
+      console.error('Upload failed:', error);
+      cloudToastService.completeOperation(operationId, `Upload failed: ${(error as Error).message}`, 'error');
+      throw error;
+    }
+  }
+
+  /**
    * List all notes, optionally filtered by provider
    * Requirements: 3.1, 3.2, 3.4
    */
@@ -366,7 +427,7 @@ export class CloudManager {
    * Open a note by downloading its content from cloud storage
    * Requirements: 4.1, 4.2, 4.3, 4.5
    */
-  async openNote(noteId: string): Promise<string> {
+  async openNote(noteId: string): Promise<string | Uint8Array> {
     await this.ensureProvidersReady();
 
     const operationId = `open_note_${noteId}_${Date.now()}`;
@@ -638,8 +699,8 @@ export class CloudManager {
                 // Add new files to local metadata
                 for (const cloudFile of newFiles) {
                   try {
-                    // Extract title from filename (remove .md extension)
-                    const title = cloudFile.name.replace(/\.md$/, '');
+                    // Extract title from filename (remove .md or .sstp extension)
+                    const title = cloudFile.name.replace(/\.(md|sstp)$/, '');
 
                     const noteMetadata: NoteMetadata = {
                       id: this.generateNoteId(),
@@ -817,12 +878,20 @@ export class CloudManager {
   /**
    * Calculate SHA-256 checksum of content
    */
-  private calculateChecksum(content: string): string {
-    if (!content || typeof content !== 'string') {
+  private calculateChecksum(content: string | Uint8Array): string {
+    if (!content) {
       return 'sha256:empty';
     }
 
-    const hash = CryptoJS.SHA256(content);
+    let input: any = content;
+    if (content instanceof Uint8Array) {
+      // Convert Uint8Array to WordArray for CryptoJS
+      input = CryptoJS.lib.WordArray.create(content);
+    } else if (typeof content !== 'string') {
+      return 'sha256:empty';
+    }
+
+    const hash = CryptoJS.SHA256(input);
     return `sha256:${hash.toString(CryptoJS.enc.Hex)}`;
   }
 }

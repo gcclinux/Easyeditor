@@ -93,27 +93,27 @@ export class DropboxProvider implements CloudProvider {
     try {
       // Generate PKCE challenge
       const pkce = await this.generatePKCEChallenge();
-      
+
       // Store verifier in sessionStorage for later use
       sessionStorage.setItem('dropbox_pkce_verifier', pkce.verifier);
       sessionStorage.setItem('dropbox_auth_state', this.generateRandomState());
 
       // Build authorization URL
       const authUrl = this.buildAuthorizationUrl(pkce.challenge);
-      
+
       console.log('[DropboxProvider] Opening authorization URL');
-      
+
       // Open authorization URL in new window
       // Note: Don't use 'noopener' to preserve window.opener relationship
       const authWindow = window.open(authUrl, 'dropbox_auth', 'width=600,height=700,noopener=no');
-      
+
       if (!authWindow) {
         throw new Error('Failed to open authorization window. Please allow popups for this site.');
       }
 
       // Wait for OAuth callback
       const result = await this.waitForOAuthCallback(authWindow);
-      
+
       return result;
     } catch (error) {
       console.error('[DropboxProvider] Authentication error:', error);
@@ -130,7 +130,7 @@ export class DropboxProvider implements CloudProvider {
   async isAuthenticated(): Promise<boolean> {
     try {
       const credentials = await cloudCredentialManager.getCredentials(this.name);
-      
+
       if (!credentials || !credentials.accessToken) {
         console.log('[DropboxProvider] No credentials found');
         return false;
@@ -139,7 +139,7 @@ export class DropboxProvider implements CloudProvider {
       // Check if token is expired
       if (credentials.expiresAt && credentials.expiresAt <= new Date()) {
         console.log('[DropboxProvider] Token expired, attempting refresh');
-        
+
         // Try to refresh token
         if (credentials.refreshToken) {
           try {
@@ -150,7 +150,7 @@ export class DropboxProvider implements CloudProvider {
             return false;
           }
         }
-        
+
         return false;
       }
 
@@ -170,7 +170,7 @@ export class DropboxProvider implements CloudProvider {
 
     try {
       const credentials = await cloudCredentialManager.getCredentials(this.name);
-      
+
       if (credentials?.accessToken) {
         // Revoke the access token
         try {
@@ -184,7 +184,7 @@ export class DropboxProvider implements CloudProvider {
 
       // Remove stored credentials
       await cloudCredentialManager.removeCredentials(this.name);
-      
+
       console.log('[DropboxProvider] Disconnected successfully');
     } catch (error) {
       console.error('[DropboxProvider] Error during disconnect:', error);
@@ -201,7 +201,7 @@ export class DropboxProvider implements CloudProvider {
     try {
       // First, try to find existing folder
       const existingFolderId = await this.findApplicationFolder();
-      
+
       if (existingFolderId) {
         console.log('[DropboxProvider] Found existing application folder:', existingFolderId);
         return existingFolderId;
@@ -218,7 +218,7 @@ export class DropboxProvider implements CloudProvider {
 
       const folderId = response.metadata.path_display;
       console.log('[DropboxProvider] Created application folder:', folderId);
-      
+
       return folderId;
     } catch (error: any) {
       // If folder already exists (409 conflict), that's okay
@@ -226,7 +226,7 @@ export class DropboxProvider implements CloudProvider {
         console.log('[DropboxProvider] Folder already exists, using existing folder');
         return `/${APPLICATION_FOLDER_NAME}`;
       }
-      
+
       console.error('[DropboxProvider] Error creating application folder:', error);
       throw error;
     }
@@ -251,9 +251,9 @@ export class DropboxProvider implements CloudProvider {
         }
       );
 
-      // Filter for markdown files only
+      // Filter for markdown and encrypted files
       const files = response.entries
-        .filter(entry => entry['.tag'] === 'file' && entry.name.endsWith('.md'))
+        .filter(entry => entry['.tag'] === 'file' && (entry.name.endsWith('.md') || entry.name.endsWith('.sstp')))
         .map(entry => this.mapDropboxFileToCloudFile(entry));
 
       console.log('[DropboxProvider] Found', files.length, 'markdown files');
@@ -267,12 +267,12 @@ export class DropboxProvider implements CloudProvider {
   /**
    * Download file content from Dropbox
    */
-  async downloadFile(fileId: string): Promise<string> {
+  async downloadFile(fileId: string): Promise<string | Uint8Array> {
     console.log('[DropboxProvider] Downloading file:', fileId);
 
     try {
       const accessToken = await this.getValidAccessToken();
-      
+
       const response = await fetch(`${DROPBOX_CONTENT_API_BASE}/files/download`, {
         method: 'POST',
         headers: {
@@ -285,10 +285,30 @@ export class DropboxProvider implements CloudProvider {
         throw new Error(`Download failed: ${response.status} ${response.statusText}`);
       }
 
-      const content = await response.text();
-      console.log('[DropboxProvider] Downloaded file successfully, size:', content.length);
-      
-      return content;
+      // Check for encrypted file based on Dropbox-API-Result header
+      const resultHeader = response.headers.get('Dropbox-API-Result');
+      let isBinary = false;
+      if (resultHeader) {
+        try {
+          const metadata = JSON.parse(resultHeader);
+          if (metadata.name && metadata.name.endsWith('.sstp')) {
+            isBinary = true;
+          }
+        } catch (e) {
+          console.warn('[DropboxProvider] Failed to parse Dropbox-API-Result header', e);
+        }
+      }
+
+      if (isBinary) {
+        const buffer = await response.arrayBuffer();
+        const content = new Uint8Array(buffer);
+        console.log('[DropboxProvider] Downloaded binary file successfully, size:', content.length);
+        return content;
+      } else {
+        const content = await response.text();
+        console.log('[DropboxProvider] Downloaded file successfully, size:', content.length);
+        return content;
+      }
     } catch (error) {
       console.error('[DropboxProvider] Error downloading file:', error);
       throw error;
@@ -298,13 +318,13 @@ export class DropboxProvider implements CloudProvider {
   /**
    * Upload a new file to Dropbox
    */
-  async uploadFile(folderId: string, fileName: string, content: string): Promise<CloudFile> {
+  async uploadFile(folderId: string, fileName: string, content: string | Uint8Array): Promise<CloudFile> {
     console.log('[DropboxProvider] Uploading file:', fileName, 'to folder:', folderId);
 
     try {
       const accessToken = await this.getValidAccessToken();
       const filePath = `${folderId}/${fileName}`;
-      
+
       const response = await fetch(`${DROPBOX_CONTENT_API_BASE}/files/upload`, {
         method: 'POST',
         headers: {
@@ -317,7 +337,7 @@ export class DropboxProvider implements CloudProvider {
             mute: false
           })
         },
-        body: content
+        body: content as BodyInit
       });
 
       if (!response.ok) {
@@ -327,7 +347,7 @@ export class DropboxProvider implements CloudProvider {
 
       const metadata: DropboxFileMetadata = await response.json();
       const cloudFile = this.mapDropboxFileToCloudFile(metadata);
-      
+
       console.log('[DropboxProvider] Uploaded file successfully:', cloudFile.id);
       return cloudFile;
     } catch (error) {
@@ -339,12 +359,12 @@ export class DropboxProvider implements CloudProvider {
   /**
    * Update an existing file in Dropbox
    */
-  async updateFile(fileId: string, content: string): Promise<CloudFile> {
+  async updateFile(fileId: string, content: string | Uint8Array): Promise<CloudFile> {
     console.log('[DropboxProvider] Updating file:', fileId);
 
     try {
       const accessToken = await this.getValidAccessToken();
-      
+
       const response = await fetch(`${DROPBOX_CONTENT_API_BASE}/files/upload`, {
         method: 'POST',
         headers: {
@@ -357,7 +377,7 @@ export class DropboxProvider implements CloudProvider {
             mute: false
           })
         },
-        body: content
+        body: content as BodyInit
       });
 
       if (!response.ok) {
@@ -367,7 +387,7 @@ export class DropboxProvider implements CloudProvider {
 
       const metadata: DropboxFileMetadata = await response.json();
       const cloudFile = this.mapDropboxFileToCloudFile(metadata);
-      
+
       console.log('[DropboxProvider] Updated file successfully');
       return cloudFile;
     } catch (error) {
@@ -407,19 +427,19 @@ export class DropboxProvider implements CloudProvider {
   private async generatePKCEChallenge(): Promise<PKCEChallenge> {
     // Generate random verifier (43-128 characters)
     const verifier = this.generateRandomString(128);
-    
+
     // Create SHA-256 hash of verifier
     const encoder = new TextEncoder();
     const data = encoder.encode(verifier);
     const hashBuffer = await crypto.subtle.digest('SHA-256', data);
-    
+
     // Convert to base64url
     const hashArray = Array.from(new Uint8Array(hashBuffer));
     const hashBase64 = btoa(String.fromCharCode(...hashArray))
       .replace(/\+/g, '-')
       .replace(/\//g, '_')
       .replace(/=/g, '');
-    
+
     return {
       verifier,
       challenge: hashBase64
@@ -433,7 +453,7 @@ export class DropboxProvider implements CloudProvider {
     const charset = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-._~';
     const randomValues = new Uint8Array(length);
     crypto.getRandomValues(randomValues);
-    
+
     return Array.from(randomValues)
       .map(value => charset[value % charset.length])
       .join('');
@@ -469,20 +489,20 @@ export class DropboxProvider implements CloudProvider {
   private async waitForOAuthCallback(authWindow: Window): Promise<AuthResult> {
     return new Promise((resolve) => {
       let messageReceived = false;
-      
+
       // Listen for OAuth callback message
       const messageHandler = async (event: MessageEvent) => {
-        console.log('[DropboxProvider] Received message:', { 
-          origin: event.origin, 
+        console.log('[DropboxProvider] Received message:', {
+          origin: event.origin,
           type: event.data?.type,
-          hasCode: !!event.data?.code 
+          hasCode: !!event.data?.code
         });
-        
+
         // Verify origin for security (check if it's from our authorized domains)
-        const isAuthorizedOrigin = DROPBOX_CONFIG.AUTHORIZED_DOMAINS.some(domain => 
+        const isAuthorizedOrigin = DROPBOX_CONFIG.AUTHORIZED_DOMAINS.some(domain =>
           event.origin === domain || event.origin.startsWith(domain)
         );
-        
+
         if (!isAuthorizedOrigin) {
           console.warn('[DropboxProvider] Received message from unauthorized origin:', event.origin);
           console.warn('[DropboxProvider] Authorized domains:', DROPBOX_CONFIG.AUTHORIZED_DOMAINS);
@@ -494,9 +514,9 @@ export class DropboxProvider implements CloudProvider {
           messageReceived = true;
           window.removeEventListener('message', messageHandler);
           clearInterval(pollInterval);
-          
+
           const { code, error } = event.data;
-          
+
           if (error) {
             resolve({
               success: false,
@@ -508,7 +528,7 @@ export class DropboxProvider implements CloudProvider {
           if (code) {
             // Exchange code for token
             const verifier = sessionStorage.getItem('dropbox_pkce_verifier');
-            
+
             if (!verifier) {
               resolve({
                 success: false,
@@ -519,11 +539,11 @@ export class DropboxProvider implements CloudProvider {
 
             try {
               const result = await this.exchangeCodeForToken(code, verifier);
-              
+
               // Clean up session storage
               sessionStorage.removeItem('dropbox_pkce_verifier');
               sessionStorage.removeItem('dropbox_auth_state');
-              
+
               resolve(result);
             } catch (error) {
               resolve({
@@ -544,32 +564,32 @@ export class DropboxProvider implements CloudProvider {
           windowExists: !!authWindow,
           windowClosed: authWindow?.closed
         });
-        
+
         // Check sessionStorage for code (works even when window.opener is null)
         const storedCode = sessionStorage.getItem('dropbox_oauth_code');
         const storedTimestamp = sessionStorage.getItem('dropbox_oauth_timestamp');
-        
+
         if (storedCode && storedTimestamp) {
           // Check if this is a recent code (within last 60 seconds)
           const timestamp = parseInt(storedTimestamp, 10);
           const age = Date.now() - timestamp;
-          
+
           if (age < 60000) { // 60 seconds
             console.log('[DropboxProvider] Found OAuth code in sessionStorage');
             clearInterval(pollInterval);
             window.removeEventListener('message', messageHandler);
-            
+
             if (authWindow && !authWindow.closed) {
               authWindow.close();
             }
-            
+
             // Clean up sessionStorage
             sessionStorage.removeItem('dropbox_oauth_code');
             sessionStorage.removeItem('dropbox_oauth_timestamp');
-            
+
             // Exchange code for token
             const verifier = sessionStorage.getItem('dropbox_pkce_verifier');
-            
+
             if (!verifier) {
               resolve({
                 success: false,
@@ -582,7 +602,7 @@ export class DropboxProvider implements CloudProvider {
               // Clean up session storage
               sessionStorage.removeItem('dropbox_pkce_verifier');
               sessionStorage.removeItem('dropbox_auth_state');
-              
+
               resolve(result);
             }).catch(error => {
               resolve({
@@ -593,19 +613,19 @@ export class DropboxProvider implements CloudProvider {
             return;
           }
         }
-        
+
         if (!authWindow || authWindow.closed) {
           console.log('[DropboxProvider] Popup window was closed');
           clearInterval(pollInterval);
           window.removeEventListener('message', messageHandler);
-          
+
           // Check one more time for stored code before giving up
           const finalCode = sessionStorage.getItem('dropbox_oauth_code');
           if (finalCode && !messageReceived) {
             console.log('[DropboxProvider] Found code in sessionStorage after window closed');
             sessionStorage.removeItem('dropbox_oauth_code');
             sessionStorage.removeItem('dropbox_oauth_timestamp');
-            
+
             const verifier = sessionStorage.getItem('dropbox_pkce_verifier');
             if (verifier) {
               this.exchangeCodeForToken(finalCode, verifier).then(result => {
@@ -621,7 +641,7 @@ export class DropboxProvider implements CloudProvider {
               return;
             }
           }
-          
+
           if (!messageReceived) {
             resolve({
               success: false,
@@ -636,7 +656,7 @@ export class DropboxProvider implements CloudProvider {
           // This will throw an error if it's on a different origin (Dropbox)
           // But will work when it redirects back to our callback URL
           const popupUrl = authWindow.location.href;
-          
+
           console.log('[DropboxProvider] Successfully read popup URL:', popupUrl);
           console.log('[DropboxProvider] Popup location details:', {
             href: authWindow.location.href,
@@ -644,19 +664,19 @@ export class DropboxProvider implements CloudProvider {
             pathname: authWindow.location.pathname,
             search: authWindow.location.search
           });
-          
+
           if (popupUrl.includes('/dropbox-oauth-callback.html')) {
             console.log('[DropboxProvider] Detected callback URL in popup');
-            
+
             // Parse the URL to get the code
             const url = new URL(popupUrl);
             const code = url.searchParams.get('code');
             const error = url.searchParams.get('error');
-            
+
             clearInterval(pollInterval);
             window.removeEventListener('message', messageHandler);
             authWindow.close();
-            
+
             if (error) {
               resolve({
                 success: false,
@@ -664,12 +684,12 @@ export class DropboxProvider implements CloudProvider {
               });
               return;
             }
-            
+
             if (code) {
               console.log('[DropboxProvider] Extracted code from URL, exchanging for token');
               // Exchange code for token
               const verifier = sessionStorage.getItem('dropbox_pkce_verifier');
-              
+
               if (!verifier) {
                 resolve({
                   success: false,
@@ -682,7 +702,7 @@ export class DropboxProvider implements CloudProvider {
                 // Clean up session storage
                 sessionStorage.removeItem('dropbox_pkce_verifier');
                 sessionStorage.removeItem('dropbox_auth_state');
-                
+
                 resolve(result);
               }).catch(error => {
                 resolve({
@@ -707,11 +727,11 @@ export class DropboxProvider implements CloudProvider {
         console.log('[DropboxProvider] OAuth timeout reached');
         clearInterval(pollInterval);
         window.removeEventListener('message', messageHandler);
-        
+
         if (!messageReceived && authWindow && !authWindow.closed) {
           authWindow.close();
         }
-        
+
         resolve({
           success: false,
           error: 'Authentication timeout'
@@ -750,7 +770,7 @@ export class DropboxProvider implements CloudProvider {
       }
 
       const data = await response.json();
-      
+
       // Calculate expiry time
       const expiresAt = new Date(Date.now() + (data.expires_in * 1000));
 
@@ -783,7 +803,7 @@ export class DropboxProvider implements CloudProvider {
    */
   private async getValidAccessToken(): Promise<string> {
     const credentials = await cloudCredentialManager.getCredentials(this.name);
-    
+
     if (!credentials || !credentials.accessToken) {
       throw new Error('Not authenticated with Dropbox');
     }
@@ -792,7 +812,7 @@ export class DropboxProvider implements CloudProvider {
     const expiryBuffer = 5 * 60 * 1000; // 5 minutes
     if (credentials.expiresAt && credentials.expiresAt.getTime() - Date.now() < expiryBuffer) {
       console.log('[DropboxProvider] Token expired or expiring soon, refreshing');
-      
+
       if (!credentials.refreshToken) {
         throw new Error('No refresh token available');
       }
@@ -832,7 +852,7 @@ export class DropboxProvider implements CloudProvider {
       }
 
       const data = await response.json();
-      
+
       // Calculate expiry time
       const expiresAt = new Date(Date.now() + (data.expires_in * 1000));
 
@@ -907,7 +927,7 @@ export class DropboxProvider implements CloudProvider {
    */
   private async makeApiCall(url: string, options: RequestInit): Promise<any> {
     const accessToken = await this.getValidAccessToken();
-    
+
     const headers = {
       'Authorization': `Bearer ${accessToken}`,
       'Content-Type': 'application/json',
@@ -925,7 +945,7 @@ export class DropboxProvider implements CloudProvider {
       error.status = response.status;
       error.statusCode = response.status;
       error.response = errorText;
-      
+
       // Log detailed error information for debugging
       console.error('[DropboxProvider] API error:', {
         url,
@@ -934,7 +954,7 @@ export class DropboxProvider implements CloudProvider {
         errorText,
         operation: options.method || 'GET'
       });
-      
+
       throw error;
     }
 
@@ -956,13 +976,13 @@ export class DropboxProvider implements CloudProvider {
     switch (statusCode) {
       case 401:
         return 'Your Dropbox session has expired. Please reconnect.';
-      
+
       case 403:
         return 'EasyEditor doesn\'t have permission to access Dropbox. Please reconnect and grant permissions.';
-      
+
       case 404:
         return 'The requested file or folder was not found in Dropbox.';
-      
+
       case 409:
         // Dropbox uses 409 for various conflicts
         if (dropboxError?.error_summary?.includes('not_found')) {
@@ -972,19 +992,19 @@ export class DropboxProvider implements CloudProvider {
           return 'A file with this name already exists in Dropbox.';
         }
         return 'A conflict occurred with Dropbox. Please try again.';
-      
+
       case 413:
         return 'File is too large for Dropbox. Please reduce the file size.';
-      
+
       case 429:
         return 'Dropbox rate limit reached. Please try again in a few minutes.';
-      
+
       case 500:
       case 502:
       case 503:
       case 504:
         return 'Dropbox is experiencing issues. Please try again later.';
-      
+
       default:
         if (statusCode >= 500) {
           return 'Dropbox server error. Please try again later.';

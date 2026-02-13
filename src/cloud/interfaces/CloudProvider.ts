@@ -24,16 +24,16 @@ export interface CloudProvider {
   readonly name: string;
   readonly displayName: string;
   readonly icon: string;
-  
+
   authenticate(): Promise<AuthResult>;
   isAuthenticated(): Promise<boolean>;
   disconnect(): Promise<void>;
-  
+
   createApplicationFolder(): Promise<string>;
   listFiles(folderId: string): Promise<CloudFile[]>;
-  downloadFile(fileId: string): Promise<string>;
-  uploadFile(folderId: string, fileName: string, content: string): Promise<CloudFile>;
-  updateFile(fileId: string, content: string): Promise<CloudFile>;
+  downloadFile(fileId: string): Promise<string | Uint8Array>;
+  uploadFile(folderId: string, fileName: string, content: string | Uint8Array): Promise<CloudFile>;
+  updateFile(fileId: string, content: string | Uint8Array): Promise<CloudFile>;
   deleteFile(fileId: string): Promise<void>;
 }
 

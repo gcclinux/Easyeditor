@@ -6,11 +6,11 @@
 
 import type { CloudProvider, CloudFile, AuthResult } from '../interfaces';
 import { cloudCredentialManager } from '../managers/CloudCredentialManager';
-import { 
-  GOOGLE_DRIVE_CONFIG, 
-  isGoogleDriveConfigured, 
+import {
+  GOOGLE_DRIVE_CONFIG,
+  isGoogleDriveConfigured,
   getConfigurationErrorMessage,
-  validateConfiguration 
+  validateConfiguration
 } from '../config/google-credentials';
 import { validateGoogleDriveConfiguration } from '../config/config-validator';
 import { ErrorHandler } from '../utils/ErrorHandler';
@@ -36,22 +36,22 @@ export class GISGoogleDriveProvider implements CloudProvider {
   readonly name = 'googledrive';
   readonly displayName = 'Google Drive';
   readonly icon = '🗂️';
-  
+
   private clientId: string;
   private scope: string = 'https://www.googleapis.com/auth/drive.file';
   private tokenClient: any = null;
   private isGISLoaded: boolean = false;
-  
+
   constructor(clientId?: string, _apiKey?: string) {
     this.clientId = clientId || GOOGLE_DRIVE_CONFIG.CLIENT_ID;
     this.scope = GOOGLE_DRIVE_CONFIG.SCOPES.join(' ');
-    
+
     // Validate configuration on initialization
     validateConfiguration();
-    
+
     if (!isGoogleDriveConfigured()) {
       console.warn('Google Drive integration not configured. Users will see a helpful error message.');
-      
+
       if (import.meta.env.MODE === 'development') {
         const validation = validateGoogleDriveConfiguration(true);
         console.warn('Configuration validation:', validation);
@@ -85,7 +85,7 @@ export class GISGoogleDriveProvider implements CloudProvider {
 
       script.onload = () => {
         console.log('[GISGoogleDriveProvider] Google Identity Services loaded');
-        
+
         // Wait a bit for the library to initialize
         const checkReady = () => {
           if (window.google?.accounts?.oauth2) {
@@ -135,7 +135,7 @@ export class GISGoogleDriveProvider implements CloudProvider {
   async authenticate(): Promise<AuthResult> {
     try {
       console.log('[GISGoogleDriveProvider] Starting authentication...');
-      
+
       // Validate configuration before attempting authentication
       const validation = validateGoogleDriveConfiguration();
       if (!validation.isValid) {
@@ -152,17 +152,17 @@ export class GISGoogleDriveProvider implements CloudProvider {
 
       return await ErrorHandler.withRetry(async () => {
         await this.initializeTokenClient();
-        
+
         return new Promise<AuthResult>((resolve) => {
           console.log('[GISGoogleDriveProvider] Starting OAuth flow...');
-          
+
           // Set up the callback for this authentication attempt
           this.tokenClient.callback = async (response: any) => {
             console.log('[GISGoogleDriveProvider] OAuth response received:', response);
-            
+
             if (response.error) {
               console.error('[GISGoogleDriveProvider] OAuth error:', response.error);
-              
+
               let errorMessage = 'Authentication failed';
               if (response.error === 'popup_blocked_by_browser') {
                 errorMessage = 'Sign-in popup was blocked by your browser. Please enable popups for this site and try again.';
@@ -171,7 +171,7 @@ export class GISGoogleDriveProvider implements CloudProvider {
               } else if (response.error === 'access_denied') {
                 errorMessage = 'Access was denied. Please try again and grant the necessary permissions.';
               }
-              
+
               resolve({
                 success: false,
                 error: errorMessage
@@ -235,32 +235,32 @@ export class GISGoogleDriveProvider implements CloudProvider {
           this.tokenClient.requestAccessToken({ prompt: 'consent' });
         });
       },
-      { operation: 'authenticate', provider: this.name },
-      { maxRetries: 1 }
+        { operation: 'authenticate', provider: this.name },
+        { maxRetries: 1 }
       );
-      
+
     } catch (error) {
       console.error('[GISGoogleDriveProvider] Authentication failed:', error);
       const cloudError = ErrorHandler.enhanceError(error, {
         operation: 'authenticate',
         provider: this.name
       });
-      
+
       return {
         success: false,
         error: ErrorHandler.getUserFriendlyMessage(cloudError)
       };
     }
   }
-  
+
   async isAuthenticated(): Promise<boolean> {
     try {
       console.log('[GISGoogleDriveProvider] Checking authentication status...');
-      
+
       // Check if we have valid stored credentials
       const credentials = await cloudCredentialManager.getCredentials(this.name);
       console.log('[GISGoogleDriveProvider] Credentials found:', !!credentials);
-      
+
       if (!credentials) {
         console.log('[GISGoogleDriveProvider] No credentials found');
         return false;
@@ -273,23 +273,23 @@ export class GISGoogleDriveProvider implements CloudProvider {
       }
 
       console.log('[GISGoogleDriveProvider] Credentials valid, checking expiry...');
-      
+
       // For now, just check if we have a valid access token and it's not expired
       // The API test was causing issues, so we'll trust the stored credentials
       if (credentials.accessToken && credentials.accessToken.length > 0) {
         console.log('[GISGoogleDriveProvider] Valid access token found, considering authenticated');
         return true;
       }
-      
+
       console.log('[GISGoogleDriveProvider] No valid access token found');
       return false;
-      
+
     } catch (error) {
       console.error('Error checking authentication status:', error);
       return false;
     }
   }
-  
+
   async disconnect(): Promise<void> {
     try {
       // Revoke the token if we have one
@@ -308,23 +308,23 @@ export class GISGoogleDriveProvider implements CloudProvider {
           // Continue with cleanup even if revocation fails
         }
       }
-      
+
       // Remove stored credentials
       await cloudCredentialManager.removeCredentials(this.name);
-      
+
     } catch (error) {
       console.error('Error during disconnect:', error);
       // Still remove credentials even if other operations fail
       await cloudCredentialManager.removeCredentials(this.name);
     }
   }
-  
+
   async createApplicationFolder(): Promise<string> {
     try {
       console.log('[GISGoogleDriveProvider] Creating application folder...');
       const accessToken = await this.getValidAccessToken();
       console.log('[GISGoogleDriveProvider] Got access token, checking for existing folder...');
-      
+
       // Check if EasyEditor folder already exists
       const existingFolder = await this.findApplicationFolder();
       if (existingFolder) {
@@ -333,7 +333,7 @@ export class GISGoogleDriveProvider implements CloudProvider {
       }
 
       console.log('[GISGoogleDriveProvider] No existing folder found, creating new one...');
-      
+
       // Create new Easyeditor folder
       const response = await this.makeApiCall('/drive/v3/files', {
         method: 'POST',
@@ -356,19 +356,19 @@ export class GISGoogleDriveProvider implements CloudProvider {
 
       console.log('[GISGoogleDriveProvider] Successfully created folder with ID:', response.id);
       return response.id;
-      
+
     } catch (error) {
       console.error('[GISGoogleDriveProvider] Error creating application folder:', error);
       throw new Error(`Failed to create application folder: ${(error as Error).message}`);
     }
   }
-  
+
   async listFiles(folderId: string): Promise<CloudFile[]> {
     try {
       const accessToken = await this.getValidAccessToken();
-      
+
       const response: GoogleDriveResponse = await this.makeApiCall(
-        `/drive/v3/files?q=parents in '${folderId}' and mimeType='text/markdown' and trashed=false&fields=files(id,name,modifiedTime,size,mimeType,webContentLink)`,
+        `/drive/v3/files?q=parents in '${folderId}' and (mimeType='text/markdown' or mimeType='application/octet-stream') and trashed=false&fields=files(id,name,modifiedTime,size,mimeType,webContentLink)`,
         {
           headers: {
             'Authorization': `Bearer ${accessToken}`,
@@ -384,81 +384,133 @@ export class GISGoogleDriveProvider implements CloudProvider {
         mimeType: file.mimeType,
         downloadUrl: file.webContentLink
       }));
-      
+
     } catch (error) {
       throw new Error(`Failed to list files: ${(error as Error).message}`);
     }
   }
-  
-  async downloadFile(fileId: string): Promise<string> {
+
+  async downloadFile(fileId: string): Promise<string | Uint8Array> {
     try {
       const accessToken = await this.getValidAccessToken();
-      
+
       const response = await this.makeApiCall(`/drive/v3/files/${fileId}?alt=media`, {
         headers: {
           'Authorization': `Bearer ${accessToken}`,
         }
       });
 
-      if (typeof response === 'string') {
+      // Response should be text content for markdown files or Uint8Array for binary
+      if (typeof response === 'string' || response instanceof Uint8Array) {
         return response;
       }
-      
+
       throw new Error('Invalid file content received');
-      
+
     } catch (error) {
       throw new Error(`Failed to download file: ${(error as Error).message}`);
     }
   }
-  
-  async uploadFile(folderId: string, fileName: string, content: string): Promise<CloudFile> {
+
+  async uploadFile(folderId: string, fileName: string, content: string | Uint8Array): Promise<CloudFile> {
     try {
       const accessToken = await this.getValidAccessToken();
-      
-      const finalFileName = fileName.endsWith('.md') ? fileName : `${fileName}.md`;
-      
+      const isBinary = content instanceof Uint8Array;
+      const mimeType = isBinary ? 'application/octet-stream' : 'text/markdown';
+      let finalFileName = fileName;
+
+      if (!isBinary && !fileName.includes('.')) {
+        finalFileName = `${fileName}.md`;
+      }
+
       const metadata = {
         name: finalFileName,
         parents: [folderId],
-        mimeType: 'text/markdown'
+        mimeType: mimeType
       };
 
-      const form = new FormData();
-      form.append('metadata', new Blob([JSON.stringify(metadata)], { type: 'application/json' }));
-      form.append('file', new Blob([content], { type: 'text/markdown' }));
+      const boundary = '-------314159265358979323846';
+      const delimiter = "\r\n--" + boundary + "\r\n";
+      const close_delim = "\r\n--" + boundary + "--";
 
-      const response = await this.makeApiCall('/upload/drive/v3/files?uploadType=multipart&fields=id,name,modifiedTime,size,mimeType', {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${accessToken}`,
-        },
-        body: form
-      });
+      // Manual multipart construction to ensure order
+      // Part 1: Metadata
+      let body = delimiter +
+        'Content-Type: application/json\r\n\r\n' +
+        JSON.stringify(metadata);
 
-      return {
-        id: response.id,
-        name: response.name,
-        modifiedTime: new Date(response.modifiedTime),
-        size: parseInt(response.size) || content.length,
-        mimeType: response.mimeType
-      };
-      
+      // Part 2: Content
+      body += delimiter +
+        `Content-Type: ${mimeType}\r\n\r\n`;
+
+      if (isBinary) {
+        const headerEncoder = new TextEncoder();
+        const part1 = headerEncoder.encode(body);
+        const part3 = headerEncoder.encode(close_delim);
+
+        const combined = new Uint8Array(part1.length + content.length + part3.length);
+        combined.set(part1);
+        combined.set(content, part1.length);
+        combined.set(part3, part1.length + content.length);
+
+        const response = await this.makeApiCall('/upload/drive/v3/files?uploadType=multipart&fields=id,name,modifiedTime,size,mimeType', {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${accessToken}`,
+            'Content-Type': `multipart/related; boundary=${boundary}`
+          },
+          body: combined
+        });
+
+        return {
+          id: response.id,
+          name: response.name,
+          modifiedTime: new Date(response.modifiedTime),
+          size: parseInt(response.size) || content.byteLength,
+          mimeType: response.mimeType
+        };
+      } else {
+        // string content
+        body += content;
+        body += close_delim;
+
+        const response = await this.makeApiCall('/upload/drive/v3/files?uploadType=multipart&fields=id,name,modifiedTime,size,mimeType', {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${accessToken}`,
+            'Content-Type': `multipart/related; boundary=${boundary}`
+          },
+          body: body
+        });
+
+        return {
+          id: response.id,
+          name: response.name,
+          modifiedTime: new Date(response.modifiedTime),
+          size: parseInt(response.size) || (content as string).length,
+          mimeType: response.mimeType
+        };
+      }
+
     } catch (error) {
       throw new Error(`Failed to upload file: ${(error as Error).message}`);
     }
   }
-  
-  async updateFile(fileId: string, content: string): Promise<CloudFile> {
+
+  async updateFile(fileId: string, content: string | Uint8Array): Promise<CloudFile> {
     try {
       const accessToken = await this.getValidAccessToken();
-      
+
+      const isBinary = content instanceof Uint8Array;
+      const mimeType = isBinary ? 'application/octet-stream' : 'text/markdown';
+
       const response = await this.makeApiCall(`/upload/drive/v3/files/${fileId}?uploadType=media&fields=id,name,modifiedTime,size,mimeType`, {
         method: 'PATCH',
         headers: {
           'Authorization': `Bearer ${accessToken}`,
-          'Content-Type': 'text/markdown',
+          'Content-Type': mimeType,
         },
-        body: content
+        body: content as BodyInit
       });
 
       return {
@@ -468,35 +520,35 @@ export class GISGoogleDriveProvider implements CloudProvider {
         size: parseInt(response.size) || content.length,
         mimeType: response.mimeType
       };
-      
+
     } catch (error) {
       throw new Error(`Failed to update file: ${(error as Error).message}`);
     }
   }
-  
+
   async deleteFile(fileId: string): Promise<void> {
     try {
       const accessToken = await this.getValidAccessToken();
-      
+
       await this.makeApiCall(`/drive/v3/files/${fileId}`, {
         method: 'DELETE',
         headers: {
           'Authorization': `Bearer ${accessToken}`,
         }
       });
-      
+
     } catch (error) {
       throw new Error(`Failed to delete file: ${(error as Error).message}`);
     }
   }
-  
+
   /**
    * Make API call to Google Drive API with enhanced error handling
    */
   private async makeApiCall(endpoint: string, options: RequestInit = {}): Promise<any> {
     const baseUrl = 'https://www.googleapis.com';
     const url = endpoint.startsWith('http') ? endpoint : `${baseUrl}${endpoint}`;
-    
+
     const response = await ErrorHandler.withTimeout(
       fetch(url, {
         ...options,
@@ -511,7 +563,7 @@ export class GISGoogleDriveProvider implements CloudProvider {
       const errorText = await response.text();
       const error = new Error(`API call failed: ${response.status} ${response.statusText} - ${errorText}`) as any;
       error.statusCode = response.status;
-      
+
       if (response.status === 401) {
         error.code = 'AUTHENTICATION_ERROR';
       } else if (response.status === 403) {
@@ -525,24 +577,26 @@ export class GISGoogleDriveProvider implements CloudProvider {
       } else if (response.status === 413) {
         error.code = 'FILE_TOO_LARGE_ERROR';
       }
-      
+
       throw error;
     }
 
     const contentType = response.headers.get('content-type');
     if (contentType && contentType.includes('application/json')) {
       return await response.json();
+    } else if (contentType && contentType.includes('application/octet-stream')) {
+      return new Uint8Array(await response.arrayBuffer());
     } else {
       return await response.text();
     }
   }
-  
+
   /**
    * Get a valid access token
    */
   private async getValidAccessToken(): Promise<string> {
     const credentials = await cloudCredentialManager.getCredentials(this.name);
-    
+
     if (!credentials) {
       throw new Error('No credentials found. Please authenticate first.');
     }
@@ -554,7 +608,7 @@ export class GISGoogleDriveProvider implements CloudProvider {
 
     return credentials.accessToken;
   }
-  
+
   /**
    * Save credentials using the credential manager
    */
@@ -572,7 +626,7 @@ export class GISGoogleDriveProvider implements CloudProvider {
       userId: userId
     });
   }
-  
+
   /**
    * Find existing EasyEditor application folder
    */
@@ -580,7 +634,7 @@ export class GISGoogleDriveProvider implements CloudProvider {
     try {
       console.log('[GISGoogleDriveProvider] Searching for existing Easyeditor folder...');
       const accessToken = await this.getValidAccessToken();
-      
+
       const response: GoogleDriveResponse = await this.makeApiCall(
         "/drive/v3/files?q=name='Easyeditor' and mimeType='application/vnd.google-apps.folder' and parents in 'root' and trashed=false&fields=files(id,name)",
         {
@@ -599,7 +653,7 @@ export class GISGoogleDriveProvider implements CloudProvider {
 
       console.log('[GISGoogleDriveProvider] No existing folder found');
       return null;
-      
+
     } catch (error) {
       console.error('[GISGoogleDriveProvider] Error finding application folder:', error);
       return null;

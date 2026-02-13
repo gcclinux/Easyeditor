@@ -178,7 +178,7 @@ export class OAuthDropboxProvider implements CloudProvider {
     try {
       // First, try to find existing folder
       const existingFolderId = await this.findApplicationFolder();
-      
+
       if (existingFolderId) {
         console.log('[OAuthDropboxProvider] Found existing application folder:', existingFolderId);
         return existingFolderId;
@@ -195,7 +195,7 @@ export class OAuthDropboxProvider implements CloudProvider {
 
       const folderId = response.metadata.path_display;
       console.log('[OAuthDropboxProvider] Created application folder:', folderId);
-      
+
       return folderId;
     } catch (error: any) {
       // If folder already exists (409 conflict), that's okay
@@ -203,7 +203,7 @@ export class OAuthDropboxProvider implements CloudProvider {
         console.log('[OAuthDropboxProvider] Folder already exists, using existing folder');
         return `/${APPLICATION_FOLDER_NAME}`;
       }
-      
+
       console.error('[OAuthDropboxProvider] Error creating application folder:', error);
       throw error;
     }
@@ -229,9 +229,9 @@ export class OAuthDropboxProvider implements CloudProvider {
         }
       );
 
-      // Filter for markdown files only
+      // Filter for markdown and encrypted files
       const files = response.entries
-        .filter(entry => entry['.tag'] === 'file' && entry.name.endsWith('.md'))
+        .filter(entry => entry['.tag'] === 'file' && (entry.name.endsWith('.md') || entry.name.endsWith('.sstp')))
         .map(entry => this.mapDropboxFileToCloudFile(entry));
 
       console.log('[OAuthDropboxProvider] Found', files.length, 'markdown files');
@@ -246,12 +246,12 @@ export class OAuthDropboxProvider implements CloudProvider {
    * Download file content from Dropbox
    * Requirements: 5.2
    */
-  async downloadFile(fileId: string): Promise<string> {
+  async downloadFile(fileId: string): Promise<string | Uint8Array> {
     console.log('[OAuthDropboxProvider] Downloading file:', fileId);
 
     try {
       const accessToken = await this.getValidAccessToken();
-      
+
       const response = await fetch(`${DROPBOX_CONTENT_API_BASE}/files/download`, {
         method: 'POST',
         headers: {
@@ -264,10 +264,29 @@ export class OAuthDropboxProvider implements CloudProvider {
         throw new Error(`Download failed: ${response.status} ${response.statusText}`);
       }
 
-      const content = await response.text();
-      console.log('[OAuthDropboxProvider] Downloaded file successfully, size:', content.length);
-      
-      return content;
+      const resultHeader = response.headers.get('Dropbox-API-Result');
+      let isBinary = false;
+      if (resultHeader) {
+        try {
+          const metadata = JSON.parse(resultHeader);
+          if (metadata.name && metadata.name.endsWith('.sstp')) {
+            isBinary = true;
+          }
+        } catch (e) {
+          console.warn('[OAuthDropboxProvider] Failed to parse Dropbox-API-Result header', e);
+        }
+      }
+
+      if (isBinary) {
+        const buffer = await response.arrayBuffer();
+        const content = new Uint8Array(buffer);
+        console.log('[OAuthDropboxProvider] Downloaded binary file successfully, size:', content.length);
+        return content;
+      } else {
+        const content = await response.text();
+        console.log('[OAuthDropboxProvider] Downloaded file successfully, size:', content.length);
+        return content;
+      }
     } catch (error) {
       console.error('[OAuthDropboxProvider] Error downloading file:', error);
       throw error;
@@ -278,13 +297,13 @@ export class OAuthDropboxProvider implements CloudProvider {
    * Upload a new file to Dropbox
    * Requirements: 5.1
    */
-  async uploadFile(folderId: string, fileName: string, content: string): Promise<CloudFile> {
+  async uploadFile(folderId: string, fileName: string, content: string | Uint8Array): Promise<CloudFile> {
     console.log('[OAuthDropboxProvider] Uploading file:', fileName, 'to folder:', folderId);
 
     try {
       const accessToken = await this.getValidAccessToken();
       const filePath = `${folderId}/${fileName}`;
-      
+
       const response = await fetch(`${DROPBOX_CONTENT_API_BASE}/files/upload`, {
         method: 'POST',
         headers: {
@@ -297,7 +316,7 @@ export class OAuthDropboxProvider implements CloudProvider {
             mute: false
           })
         },
-        body: content
+        body: content as BodyInit
       });
 
       if (!response.ok) {
@@ -307,7 +326,7 @@ export class OAuthDropboxProvider implements CloudProvider {
 
       const metadata: DropboxFileMetadata = await response.json();
       const cloudFile = this.mapDropboxFileToCloudFile(metadata);
-      
+
       console.log('[OAuthDropboxProvider] Uploaded file successfully:', cloudFile.id);
       return cloudFile;
     } catch (error) {
@@ -320,12 +339,12 @@ export class OAuthDropboxProvider implements CloudProvider {
    * Update an existing file in Dropbox
    * Requirements: 5.3
    */
-  async updateFile(fileId: string, content: string): Promise<CloudFile> {
+  async updateFile(fileId: string, content: string | Uint8Array): Promise<CloudFile> {
     console.log('[OAuthDropboxProvider] Updating file:', fileId);
 
     try {
       const accessToken = await this.getValidAccessToken();
-      
+
       const response = await fetch(`${DROPBOX_CONTENT_API_BASE}/files/upload`, {
         method: 'POST',
         headers: {
@@ -338,7 +357,7 @@ export class OAuthDropboxProvider implements CloudProvider {
             mute: false
           })
         },
-        body: content
+        body: content as BodyInit
       });
 
       if (!response.ok) {
@@ -348,7 +367,7 @@ export class OAuthDropboxProvider implements CloudProvider {
 
       const metadata: DropboxFileMetadata = await response.json();
       const cloudFile = this.mapDropboxFileToCloudFile(metadata);
-      
+
       console.log('[OAuthDropboxProvider] Updated file successfully');
       return cloudFile;
     } catch (error) {
@@ -427,7 +446,7 @@ export class OAuthDropboxProvider implements CloudProvider {
    */
   private async makeApiCall(url: string, options: RequestInit): Promise<any> {
     const accessToken = await this.getValidAccessToken();
-    
+
     const headers = {
       'Authorization': `Bearer ${accessToken}`,
       'Content-Type': 'application/json',
@@ -445,7 +464,7 @@ export class OAuthDropboxProvider implements CloudProvider {
       error.status = response.status;
       error.statusCode = response.status;
       error.response = errorText;
-      
+
       // Log detailed error information for debugging
       console.error('[OAuthDropboxProvider] API error:', {
         url,
@@ -454,7 +473,7 @@ export class OAuthDropboxProvider implements CloudProvider {
         errorText,
         operation: options.method || 'GET'
       });
-      
+
       throw error;
     }
 
@@ -476,13 +495,13 @@ export class OAuthDropboxProvider implements CloudProvider {
     switch (statusCode) {
       case 401:
         return 'Your Dropbox session has expired. Please reconnect.';
-      
+
       case 403:
         return 'EasyEditor doesn\'t have permission to access Dropbox. Please reconnect and grant permissions.';
-      
+
       case 404:
         return 'The requested file or folder was not found in Dropbox.';
-      
+
       case 409:
         // Dropbox uses 409 for various conflicts
         if (dropboxError?.error_summary?.includes('not_found')) {
@@ -492,19 +511,19 @@ export class OAuthDropboxProvider implements CloudProvider {
           return 'A file with this name already exists in Dropbox.';
         }
         return 'A conflict occurred with Dropbox. Please try again.';
-      
+
       case 413:
         return 'File is too large for Dropbox. Please reduce the file size.';
-      
+
       case 429:
         return 'Dropbox rate limit reached. Please try again in a few minutes.';
-      
+
       case 500:
       case 502:
       case 503:
       case 504:
         return 'Dropbox is experiencing issues. Please try again later.';
-      
+
       default:
         if (statusCode >= 500) {
           return 'Dropbox server error. Please try again later.';

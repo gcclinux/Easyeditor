@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { FaStickyNote, FaCloud, FaSync, FaPlus, FaTrash } from 'react-icons/fa';
+import { FaStickyNote, FaCloud, FaSync, FaPlus, FaTrash, FaKey } from 'react-icons/fa';
 import ConfirmationModal from './ConfirmationModal';
 import { cloudManager } from '../cloud/managers/CloudManager';
 import { cloudToastService } from '../cloud/utils/CloudToastService';
@@ -15,7 +15,7 @@ interface EasyNotesSidebarProps {
   showEasyNotesSidebar: boolean;
   setShowEasyNotesSidebar: (show: boolean) => void;
   showToast: (message: string, type?: 'success' | 'error' | 'info' | 'warning') => void;
-  onNoteSelect?: (noteId: string, content: string, noteMetadata?: NoteMetadata) => void;
+  onNoteSelect?: (noteId: string, content: string | Uint8Array, noteMetadata?: NoteMetadata) => void;
   onNoteDelete?: (noteId: string) => void;
   currentCloudNote?: { noteId: string; title: string } | null;
   refreshTrigger?: number; // Add refresh trigger prop
@@ -577,6 +577,9 @@ const EasyNotesSidebar: React.FC<EasyNotesSidebarProps> = ({
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '4px', gap: '8px' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '6px', flex: 1, minWidth: 0, overflow: 'hidden' }}>
             <span style={{ fontSize: '14px', flexShrink: 0 }}>{providerMetadata?.icon || '📄'}</span>
+            {(note.fileName?.endsWith('.sstp') || note.title.endsWith('.sstp')) && (
+              <FaKey style={{ fontSize: '12px', color: 'var(--color-text-light)', flexShrink: 0 }} title="Backups encrypted" />
+            )}
             <span style={{ fontSize: '13px', fontWeight: '500', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{note.title}</span>
             {currentCloudNote?.noteId === note.id && (
               <span style={{ fontSize: '14px', flexShrink: 0 }} title="Currently open">🔥</span>

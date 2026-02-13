@@ -104,7 +104,7 @@ import FeaturesModal from './components/FeaturesModal';
 import ThemeModal from './components/ThemeModal';
 import ImportThemeModal from './components/ImportThemeModal';
 
-import { encryptContent, decryptFile } from './cryptoHandler';
+import { decryptFile } from './cryptoHandler';
 import PasswordModal from './components/PasswordModal';
 import { loadTheme, getCurrentTheme } from './themeLoader';
 import { saveCustomTheme } from './customThemeManager';
@@ -1935,9 +1935,32 @@ const App = () => {
 
   // State for Save Location Modal (Cloud vs Local)
   const [saveLocationModalOpen, setSaveLocationModalOpen] = useState(false);
-  const [saveLocationProviders, setSaveLocationProviders] = useState<{ name: string; displayName: string; icon?: string }[]>([]);
+  const [connectedProviders, setConnectedProviders] = useState<{ name: string; displayName: string; icon?: string }[]>([]);
   const [fileNameModalOpen, setFileNameModalOpen] = useState(false);
   const [pendingSaveProvider, setPendingSaveProvider] = useState<string | null>(null);
+  const [isExporting, setIsExporting] = useState(false);
+
+  // Helper to update connected providers
+  const updateConnectedProviders = async () => {
+    if (!isFeatureEnabled('EASY_NOTES')) return [];
+    try {
+      const { cloudManager } = await import('./cloud/managers/CloudManager');
+      if (cloudManager) {
+        const providers = await cloudManager.getAvailableProviders();
+        const connected: { name: string; displayName: string; icon?: string }[] = [];
+        for (const p of providers) {
+          if (await cloudManager.isProviderConnected(p.name)) {
+            connected.push({ name: p.name, displayName: p.displayName, icon: p.icon });
+          }
+        }
+        setConnectedProviders(connected);
+        return connected;
+      }
+    } catch (e) {
+      console.error('Failed to check cloud providers', e);
+    }
+    return [];
+  };
 
   const handleSaveLocationProviderSelect = (providerName: string) => {
     setSaveLocationModalOpen(false);
@@ -1951,7 +1974,12 @@ const App = () => {
     if (!providerName) return;
 
     try {
-      showToast("Creating cloud note...", "info");
+      if (isExporting) {
+        showToast(`Exporting to ${providerName}...`, "info");
+      } else {
+        showToast("Creating cloud note...", "info");
+      }
+
       const { cloudManager } = await import('./cloud/managers/CloudManager');
 
       if (!cloudManager) {
@@ -1960,37 +1988,38 @@ const App = () => {
 
       const note = await cloudManager.createNote(providerName, fileName);
 
-      // Update current cloud note state to switch to cloud mode
-      // We need to fetch provider metadata first for consistency
-      const providerMetadata = await cloudManager.getProviderMetadata(providerName);
-
-      setCurrentCloudNote({
-        noteId: note.id,
-        title: note.title,
-        provider: note.provider,
-        providerDisplayName: providerMetadata?.displayName || note.provider,
-        providerIcon: providerMetadata?.icon || '☁️',
-        lastSaved: new Date(note.lastSynced),
-        hasUnsavedChanges: false
-      });
-
-      // Save initial content (which is just title + date from createNote)
-      // Wait, createNote creates file with initial content.
-      // But we have editorContent which might have content.
-      // We should save the current editor content to the new note immediately.
-
+      // Save content to the new note immediately
       await cloudManager.saveNote(note.id, editorContent);
 
-      // Clear file path as we are now in cloud mode
-      setCurrentFilePath(null);
+      if (isExporting) {
+        // Export mode: Do NOT switch context
+        showToast(`Exported to ${providerName} successfully!`, "success");
+      } else {
+        // Save As / New mode: Switch context
+        // Fetch provider metadata for state
+        const providerMetadata = await cloudManager.getProviderMetadata(providerName);
 
-      showToast(`Saved to ${providerMetadata?.displayName || providerName} successfully!`, "success");
+        setCurrentCloudNote({
+          noteId: note.id,
+          title: note.title,
+          provider: note.provider,
+          providerDisplayName: providerMetadata?.displayName || note.provider,
+          providerIcon: providerMetadata?.icon || '☁️',
+          lastSaved: new Date(note.lastSynced),
+          hasUnsavedChanges: false
+        });
+
+        // Clear file path as we are now in cloud mode
+        setCurrentFilePath(null);
+        showToast(`Saved to ${providerMetadata?.displayName || providerName} successfully!`, "success");
+      }
 
     } catch (error) {
       console.error("Failed to create cloud note:", error);
-      showToast(`Failed to save to cloud: ${(error as Error).message}`, "error");
+      showToast(`Failed to ${isExporting ? 'export' : 'save'} to cloud: ${(error as Error).message}`, "error");
     } finally {
       setPendingSaveProvider(null);
+      setIsExporting(false);
     }
   };
 
@@ -2014,33 +2043,28 @@ const App = () => {
 
     // Check if cloud features are enabled
     if (isFeatureEnabled('EASY_NOTES')) {
-      try {
-        const { cloudManager } = await import('./cloud/managers/CloudManager');
-        if (cloudManager) {
-          const providers = await cloudManager.getAvailableProviders();
-          const connected: { name: string; displayName: string; icon?: string }[] = [];
-
-          for (const p of providers) {
-            if (await cloudManager.isProviderConnected(p.name)) {
-              connected.push({ name: p.name, displayName: p.displayName, icon: p.icon });
-            }
-          }
-
-          if (connected.length > 0) {
-            // If we have connected providers, show the modal
-            setSaveLocationProviders(connected);
-            setSaveLocationModalOpen(true);
-            return;
-          }
-        }
-      } catch (e) {
-        console.error('Failed to check cloud providers', e);
-        // Continue to local save on error
+      const connected = await updateConnectedProviders();
+      if (connected.length > 0) {
+        setSaveLocationModalOpen(true);
+        return;
       }
     }
 
     // Default: Local save (Save As dialog)
     await saveToFile(editorContent, setCurrentFilePath);
+  };
+
+  const handleExportToCloud = (providerName: string) => {
+    setPendingSaveProvider(providerName);
+    setIsExporting(true);
+    setFileNameModalOpen(true);
+  };
+
+  // Export to Markdown - Always save as new file without changing current context
+  const handleExportToMarkdown = async () => {
+    // Force save as dialog by not passing a callback to update current file path
+    // This effectively "exports" a copy while keeping the current session intact
+    await saveToFile(editorContent);
   };
 
   // Save to TXT wrapper
@@ -2081,14 +2105,69 @@ const App = () => {
   };
 
   // Save Encrypted wrapper
-  const handleSaveEncrypted = () => {
-    encryptContent(editorContent, (onSubmit) => {
-      showPasswordPrompt(
-        'Encrypt Content',
-        'Enter a password to encrypt the file (min 8 characters):',
-        onSubmit
-      );
-    }, showToast);
+  const handleSaveEncrypted = async () => {
+    // 1. Check for cloud providers first to determine UI flow
+    let connected: { name: string; displayName: string; icon?: string }[] = [];
+    if (isFeatureEnabled('EASY_NOTES')) {
+      connected = await updateConnectedProviders();
+    }
+
+    showPasswordPrompt(
+      'Encrypt Content',
+      'Enter a password to encrypt the file (min 8 characters):',
+      async (password) => {
+        try {
+          const { encryptTextToBytes } = await import('./stpFileCrypter');
+          const encrypted = encryptTextToBytes(editorContent, password);
+          const uint8 = encrypted instanceof Uint8Array ? encrypted : new Uint8Array(encrypted as any);
+
+          if (connected.length > 0) {
+            (window as any).pendingEncryptedContent = uint8;
+            setSaveLocationModalOpen(true);
+          } else {
+            saveEncryptedLocally(uint8);
+          }
+        } catch (e) {
+          showToast("Encryption failed", "error");
+        }
+      }
+    );
+  };
+
+  const saveEncryptedLocally = async (content: Uint8Array) => {
+    const isTauri = typeof window !== 'undefined' && (window as any).__TAURI_INTERNALS__;
+    if (isTauri) {
+      try {
+        const { save } = await import('@tauri-apps/plugin-dialog');
+        const { writeFile } = await import('@tauri-apps/plugin-fs');
+
+        const filePath = await save({
+          defaultPath: 'easyeditor.sstp',
+          filters: [{
+            name: 'Encrypted Document',
+            extensions: ['sstp']
+          }]
+        });
+
+        if (filePath) {
+          await writeFile(filePath, content);
+          showToast('File encrypted and saved successfully', 'success');
+        }
+      } catch (tauriError) {
+        console.error('Tauri save failed:', tauriError);
+        showToast('Failed to save via Tauri: ' + tauriError, 'error');
+      }
+    } else {
+      // Web fallback
+      const blob = new Blob([content.slice()], { type: 'application/octet-stream' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = 'easyeditor.sstp';
+      a.click();
+      URL.revokeObjectURL(url);
+      showToast('File encrypted and download started', 'success');
+    }
   };
 
   // Update effect to include cursor position
@@ -2259,6 +2338,7 @@ const App = () => {
               cacheSelection();
               closeAllDropdowns();
               setShowEasyNotesSidebar(false);
+              updateConnectedProviders();
               setShowExportModal(true);
             }}
             title={t('menu.exports')}
@@ -2326,11 +2406,11 @@ const App = () => {
             <ExportModal
               onSaveAsPNG={handleSaveAsPNG}
               onSaveAsPDF={handleSaveAsPDF}
-              onSaveToMarkdown={handleSaveToMarkdown}
+              onSaveToMarkdown={handleExportToMarkdown}
               onSaveToTXT={handleSaveToTXT}
               onSaveEncrypted={handleSaveEncrypted}
-              onSaveToCloud={handleCloudNoteSave}
-              currentCloudNote={currentCloudNote}
+              onExportToCloud={handleExportToCloud}
+              connectedProviders={connectedProviders}
               onClose={() => setShowExportModal(false)}
             />
           )
@@ -2509,18 +2589,60 @@ const App = () => {
           onClose={() => setSaveLocationModalOpen(false)}
           onSelectLocal={async () => {
             setSaveLocationModalOpen(false);
-            await saveToFile(editorContent, setCurrentFilePath);
+            if ((window as any).pendingEncryptedContent) {
+              saveEncryptedLocally((window as any).pendingEncryptedContent);
+              delete (window as any).pendingEncryptedContent;
+            } else {
+              await saveToFile(editorContent, setCurrentFilePath);
+            }
           }}
-          onSelectProvider={handleSaveLocationProviderSelect}
-          connectedProviders={saveLocationProviders}
+          onSelectProvider={(providerName) => {
+            // Handle Cloud Selection
+            setSaveLocationModalOpen(false);
+            if ((window as any).pendingEncryptedContent) {
+              // If we are saving encrypted content, we need a filename first
+              setPendingSaveProvider(providerName);
+              setIsExporting(true); // Treat as export (don't switch context)
+              setFileNameModalOpen(true);
+              // We keep pendingEncryptedContent in window
+            } else {
+              handleSaveLocationProviderSelect(providerName);
+            }
+          }}
+          connectedProviders={connectedProviders}
         />
         <FileNameModal
           open={fileNameModalOpen}
           onClose={() => {
             setFileNameModalOpen(false);
+            delete (window as any).pendingEncryptedContent;
             setPendingSaveProvider(null);
           }}
-          onSubmit={handleFileNameSubmit}
+          onSubmit={async (fileName) => {
+            // Intercept for Encrypted Cloud Save
+            if ((window as any).pendingEncryptedContent && pendingSaveProvider) {
+              const content = (window as any).pendingEncryptedContent;
+              const finalName = fileName.endsWith('.sstp') ? fileName : `${fileName}.sstp`;
+              setFileNameModalOpen(false);
+
+              try {
+                showToast(`Uploading encrypted file to ${pendingSaveProvider}...`, "info");
+                const { cloudManager } = await import('./cloud/managers/CloudManager');
+                if (cloudManager) {
+                  await cloudManager.uploadFile(pendingSaveProvider, finalName, content);
+                  showToast("Encrypted file uploaded successfully!", "success");
+                }
+              } catch (e) {
+                showToast(`Upload failed: ${(e as Error).message}`, "error");
+              } finally {
+                delete (window as any).pendingEncryptedContent;
+                setPendingSaveProvider(null);
+                setIsExporting(false);
+              }
+            } else {
+              handleFileNameSubmit(fileName);
+            }
+          }}
           title={t('modal.enter_note_title') || "Enter note title"}
           placeholder="My New Note"
           submitLabel="Create Note"
@@ -2749,37 +2871,111 @@ const App = () => {
                   setCurrentFilePath(null);
                 }
               }}
-              onNoteSelect={async (noteId: string, content: string, noteMetadata?: any) => {
-                setEditorContent(content);
+              onNoteSelect={async (noteId: string, rawContent: string | Uint8Array, noteMetadata?: any) => {
+                const processContent = async (text: string) => {
+                  setEditorContent(text);
 
-                // Clear current file path since we're opening a cloud note
-                setCurrentFilePath(null);
+                  // Clear current file path since we're opening a cloud note
+                  setCurrentFilePath(null);
 
-                // Set cloud note state if metadata is provided
-                if (noteMetadata) {
-                  // Import cloudManager singleton to get provider metadata
-                  const { cloudManager } = await import('./cloud/managers/CloudManager');
+                  // Set cloud note state if metadata is provided
+                  if (noteMetadata) {
+                    // Import cloudManager singleton to get provider metadata
+                    const { cloudManager } = await import('./cloud/managers/CloudManager');
 
-                  if (!cloudManager) {
-                    console.warn('Cloud features are disabled, cannot load provider metadata');
-                    return;
+                    if (!cloudManager) {
+                      console.warn('Cloud features are disabled, cannot load provider metadata');
+                      return;
+                    }
+
+                    const providerMetadata = await cloudManager.getProviderMetadata(noteMetadata.provider);
+
+                    setCurrentCloudNote({
+                      noteId,
+                      title: noteMetadata.title,
+                      provider: noteMetadata.provider,
+                      providerDisplayName: providerMetadata?.displayName || noteMetadata.provider,
+                      providerIcon: providerMetadata?.icon || '📄',
+                      lastSaved: new Date(noteMetadata.lastSynced),
+                      hasUnsavedChanges: false
+                    });
                   }
 
-                  const providerMetadata = await cloudManager.getProviderMetadata(noteMetadata.provider);
+                  // Add to history for undo/redo functionality
+                  addToHistory(text, cursorPositionRef.current, documentHistory, historyIndex, setDocumentHistory, setHistoryIndex);
+                };
 
-                  setCurrentCloudNote({
-                    noteId,
-                    title: noteMetadata.title,
-                    provider: noteMetadata.provider,
-                    providerDisplayName: providerMetadata?.displayName || noteMetadata.provider,
-                    providerIcon: providerMetadata?.icon || '📄',
-                    lastSaved: new Date(noteMetadata.lastSynced),
-                    hasUnsavedChanges: false
+                if (rawContent instanceof Uint8Array) {
+                  setPasswordModalConfig({
+                    open: true,
+                    title: 'Enter Password',
+                    promptText: 'Enter password to decrypt note',
+                    onSubmit: async (password: string) => {
+                      setPasswordModalConfig(prev => ({ ...prev, open: false }));
+                      try {
+                        const { decryptBytesToText } = await import('./stpFileCrypter');
+                        const decrypted = decryptBytesToText(rawContent, password);
+
+                        // Automatically convert to Markdown file if it's an encrypted cloud note
+                        if (noteMetadata) {
+                          try {
+                            const { cloudManager } = await import('./cloud/managers/CloudManager');
+                            if (cloudManager) {
+                              const newFileName = noteMetadata.fileName.replace(/\.sstp$/, '') + '.md';
+
+                              showToast('Converting to decrypted markdown file...', 'info');
+
+                              // 1. Upload new .md file and get metadata directly
+                              const newNoteMetadata = await cloudManager.uploadFile(noteMetadata.provider, newFileName, decrypted);
+
+                              // 2. Delete old .sstp file
+                              await cloudManager.deleteNote(noteId);
+
+                              if (newNoteMetadata) {
+                                // Update currentCloudNote to point to the NEW file directly from returned metadata
+                                const providerMetadata = await cloudManager.getProviderMetadata(newNoteMetadata.provider);
+
+                                setCurrentCloudNote({
+                                  noteId: newNoteMetadata.id,
+                                  title: newNoteMetadata.title,
+                                  provider: newNoteMetadata.provider,
+                                  providerDisplayName: providerMetadata?.displayName || newNoteMetadata.provider,
+                                  providerIcon: providerMetadata?.icon || '📄',
+                                  lastSaved: new Date(newNoteMetadata.lastSynced),
+                                  hasUnsavedChanges: false
+                                });
+
+                                // Set editor content
+                                setEditorContent(decrypted);
+                                setCurrentFilePath(null);
+
+                                // Add to history
+                                addToHistory(decrypted, cursorPositionRef.current, documentHistory, historyIndex, setDocumentHistory, setHistoryIndex);
+
+                                showToast('Note decrypted and converted to Markdown', 'success');
+                                return;
+                              }
+                            }
+                          } catch (conversionError) {
+                            console.error('Failed to convert encrypted file:', conversionError);
+                            showToast('Decrypted locally, but failed to update cloud file: ' + (conversionError as Error).message, 'warning');
+                            // Fallback to just showing content
+                          }
+                        }
+
+                        await processContent(decrypted);
+                        if (!noteMetadata) {
+                          showToast('Note decrypted successfully', 'success');
+                        }
+                      } catch (error) {
+                        showToast('Decryption failed: ' + (error as Error).message, 'error');
+                      }
+                    }
                   });
+                  return;
                 }
 
-                // Add to history for undo/redo functionality
-                addToHistory(content, cursorPositionRef.current, documentHistory, historyIndex, setDocumentHistory, setHistoryIndex);
+                await processContent(rawContent as string);
               }}
               onUpgradeClick={() => {
                 setShowEasyNotesSidebar(false);

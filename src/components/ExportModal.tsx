@@ -1,5 +1,5 @@
 import React from 'react';
-import { FaDownload, FaFilePdf, FaFileAlt, FaLock, FaCloud, FaTimes, FaImage } from 'react-icons/fa';
+import { FaDownload, FaFilePdf, FaFileAlt, FaLock, FaCloud, FaTimes, FaImage, FaGoogleDrive, FaDropbox } from 'react-icons/fa';
 import { useLanguage } from '../i18n/LanguageContext';
 import './exportModal.css';
 
@@ -9,8 +9,8 @@ type Props = {
     onSaveToMarkdown: () => void;
     onSaveToTXT: () => void;
     onSaveEncrypted: () => void;
-    onSaveToCloud: () => void;
-    currentCloudNote: { providerDisplayName: string } | null;
+    onExportToCloud: (providerName: string) => void;
+    connectedProviders: { name: string; displayName: string; icon?: string }[];
     onClose: () => void;
 };
 
@@ -20,18 +20,17 @@ export default function ExportModal({
     onSaveToMarkdown,
     onSaveToTXT,
     onSaveEncrypted,
-    onSaveToCloud,
-    currentCloudNote,
+    onExportToCloud,
+    connectedProviders,
     onClose
 }: Props) {
     const { t } = useLanguage();
 
     const renderTile = (
         icon: React.ReactNode,
-        titleKey: string,
-        descKey: string,
-        onClick: () => void,
-        dynamicDesc?: string
+        title: string,
+        desc: string,
+        onClick: () => void
     ) => {
         return (
             <button
@@ -44,10 +43,18 @@ export default function ExportModal({
                 <div className="export-tile-icon">
                     {icon}
                 </div>
-                <div className="export-tile-title">{t(titleKey)}</div>
-                <div className="export-tile-desc">{t(descKey)} {dynamicDesc}</div>
+                <div className="export-tile-title">{title}</div>
+                <div className="export-tile-desc">{desc}</div>
             </button>
         );
+    };
+
+    const getProviderIcon = (name: string) => {
+        switch (name) {
+            case 'googledrive': return <FaGoogleDrive />;
+            case 'dropbox': return <FaDropbox />;
+            default: return <FaCloud />;
+        }
     };
 
     return (
@@ -61,25 +68,28 @@ export default function ExportModal({
                 <div className="export-tiles-section">
                     <div className="export-tiles-section-title">{t('modals.exports.section_title')}</div>
                     <div className="export-tiles-grid">
-                        {renderTile(<FaImage />, 'exports.png', 'exports.png_desc', onSaveAsPNG)}
-                        {renderTile(<FaFilePdf />, 'exports.pdf', 'exports.pdf_desc', onSaveAsPDF)}
-                        {renderTile(<FaFileAlt />, 'exports.markdown', 'exports.markdown_desc', onSaveToMarkdown)}
-                        {renderTile(<FaFileAlt />, 'exports.txt', 'exports.txt_desc', onSaveToTXT)}
-                        {renderTile(<FaLock />, 'exports.encrypted', 'exports.encrypted_desc', onSaveEncrypted)}
+                        {renderTile(<FaImage />, t('exports.png'), t('exports.png_desc'), onSaveAsPNG)}
+                        {renderTile(<FaFilePdf />, t('exports.pdf'), t('exports.pdf_desc'), onSaveAsPDF)}
+                        {renderTile(<FaFileAlt />, t('exports.markdown'), t('exports.markdown_desc'), onSaveToMarkdown)}
+                        {renderTile(<FaFileAlt />, t('exports.txt'), t('exports.txt_desc'), onSaveToTXT)}
+                        {renderTile(<FaLock />, t('exports.encrypted'), t('exports.encrypted_desc'), onSaveEncrypted)}
                     </div>
                 </div>
 
-                {currentCloudNote && (
+                {connectedProviders.length > 0 && (
                     <div className="export-tiles-section">
                         <div className="export-tiles-section-title">{t('exports.cloud')}</div>
                         <div className="export-tiles-grid">
-                            {renderTile(
-                                <FaCloud />,
-                                'exports.cloud',
-                                'exports.cloud_desc',
-                                onSaveToCloud,
-                                currentCloudNote.providerDisplayName
-                            )}
+                            {connectedProviders.map(provider => (
+                                <React.Fragment key={provider.name}>
+                                    {renderTile(
+                                        getProviderIcon(provider.name),
+                                        provider.displayName,
+                                        t('exports.cloud_desc'),
+                                        () => onExportToCloud(provider.name)
+                                    )}
+                                </React.Fragment>
+                            ))}
                         </div>
                     </div>
                 )}
