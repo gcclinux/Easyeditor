@@ -213,6 +213,8 @@
     "license_email_placeholder": "Ihre E-Mail",
     "license_date": "Kaufdatum",
     "license_date_placeholder": "z.B. 1767633074989",
+    "subscription_type": "Abonnement-Typ",
+    "subscription_type_placeholder": "Abonnement-Plan",
     "check_license": "Lizenz prüfen",
     "close": "Schließen"
   },
