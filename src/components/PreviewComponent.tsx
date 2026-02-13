@@ -6,6 +6,10 @@ import rehypeRaw from 'rehype-raw';
 import mermaid from 'mermaid';
 import nomnoml from 'nomnoml';
 
+import remarkMath from 'remark-math';
+import rehypeKatex from 'rehype-katex';
+import 'katex/dist/katex.min.css';
+
 interface PreviewComponentProps {
   previewRef: React.RefObject<HTMLDivElement | null>;
   editorContent: string;
@@ -135,8 +139,8 @@ const PreviewComponent: React.FC<PreviewComponentProps> = React.memo(({
       id="preview-content"
     >
       <ReactMarkdown
-        remarkPlugins={[remarkGfm, remarkEmoji, preserveListBreaks]}
-        rehypePlugins={[rehypeRaw]}
+        remarkPlugins={[remarkGfm, remarkEmoji, remarkMath, preserveListBreaks]}
+        rehypePlugins={[rehypeRaw, rehypeKatex]}
         components={{
           li({ children, className }) {
             return <li className={className}>{children}</li>;
