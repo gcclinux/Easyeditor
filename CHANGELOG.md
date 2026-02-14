@@ -7,6 +7,7 @@ EasyEditor is an easy markdown editor that allows you to write Markdown (MD) and
 *EasyEditor is a free and open-source project. You can use it for free and modify it as you like.*
 
 ## Latest CODE version
+- 1.6.5 - feat: Add KaTeX support for rendering mathematical equations in the preview component.
 - 1.6.4 - Implemented new templates and plantuml templates.
 - 1.6.3 - Updated legacy dropdown menu to use the new modal system.
 - 1.6.2 - Added support for opening encrypted (.sstp) files directly and created fileModal, taskModal, templateModal, exportModal and export to png

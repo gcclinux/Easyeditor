@@ -1,9 +1,29 @@
+Core - Open Source (MIT)
+The core EasyEditor source code is open source and available under the MIT License. This ensures that the community can contribute, audit, and use the base editor freely.
+
 MIT License
 
-Copyright (c) 2025 ricardo wagemaker
+Copyright (c) 2026 EasyEditor
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions:
 
 The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
 
 THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+
+---
+
+Premium Features - Commercial
+EasyEditor Premium features are provided under a proprietary commercial license. These features are not open source and require a valid active subscription to use.
+
+1. Grant of License
+Subject to your payment of the applicable subscription fees, EasyEditor grants you a limited, non-exclusive, non-transferable, revocable license to access and use the Premium features.
+
+2. Restrictions
+You may not:
+
+Reverse engineer, decompile, or seek to obtain the source code of the Premium features.
+Share your subscription credentials with others.
+Resell or redistribute the Premium features.
+3. Termination
+This license is effective until terminated. Your rights under this license will terminate automatically without notice if you fail to comply with any of its terms or if your subscription expires.

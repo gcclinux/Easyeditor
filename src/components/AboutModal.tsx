@@ -150,7 +150,8 @@ export function AboutModal({ open, onClose }: AboutModalProps) {
                 <p>
                   <a href="https://mermaid.js.org/" target="_blank" rel="noopener noreferrer"><b>Mermaid</b></a> - {t('about.official_module')}<br />
                   <a href="https://daringfireball.net/projects/markdown/" target="_blank" rel="noopener noreferrer"><b>Markdown</b></a> - {t('about.official_module')}<br />
-                  <a href="https://plantuml.com/" target="_blank" rel="noopener noreferrer"><b>PlantUML</b></a> - {t('about.official_module')}
+                  <a href="https://plantuml.com/" target="_blank" rel="noopener noreferrer"><b>PlantUML</b></a> - {t('about.official_module')}<br />
+                  <a href="https://katex.org/" target="_blank" rel="noopener noreferrer"><b>KaTeX</b></a> - {t('about.official_module')}
                 </p>
               </div>
             </div>
