@@ -332,7 +332,7 @@ html,
 
 /* Fixed menubar button size for uniform buttons */
 .fixed-menubar-btn {
-  width: 188px;
+  width: 160px;
   height: 43px;
   box-sizing: border-box;
   padding: 4px 4px;
