@@ -14,6 +14,9 @@ From simple notes to complex technical documentation, Easyeditor has you covered
 *   **Git Integration**: Load, stage, commit, and push directly from the editor.
 *   **Export Power**: Export to **HTML**, **TXT**, **PDF**, and secure **SSTP Encryption**.
 *   **Customizable**: Choose from beautiful themes or create your own!
+*   **SSTP Encryption**: SSTP (Simple Security Text Protocol) protection using modern AES-256-CBC encryption!
+
+---
 
 ![Easyeditor](screenshots/banner-tauri.png)
 
@@ -121,6 +124,7 @@ Clean and responsive table rendering.
 | **Markdown** | ✅ |
 | **Mermaid** | ✅ |
 | **KaTeX** | ✅ |
+| **SSTP Encryption** | ✅ |
 
 ---
 
