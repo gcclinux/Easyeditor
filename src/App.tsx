@@ -1011,6 +1011,90 @@ const App = () => {
     }
   };
 
+  const handleImportDocx = async () => {
+    const input = document.createElement('input');
+    input.type = 'file';
+    input.accept = '.docx';
+    input.onchange = async (e) => {
+      const file = (e.target as HTMLInputElement).files?.[0];
+      if (!file) return;
+
+      try {
+        showToast(t('toasts.importing') || 'Importing Docx...', 'info');
+        const arrayBuffer = await file.arrayBuffer();
+
+        const mammoth = await import('mammoth');
+        const TurndownService = (await import('turndown')).default;
+
+        const result = await mammoth.convertToHtml({ arrayBuffer }, { preserveEmptyParagraphs: false });
+        let html = result.value;
+
+        // Fix table parsing for accurate Markdown generation
+        const tempDiv = document.createElement('div');
+        tempDiv.innerHTML = html;
+
+        const tables = tempDiv.querySelectorAll('table');
+        tables.forEach(table => {
+          const rows = Array.from(table.querySelectorAll('tr'));
+          if (rows.length === 0) return;
+
+          table.innerHTML = '';
+          const thead = document.createElement('thead');
+          const tbody = document.createElement('tbody');
+
+          rows.forEach((row, i) => {
+            const cells = Array.from(row.querySelectorAll('td, th'));
+            cells.forEach(cell => {
+              // Remove <p> tags inside table cells which break markdown tables
+              const inner = cell.innerHTML.replace(/<\/?p[^>]*>/g, '').trim();
+              if (i === 0) {
+                const th = document.createElement('th');
+                th.innerHTML = inner;
+                row.replaceChild(th, cell);
+              } else {
+                const td = document.createElement('td');
+                td.innerHTML = inner;
+                row.replaceChild(td, cell);
+              }
+            });
+
+            if (i === 0) {
+              thead.appendChild(row);
+            } else {
+              tbody.appendChild(row);
+            }
+          });
+
+          table.appendChild(thead);
+          if (rows.length > 1) {
+            table.appendChild(tbody);
+          }
+        });
+
+        const turndownService = new TurndownService({
+          headingStyle: 'atx',
+          codeBlockStyle: 'fenced'
+        });
+
+        // Add GFM plugin to Turndown to support tables and strikethroughs
+        const { gfm } = await import('turndown-plugin-gfm');
+        turndownService.use(gfm);
+
+        const markdown = turndownService.turndown(tempDiv.innerHTML);
+
+        setEditorContent(markdown);
+        setCurrentFilePath(null);
+        setCurrentCloudNote(null);
+        setShowAutoModal(false);
+        showToast(t('toasts.import_success') || 'Successfully imported Word Document', 'success');
+      } catch (error) {
+        console.error('Docx import error:', error);
+        showToast(`${t('toasts.import_error') || 'Failed to import Docx'}: ${(error as Error).message}`, 'error');
+      }
+    };
+    input.click();
+  };
+
   const handleCloneSubmit = async (url: string, targetDir: string, branch?: string) => {
     setCloneModalOpen(false);
 
@@ -2512,6 +2596,7 @@ const App = () => {
               onAutoGantt={() => setGanttModalOpen(true)}
               onAutoTimeline={() => setTimelineModalOpen(true)}
               onImportMD={() => setImportMDModalOpen(true)}
+              onImportDocx={handleImportDocx}
               onClose={() => setShowAutoModal(false)}
             />
           )

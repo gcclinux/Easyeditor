@@ -1,5 +1,5 @@
 import React, { useEffect } from 'react';
-import ReactMarkdown from 'react-markdown';
+import ReactMarkdown, { defaultUrlTransform } from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import remarkEmoji from 'remark-emoji';
 import rehypeRaw from 'rehype-raw';
@@ -141,7 +141,14 @@ const PreviewComponent: React.FC<PreviewComponentProps> = React.memo(({
       <ReactMarkdown
         remarkPlugins={[remarkGfm, remarkEmoji, remarkMath, preserveListBreaks]}
         rehypePlugins={[rehypeRaw, rehypeKatex]}
+        urlTransform={(url: string) => {
+          if (url.startsWith('data:image/')) return url;
+          return defaultUrlTransform(url);
+        }}
         components={{
+          img(props) {
+            return <img {...props} style={{ maxWidth: '100%', ...(props.style as React.CSSProperties) }} />;
+          },
           li({ children, className }) {
             return <li className={className}>{children}</li>;
           },

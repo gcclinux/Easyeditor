@@ -12,9 +12,11 @@ From simple notes to complex technical documentation, Easyeditor has you covered
 *   **Math Ready**: **KaTeX** support for beautiful mathematical notations.
 *   **Template System**: Jumpstart your docs with built-in templates.
 *   **Git Integration**: Load, stage, commit, and push directly from the editor.
-*   **Export Power**: Export to **HTML**, **TXT**, **PDF**, and secure **SSTP Encryption**.
+*   **Export Power**: Export to **PNG**, **TXT**, **PDF**, **MD** and secure **SSTP Encryption**.
 *   **Customizable**: Choose from beautiful themes or create your own!
 *   **SSTP Encryption**: SSTP (Simple Security Text Protocol) protection using modern AES-256-CBC encryption!
+
+[![Infographic](https://img.shields.io/badge/📊_Infographic-View_PDF-orange?style=for-the-badge)](docs/Easyeditor-Infographic.pdf)
 
 ---
 
@@ -132,6 +134,7 @@ Clean and responsive table rendering.
 
 [![Home](https://img.shields.io/badge/🏠_Home-Visit_Site-blue?style=for-the-badge)](https://www.easyeditor.co.uk) 
 [![Docs](https://img.shields.io/badge/📚_Documentation-Read_Docs-green?style=for-the-badge)](https://gcclinux.github.io/EasyEditor/docs) 
+[![Infographic](https://img.shields.io/badge/📊_Infographic-View_PDF-orange?style=for-the-badge)](docs/Easyeditor-Infographic.pdf) 
 [![Releases](https://img.shields.io/badge/📦_Releases-View_All-blueviolet?style=for-the-badge)](https://github.com/gcclinux/EasyEditor/releases) 
 [![GitHub](https://img.shields.io/badge/💻_Source_Code-GitHub-black?style=for-the-badge&logo=github)](https://github.com/gcclinux/EasyEditor) 
 [![Stars](https://img.shields.io/github/stars/gcclinux/EasyEditor?style=for-the-badge&logo=github)](https://github.com/gcclinux/EasyEditor/stargazers) 
