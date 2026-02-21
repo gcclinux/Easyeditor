@@ -1,4 +1,6 @@
 @echo off
+cd /d "%~dp0\.."
+
 echo Setting up build environment...
 
 @REM [Environment]::SetEnvironmentVariable("Path", $env:Path + ";C:\Program Files (x86)\Windows Kits\10\bin\10.0.26100.0\x64", "User")
@@ -21,7 +23,7 @@ if "%1"=="build" goto build
 if "%1"=="--build" goto build
 
 :usage
-echo Usage: build-tauri.bat [command]
+echo Usage: scripts\build-tauri.bat [command]
 echo.
 echo Commands:
 echo   build, --build    Build the Tauri application

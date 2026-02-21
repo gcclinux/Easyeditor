@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 set -e
 
-VERSION=$(node -p "require('./package.json').version")
+VERSION=$(node -p "require('../package.json').version")
 
 # Build Docker image WITHOUT secrets
 docker build -t gcclinux/easyeditor:${VERSION}-$(arch) .

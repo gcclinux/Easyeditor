@@ -2,7 +2,7 @@
 
 /**
  * Simple static file server for testing production build
- * Usage: node serve-dist.js [port]
+ * Usage: node scripts/serve-dist.js [port]
  * Default port: 3024
  */
 
@@ -11,7 +11,7 @@ const fs = require('fs');
 const path = require('path');
 
 const PORT = process.argv[2] || 3024;
-const DIST_DIR = path.join(__dirname, 'dist');
+const DIST_DIR = path.join(__dirname, '..', 'dist');
 
 const MIME_TYPES = {
   '.html': 'text/html',
@@ -34,7 +34,7 @@ const server = http.createServer((req, res) => {
 
   // Parse URL and remove query string for file lookup
   let filePath = req.url.split('?')[0];
-  
+
   // Default to index.html for root
   if (filePath === '/') {
     filePath = '/index.html';
@@ -68,8 +68,8 @@ const server = http.createServer((req, res) => {
       } else {
         const ext = path.extname(fullPath);
         const contentType = MIME_TYPES[ext] || 'application/octet-stream';
-        
-        res.writeHead(200, { 
+
+        res.writeHead(200, {
           'Content-Type': contentType,
           'Cache-Control': 'no-cache'
         });

@@ -24,7 +24,7 @@ if (isElectronMode) {
   console.log('🔐 HTTPS certificates found - server will use HTTPS');
 } else {
   console.log('ℹ️  No HTTPS certificates found - server will use HTTP');
-  console.log('   Run ./setup-https.sh to enable HTTPS');
+  console.log('   Run ./scripts/setup-https.sh to enable HTTPS');
 }
 
 export default defineConfig({
