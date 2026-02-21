@@ -472,7 +472,10 @@
     "gantt": "Auto Gantt",
     "gantt_desc": "Generate Mermaid Gantt charts",
     "timeline": "Auto Timeline",
-    "timeline_desc": "Generate Mermaid timeline charts"
+    "timeline_desc": "Generate Mermaid timeline charts",
+    "rows": "Rows:",
+    "columns": "Columns:",
+    "insert": "Insert"
   },
   "icons": {
     "categories": {
