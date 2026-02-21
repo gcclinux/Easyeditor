@@ -1,7 +1,8 @@
 {
   "toasts": {
     "import_success": "Pomyślnie zaimportowano Markdown",
-    "import_error": "Import nie powiódł się"
+    "import_error": "Import nie powiódł się",
+    "importing": "Importowanie Docx..."
   },
   "menu": {
     "file": "Plik",

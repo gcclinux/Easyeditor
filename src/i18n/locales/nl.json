@@ -1,7 +1,8 @@
 {
   "toasts": {
     "import_success": "Markdown succesvol geïmporteerd",
-    "import_error": "Importeren mislukt"
+    "import_error": "Importeren mislukt",
+    "importing": "Docx importeren..."
   },
   "menu": {
     "file": "Bestand",

@@ -1,7 +1,8 @@
 {
   "toasts": {
     "import_success": "Successfully imported Markdown",
-    "import_error": "Failed to import"
+    "import_error": "Failed to import",
+    "importing": "Importing Docx..."
   },
   "menu": {
     "file": "File",
