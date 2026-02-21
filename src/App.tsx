@@ -578,6 +578,54 @@ const App = () => {
     setupTauriEventListeners();
   }, []);
 
+  // Cleanup all timers and pending work when app is closing
+  // This helps WebView2 shut down cleanly on Windows
+  useEffect(() => {
+    const clearAllTimers = () => {
+      // Clear all intervals and timeouts by ID
+      // Browsers assign incrementing IDs, so clearing up to a high number
+      // catches everything
+      const maxId = setTimeout(() => { }, 0) as unknown as number;
+      for (let i = 1; i <= maxId; i++) {
+        clearTimeout(i);
+        clearInterval(i);
+      }
+    };
+
+    // Listen for the Tauri cleanup event (emitted by backend on CloseRequested)
+    let unlistenCleanup: (() => void) | undefined;
+
+    const setupCleanupListener = async () => {
+      const isTauri = typeof window !== 'undefined' &&
+        ((window as any).__TAURI__ || (window as any).__TAURI_INTERNALS__ ||
+          typeof (window as any).__TAURI_INVOKE__ === 'function');
+
+      if (isTauri) {
+        try {
+          const { listen } = await import('@tauri-apps/api/event');
+          unlistenCleanup = await listen('app-cleanup', () => {
+            clearAllTimers();
+          });
+        } catch (error) {
+          console.error('Failed to setup cleanup listener:', error);
+        }
+      }
+    };
+
+    setupCleanupListener();
+
+    // Also handle browser beforeunload as a fallback
+    const handleBeforeUnload = () => {
+      clearAllTimers();
+    };
+    window.addEventListener('beforeunload', handleBeforeUnload);
+
+    return () => {
+      unlistenCleanup?.();
+      window.removeEventListener('beforeunload', handleBeforeUnload);
+    };
+  }, []);
+
   // Restore cursor position effect
   useEffect(() => {
     if (textareaRef.current) {
@@ -1012,87 +1060,160 @@ const App = () => {
   };
 
   const handleImportDocx = async () => {
-    const input = document.createElement('input');
-    input.type = 'file';
-    input.accept = '.docx';
-    input.onchange = async (e) => {
-      const file = (e.target as HTMLInputElement).files?.[0];
-      if (!file) return;
+    const isTauri = typeof window !== 'undefined' &&
+      ((window as any).__TAURI__ || (window as any).__TAURI_INTERNALS__ ||
+        typeof (window as any).__TAURI_INVOKE__ === 'function');
 
-      try {
+    try {
+      let arrayBuffer: ArrayBuffer | null = null;
+
+      if (isTauri) {
+        // In Tauri, DO NOT use <input type="file">. It uses WebView2's native picker which
+        // bugs out on Windows, causing the WebView2 Browser Process to spin at 100% CPU indefinitely.
+        const { open } = await import('@tauri-apps/plugin-dialog');
+        const { readFile } = await import('@tauri-apps/plugin-fs');
+
+        const selectedPath = await open({
+          multiple: false,
+          filters: [{ name: 'Word Document', extensions: ['docx'] }]
+        });
+
+        if (!selectedPath || typeof selectedPath !== 'string') return;
+
         showToast(t('toasts.importing') || 'Importing Docx...', 'info');
-        const arrayBuffer = await file.arrayBuffer();
+        const uint8Array = await readFile(selectedPath);
+        // Convert to standard ArrayBuffer for mammoth
+        arrayBuffer = uint8Array.buffer.slice(
+          uint8Array.byteOffset,
+          uint8Array.byteOffset + uint8Array.byteLength
+        );
+      } else {
+        // Web fallback: Input MUST be attached to DOM to prevent browser GC issues
+        const input = document.createElement('input');
+        input.type = 'file';
+        input.accept = '.docx';
+        input.style.display = 'none';
+        document.body.appendChild(input);
 
-        const mammoth = await import('mammoth');
-        const TurndownService = (await import('turndown')).default;
+        const file = await new Promise<File | null>((resolve) => {
+          let resolved = false;
+          input.onchange = (e) => {
+            resolved = true;
+            resolve((e.target as HTMLInputElement).files?.[0] || null);
+          };
+          window.addEventListener('focus', () => {
+            // Handle cancellation by checking focus
+            setTimeout(() => { if (!resolved) resolve(null); }, 500);
+          }, { once: true });
 
-        const result = await mammoth.convertToHtml({ arrayBuffer }, { preserveEmptyParagraphs: false });
-        let html = result.value;
+          input.click();
+        });
 
-        // Fix table parsing for accurate Markdown generation
-        const tempDiv = document.createElement('div');
-        tempDiv.innerHTML = html;
+        document.body.removeChild(input);
+        if (!file) return;
 
-        const tables = tempDiv.querySelectorAll('table');
-        tables.forEach(table => {
-          const rows = Array.from(table.querySelectorAll('tr'));
-          if (rows.length === 0) return;
+        showToast(t('toasts.importing') || 'Importing Docx...', 'info');
+        arrayBuffer = await file.arrayBuffer();
+      }
 
-          table.innerHTML = '';
-          const thead = document.createElement('thead');
-          const tbody = document.createElement('tbody');
+      const mammoth = await import('mammoth');
+      const TurndownService = (await import('turndown')).default;
 
-          rows.forEach((row, i) => {
-            const cells = Array.from(row.querySelectorAll('td, th'));
-            cells.forEach(cell => {
-              // Remove <p> tags inside table cells which break markdown tables
-              const inner = cell.innerHTML.replace(/<\/?p[^>]*>/g, '').trim();
-              if (i === 0) {
-                const th = document.createElement('th');
-                th.innerHTML = inner;
-                row.replaceChild(th, cell);
-              } else {
-                const td = document.createElement('td');
-                td.innerHTML = inner;
-                row.replaceChild(td, cell);
-              }
-            });
+      const options: any = {
+        preserveEmptyParagraphs: false,
+        convertImage: (mammoth as any).images.imgElement((image: any) => {
+          return image.read("base64").then((imageBuffer: string) => {
+            // We MUST use a Blob URL to prevent the massive Base64 string from
+            // ever being inserted into the React <textarea>. The Chromium spellchecker
+            // and layout engine will crash WebView2 (15% CPU loop eternally) if forced
+            // to process a single 15,000,000 character line inside an editable field.
+            // By allocating the buffer locally and wrapping it inside a blob, the image 
+            // reference drops to just ~40 characters entirely avoiding ReDOS and UI locks.
+            const byteCharacters = atob(imageBuffer);
+            const byteNumbers = new Array(byteCharacters.length);
+            for (let i = 0; i < byteCharacters.length; i++) {
+              byteNumbers[i] = byteCharacters.charCodeAt(i);
+            }
+            const byteArray = new Uint8Array(byteNumbers);
+            const blob = new Blob([byteArray], { type: image.contentType });
+            const url = URL.createObjectURL(blob);
 
+            return { src: url };
+          });
+        })
+      };
+
+      const result = await mammoth.convertToHtml({ arrayBuffer: arrayBuffer! }, options);
+      // Release memory early
+      arrayBuffer = null;
+
+      let html = result.value;
+
+      // Fix table parsing for accurate Markdown generation
+      const tempDiv = document.createElement('div');
+      tempDiv.innerHTML = html;
+
+      const tables = tempDiv.querySelectorAll('table');
+      tables.forEach(table => {
+        const rows = Array.from(table.querySelectorAll('tr'));
+        if (rows.length === 0) return;
+
+        table.innerHTML = '';
+        const thead = document.createElement('thead');
+        const tbody = document.createElement('tbody');
+
+        rows.forEach((row, i) => {
+          const cells = Array.from(row.querySelectorAll('td, th'));
+          cells.forEach(cell => {
+            // Remove <p> tags inside table cells which break markdown tables
+            const inner = cell.innerHTML.replace(/<\/?p[^>]*>/g, '').trim();
             if (i === 0) {
-              thead.appendChild(row);
+              const th = document.createElement('th');
+              th.innerHTML = inner;
+              row.replaceChild(th, cell);
             } else {
-              tbody.appendChild(row);
+              const td = document.createElement('td');
+              td.innerHTML = inner;
+              row.replaceChild(td, cell);
             }
           });
 
-          table.appendChild(thead);
-          if (rows.length > 1) {
-            table.appendChild(tbody);
+          if (i === 0) {
+            thead.appendChild(row);
+          } else {
+            tbody.appendChild(row);
           }
         });
 
-        const turndownService = new TurndownService({
-          headingStyle: 'atx',
-          codeBlockStyle: 'fenced'
-        });
+        table.appendChild(thead);
+        if (rows.length > 1) {
+          table.appendChild(tbody);
+        }
+      });
 
-        // Add GFM plugin to Turndown to support tables and strikethroughs
-        const { gfm } = await import('turndown-plugin-gfm');
-        turndownService.use(gfm);
+      const turndownService = new TurndownService({
+        headingStyle: 'atx',
+        codeBlockStyle: 'fenced'
+      });
 
-        const markdown = turndownService.turndown(tempDiv.innerHTML);
+      // Add GFM plugin to Turndown to support tables and strikethroughs
+      const { gfm } = await import('turndown-plugin-gfm');
+      turndownService.use(gfm);
 
-        setEditorContent(markdown);
-        setCurrentFilePath(null);
-        setCurrentCloudNote(null);
-        setShowAutoModal(false);
-        showToast(t('toasts.import_success') || 'Successfully imported Word Document', 'success');
-      } catch (error) {
-        console.error('Docx import error:', error);
-        showToast(`${t('toasts.import_error') || 'Failed to import Docx'}: ${(error as Error).message}`, 'error');
-      }
-    };
-    input.click();
+      let markdown = turndownService.turndown(tempDiv.innerHTML);
+
+      // Clean up the tempDiv
+      tempDiv.innerHTML = '';
+
+      setEditorContent(markdown);
+      setCurrentFilePath(null);
+      setCurrentCloudNote(null);
+      setShowAutoModal(false);
+      showToast(t('toasts.import_success') || 'Successfully imported Word Document', 'success');
+    } catch (error) {
+      console.error('Docx import error:', error);
+      showToast(`${t('toasts.import_error') || 'Failed to import Docx'}: ${(error as Error).message}`, 'error');
+    }
   };
 
   const handleCloneSubmit = async (url: string, targetDir: string, branch?: string) => {

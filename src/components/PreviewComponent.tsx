@@ -28,8 +28,6 @@ const PreviewComponent: React.FC<PreviewComponentProps> = React.memo(({
   // Custom remark plugin to preserve blank lines between list items
   const preserveListBreaks = () => {
     return (tree: any) => {
-      const lines = editorContent.split('\n');
-
       const visit = (node: any, parent: any, index: number) => {
         if (node.type === 'listItem' && node.position && index > 0) {
           const currentLine = node.position.start.line;
@@ -143,6 +141,7 @@ const PreviewComponent: React.FC<PreviewComponentProps> = React.memo(({
         rehypePlugins={[rehypeRaw, rehypeKatex]}
         urlTransform={(url: string) => {
           if (url.startsWith('data:image/')) return url;
+          if (url.startsWith('blob:')) return url;
           return defaultUrlTransform(url);
         }}
         components={{

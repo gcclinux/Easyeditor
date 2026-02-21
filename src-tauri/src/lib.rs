@@ -70,6 +70,38 @@ pub fn run() {
             oauth_get_config_status,
             oauth_start_server
         ])
+        .on_window_event(|window, event| {
+            // Properly handle window close to ensure WebView2 and its
+            // crashpad process don't linger on Windows
+            if window.label() == "main" {
+                match event {
+                    tauri::WindowEvent::CloseRequested { .. } => {
+                        // Emit a cleanup event to the frontend so it can
+                        // clear timers, intervals, and connections before
+                        // the WebView2 renderer shuts down
+                        let _ = window.emit("app-cleanup", ());
+                        
+                        // Start a detached watchdog thread to guarantee shutdown. 
+                        // If the frontend renderer is catastrophically locked 
+                        // (e.g. 100% CPU layout recalculation loops), the window.close()
+                        // call will never resolve through the Windows COM layer, preventing
+                        // the `Destroyed` event from firing. We allow 500ms for graceful
+                        // shutdown, then force kill any orphaned webview processes.
+                        std::thread::spawn(|| {
+                            std::thread::sleep(std::time::Duration::from_millis(500));
+                            std::process::exit(0);
+                        });
+                    }
+                    tauri::WindowEvent::Destroyed => {
+                        // After the window and WebView2 have been properly
+                        // torn down, force-exit to kill any orphaned
+                        // WebView2 child processes (crashpad, GPU, etc.)
+                        std::process::exit(0);
+                    }
+                    _ => {}
+                }
+            }
+        })
         .setup(|app| {
             // Handle file opening on startup
             let args: Vec<String> = env::args().collect();

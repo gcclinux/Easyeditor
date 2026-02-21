@@ -46,6 +46,17 @@ export const saveAsPNG = async (elementId: string, fileName: string = 'easyedito
                     clonedElement.style.maxWidth = 'none';
                     clonedElement.style.margin = '0';
                     clonedElement.style.flex = 'none';
+
+                    // Force all text to black for readability (background is white)
+                    clonedElement.style.color = '#000000';
+                    const allElements = clonedElement.querySelectorAll('*');
+                    allElements.forEach((el) => {
+                        const htmlEl = el as HTMLElement;
+                        htmlEl.style.color = '#000000';
+                        // Also fix border colors that may be invisible on white
+                        htmlEl.style.borderColor = '#cccccc';
+                    });
+
                     // Also ensure body/html in clone can accommodate it
                     const body = clonedDoc.body;
                     if (body) {

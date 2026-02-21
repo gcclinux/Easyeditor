@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { FaStickyNote, FaCloud, FaSync, FaPlus, FaTrash, FaKey } from 'react-icons/fa';
 import ConfirmationModal from './ConfirmationModal';
 import { cloudManager } from '../cloud/managers/CloudManager';
@@ -484,60 +484,98 @@ const EasyNotesSidebar: React.FC<EasyNotesSidebarProps> = ({
     }
   };
 
-  // Calculate how many columns are needed based on notes count and available height
-  const calculateColumns = (noteCount: number) => {
-    const baseColumnWidth = 400;
-    const headerHeight = 320; // Height for header, providers, actions, and notes header
-    const noteItemHeight = 75; // Height per note item including margin
-    const availableHeight = window.innerHeight - 120 - headerHeight; // 120px is top offset
-    const notesPerColumn = Math.max(1, Math.floor(availableHeight / noteItemHeight));
 
-    if (noteCount === 0) return 1;
-
-    const columnsNeeded = Math.ceil(noteCount / notesPerColumn);
-    const maxColumns = Math.min(columnsNeeded, 3); // Cap at 3 columns
-
-    // Check if screen can fit the columns
-    const screenWidth = window.innerWidth;
-    const maxPossibleColumns = Math.floor(screenWidth * 0.8 / baseColumnWidth); // Use max 80% of screen
-
-    return Math.min(maxColumns, Math.max(1, maxPossibleColumns));
-  };
-
-  // Calculate notes per column for distribution
+  // Calculate notes per column for overflow columns (which only have a small heading)
   const getNotesPerColumn = () => {
-    const headerHeight = 320;
+    const overflowHeaderHeight = 75; // heading (~16px font + 15px margin) + padding (40px top+bottom) + border offset
     const noteItemHeight = 75;
-    const availableHeight = window.innerHeight - 120 - headerHeight;
+    const availableHeight = window.innerHeight - 120 - overflowHeaderHeight;
     return Math.max(1, Math.floor(availableHeight / noteItemHeight));
   };
 
   const [columnCount, setColumnCount] = useState(1);
+  const [firstColumnCapacity, setFirstColumnCapacity] = useState<number | null>(null);
+  const firstColumnNotesRef = useRef<HTMLDivElement>(null);
+  const sidebarRef = useRef<HTMLDivElement>(null);
+
+  // Close sidebar when clicking outside of it
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (
+        showEasyNotesSidebar &&
+        sidebarRef.current &&
+        !sidebarRef.current.contains(event.target as Node)
+      ) {
+        setShowEasyNotesSidebar(false);
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, [showEasyNotesSidebar, setShowEasyNotesSidebar]);
+
+  // Measure the actual available height in the first column's notes container
+  const measureFirstColumnCapacity = useCallback(() => {
+    if (firstColumnNotesRef.current && showEasyNotesSidebar) {
+      const containerHeight = firstColumnNotesRef.current.clientHeight;
+      // Subtract space used by the "Notes (N)" heading (~19px font + 15px margin = 34px)
+      // and the container's paddingTop (20px)
+      const headerAndPadding = 54;
+      const usableHeight = containerHeight - headerAndPadding;
+      const noteItemHeight = 75; // Height per note item including margin
+      // Use floor so we only count notes that FULLY fit (no clipping)
+      const capacity = Math.max(1, Math.floor(usableHeight / noteItemHeight));
+      setFirstColumnCapacity(capacity);
+      return capacity;
+    }
+    return null;
+  }, [showEasyNotesSidebar]);
 
   // Update column count when notes change or window resizes
   useEffect(() => {
     const updateColumns = () => {
       if (showEasyNotesSidebar) {
-        const newColumnCount = calculateColumns(notes.length);
-        /* console.log('[EasyNotesSidebar] Column calculation:', {
-          notesCount: notes.length,
-          notesPerColumn: getNotesPerColumn(),
-          calculatedColumns: newColumnCount
-        }); */
+        // Measure first column capacity from the actual DOM
+        const measuredCapacity = measureFirstColumnCapacity();
+        const col1Capacity = measuredCapacity ?? getNotesPerColumn();
+        const otherColCapacity = getNotesPerColumn();
+
+        // Calculate how many notes overflow from the first column
+        const overflowNotes = Math.max(0, notes.length - col1Capacity);
+        const extraColumnsNeeded = overflowNotes > 0 ? Math.ceil(overflowNotes / otherColCapacity) : 0;
+        const totalColumns = 1 + extraColumnsNeeded;
+
+        // Cap columns based on screen width
+        const baseColumnWidth = 400;
+        const screenWidth = window.innerWidth;
+        const maxPossibleColumns = Math.max(1, Math.floor(screenWidth * 0.8 / baseColumnWidth));
+        const newColumnCount = Math.min(totalColumns, maxPossibleColumns);
+
         setColumnCount(newColumnCount);
       }
     };
 
-    updateColumns();
+    // Small delay to allow the DOM to render before measuring
+    const timeoutId = setTimeout(updateColumns, 50);
     window.addEventListener('resize', updateColumns);
-    return () => window.removeEventListener('resize', updateColumns);
-  }, [notes.length, showEasyNotesSidebar]);
+    return () => {
+      clearTimeout(timeoutId);
+      window.removeEventListener('resize', updateColumns);
+    };
+  }, [notes.length, showEasyNotesSidebar, measureFirstColumnCapacity]);
 
-  // Split notes into columns
+  // Split notes into columns, using measured first-column capacity
   const getNotesForColumn = (columnIndex: number) => {
-    const notesPerColumn = getNotesPerColumn();
-    const startIndex = columnIndex * notesPerColumn;
-    const endIndex = startIndex + notesPerColumn;
+    const col1Capacity = firstColumnCapacity ?? getNotesPerColumn();
+    const otherColCapacity = getNotesPerColumn();
+
+    if (columnIndex === 0) {
+      return notes.slice(0, col1Capacity);
+    }
+
+    // For subsequent columns, offset by first column capacity then use standard capacity
+    const startIndex = col1Capacity + (columnIndex - 1) * otherColCapacity;
+    const endIndex = startIndex + otherColCapacity;
     return notes.slice(startIndex, endIndex);
   };
 
@@ -640,6 +678,7 @@ const EasyNotesSidebar: React.FC<EasyNotesSidebarProps> = ({
 
   return (
     <div
+      ref={sidebarRef}
       className={`easynotes-sidebar ${showEasyNotesSidebar ? 'easynotes-sidebar-open' : ''}`}
       style={{
         position: 'fixed',
@@ -852,7 +891,7 @@ const EasyNotesSidebar: React.FC<EasyNotesSidebarProps> = ({
         </div>
 
         {/* Notes List - First Column */}
-        <div style={{ borderTop: '1px solid var(--border-secondary)', paddingTop: '20px', flex: 1, overflow: 'hidden' }}>
+        <div ref={firstColumnNotesRef} style={{ borderTop: '1px solid var(--border-secondary)', paddingTop: '20px', flex: 1, overflow: 'hidden' }}>
           <h3 style={{ fontSize: '1.2rem', marginBottom: '15px', color: 'var(--color-text-dropdown)' }}>
             Notes ({notes.length})
           </h3>
