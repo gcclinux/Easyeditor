@@ -545,11 +545,9 @@ const EasyNotesSidebar: React.FC<EasyNotesSidebarProps> = ({
         const extraColumnsNeeded = overflowNotes > 0 ? Math.ceil(overflowNotes / otherColCapacity) : 0;
         const totalColumns = 1 + extraColumnsNeeded;
 
-        // Cap columns based on screen width
-        const baseColumnWidth = 400;
-        const screenWidth = window.innerWidth;
-        const maxPossibleColumns = Math.max(1, Math.floor(screenWidth * 0.8 / baseColumnWidth));
-        const newColumnCount = Math.min(totalColumns, maxPossibleColumns);
+        // Cap at 4 columns max (horizontal scroll handles overflow)
+        const MAX_COLUMNS = 4;
+        const newColumnCount = Math.min(totalColumns, MAX_COLUMNS);
 
         setColumnCount(newColumnCount);
       }
@@ -579,7 +577,8 @@ const EasyNotesSidebar: React.FC<EasyNotesSidebarProps> = ({
     return notes.slice(startIndex, endIndex);
   };
 
-  const sidebarWidth = columnCount * 400;
+  const sidebarWidth = Math.min(columnCount * 400, Math.floor(window.innerWidth * 0.95));
+  const sidebarInnerWidth = columnCount * 400;
 
   // Helper function to render a note item
   const renderNoteItem = (note: NoteMetadata) => {
@@ -694,9 +693,19 @@ const EasyNotesSidebar: React.FC<EasyNotesSidebarProps> = ({
         boxShadow: showEasyNotesSidebar ? '2px 0 10px var(--shadow-md)' : 'none',
         display: 'flex',
         flexDirection: 'row',
-        overflow: 'hidden'
+        overflow: 'hidden',
+        overflowX: 'auto'
       }}
     >
+      {/* Scrollable columns wrapper */}
+      <div style={{
+        display: 'flex',
+        flexDirection: 'row',
+        width: `${sidebarInnerWidth}px`,
+        minWidth: `${sidebarInnerWidth}px`,
+        height: '100%',
+        overflowY: 'hidden'
+      }}>
       {/* First Column - Header, Providers, Actions, and first set of notes */}
       <div style={{
         width: '400px',
@@ -949,6 +958,7 @@ const EasyNotesSidebar: React.FC<EasyNotesSidebarProps> = ({
           </div>
         );
       })}
+      </div>{/* end scrollable columns wrapper */}
 
       {/* New Note Dialog */}
       {showNewNoteDialog && (
