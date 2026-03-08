@@ -4,12 +4,12 @@ import { isTauriEnvironment } from '../utils/environment';
 class LicenseManager {
   private static instance: LicenseManager;
   private activeLicense: boolean = false;
-  private plan: string = '';
+  private type: string = '';
   private checking: boolean = false;
   private API_ENDPOINT = 'https://easyeditor-premium.web.app/api/check-license';
   private STORAGE_KEY_EMAIL = 'easyeditor-user-email';
   private STORAGE_KEY_DATE = 'easyeditor-user-purchase-date';
-  private STORAGE_KEY_PLAN = 'easyeditor-user-plan';
+  private STORAGE_KEY_TYPE = 'easyeditor-user-type';
 
   private constructor() { }
 
@@ -34,8 +34,8 @@ class LicenseManager {
     return this.activeLicense;
   }
 
-  public getPlan(): string {
-    return this.plan;
+  public getType(): string {
+    return this.type;
   }
 
   public async setLicenseData(email: string): Promise<void> {
@@ -52,8 +52,8 @@ class LicenseManager {
     return localStorage.getItem(this.STORAGE_KEY_DATE);
   }
 
-  public getStoredPlan(): string | null {
-    return localStorage.getItem(this.STORAGE_KEY_PLAN);
+  public getStoredType(): string | null {
+    return localStorage.getItem(this.STORAGE_KEY_TYPE);
   }
 
   private listeners: (() => void)[] = [];
@@ -75,7 +75,7 @@ class LicenseManager {
     if (!email) {
       const oldStatus = this.activeLicense;
       this.activeLicense = false;
-      this.plan = '';
+      this.type = '';
       if (oldStatus !== this.activeLicense) {
         this.notifyListeners();
       }
@@ -95,20 +95,20 @@ class LicenseManager {
       });
 
       const oldStatus = this.activeLicense;
-      const oldPlan = this.plan;
+      const oldType = this.type;
 
       if (response.ok) {
         const data = await response.json();
         // Check for "True" string or true boolean
         this.activeLicense = data.hasActiveLicense === true || data.hasActiveLicense === 'True';
 
-        // Store plan if available
-        if (data.plan) {
-          this.plan = data.plan;
-          localStorage.setItem(this.STORAGE_KEY_PLAN, this.plan);
+        // Store type if available
+        if (data.type) {
+          this.type = data.type;
+          localStorage.setItem(this.STORAGE_KEY_TYPE, this.type);
         } else {
-          this.plan = '';
-          localStorage.removeItem(this.STORAGE_KEY_PLAN);
+          this.type = '';
+          localStorage.removeItem(this.STORAGE_KEY_TYPE);
         }
 
         // Store purchaseDate if available (returned from server)
@@ -117,10 +117,10 @@ class LicenseManager {
         }
       } else {
         this.activeLicense = false;
-        this.plan = '';
+        this.type = '';
       }
 
-      if (oldStatus !== this.activeLicense || oldPlan !== this.plan) {
+      if (oldStatus !== this.activeLicense || oldType !== this.type) {
         this.notifyListeners();
       }
     } catch (error) {
@@ -131,7 +131,7 @@ class LicenseManager {
       // For safety/validity, if check fails, we assume no license.
       // But maybe we should keep the cached values if network error?
       // Current implementation clears it. I'll stick to that.
-      this.plan = '';
+      this.type = '';
 
       if (oldStatus !== this.activeLicense) {
         this.notifyListeners();

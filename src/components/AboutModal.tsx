@@ -20,14 +20,14 @@ export function AboutModal({ open, onClose }: AboutModalProps) {
   const [availableVersion, setAvailableVersion] = React.useState<string>('');
   const [name, setName] = React.useState('');
   const [email, setEmail] = React.useState('');
-  const [plan, setPlan] = React.useState('');
+  const [type, setType] = React.useState('');
   const [isLicenseValid, setIsLicenseValid] = React.useState(false);
 
   React.useEffect(() => {
     const storedEmail = LicenseManager.getStoredEmail();
     if (storedEmail) setEmail(storedEmail);
-    const storedPlan = LicenseManager.getStoredPlan();
-    if (storedPlan) setPlan(storedPlan);
+    const storedType = LicenseManager.getStoredType();
+    if (storedType) setType(storedType);
     const storedName = localStorage.getItem('easyeditor-user-name');
     if (storedName) setName(storedName);
 
@@ -36,11 +36,11 @@ export function AboutModal({ open, onClose }: AboutModalProps) {
       setIsLicenseValid(true);
     }
 
-    // Subscribe to license changes to update plan
+    // Subscribe to license changes to update type
     const unsubscribe = LicenseManager.subscribe(() => {
       setIsLicenseValid(LicenseManager.hasActiveLicense());
-      const updatedPlan = LicenseManager.getPlan();
-      setPlan(updatedPlan);
+      const updatedType = LicenseManager.getType();
+      setType(updatedType);
     });
 
     return () => unsubscribe();
@@ -50,7 +50,7 @@ export function AboutModal({ open, onClose }: AboutModalProps) {
     localStorage.setItem('easyeditor-user-name', name);
     await LicenseManager.setLicenseData(email);
     setIsLicenseValid(LicenseManager.hasActiveLicense());
-    setPlan(LicenseManager.getPlan());
+    setType(LicenseManager.getType());
   };
 
   React.useEffect(() => {
@@ -211,7 +211,7 @@ export function AboutModal({ open, onClose }: AboutModalProps) {
                     <label style={{ display: 'block', fontSize: '0.9em', marginBottom: '4px' }}>{t('about.subscription_type')}</label>
                     <input
                       type="text"
-                      value={plan}
+                      value={type}
                       readOnly
                       className="license-plan-input"
                       style={{ width: '95%', padding: '4px', borderRadius: '4px', border: '1px solid #ccc' }}
