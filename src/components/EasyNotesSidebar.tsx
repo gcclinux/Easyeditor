@@ -42,6 +42,7 @@ const EasyNotesSidebar: React.FC<EasyNotesSidebarProps> = ({
   const [newNoteTitle, setNewNoteTitle] = useState('');
 
   const [selectedProvider, setSelectedProvider] = useState<string>('googledrive');
+  const [activeProviderFilter, setActiveProviderFilter] = useState<string>('all');
   const [hasLicense, setHasLicense] = useState(LicenseManager.hasActiveLicense());
 
   // Delete confirmation modal state
@@ -463,6 +464,10 @@ const EasyNotesSidebar: React.FC<EasyNotesSidebarProps> = ({
     return Object.entries(providers).filter(([_, metadata]) => metadata.connected);
   };
 
+  const filteredNotes = activeProviderFilter === 'all'
+    ? notes
+    : notes.filter(n => n.provider === activeProviderFilter);
+
   const handleUpgradeClick = async (e: React.MouseEvent) => {
     e.preventDefault();
     if (onUpgradeClick) {
@@ -541,7 +546,7 @@ const EasyNotesSidebar: React.FC<EasyNotesSidebarProps> = ({
         const otherColCapacity = getNotesPerColumn();
 
         // Calculate how many notes overflow from the first column
-        const overflowNotes = Math.max(0, notes.length - col1Capacity);
+        const overflowNotes = Math.max(0, filteredNotes.length - col1Capacity);
         const extraColumnsNeeded = overflowNotes > 0 ? Math.ceil(overflowNotes / otherColCapacity) : 0;
         const totalColumns = 1 + extraColumnsNeeded;
 
@@ -560,7 +565,7 @@ const EasyNotesSidebar: React.FC<EasyNotesSidebarProps> = ({
       clearTimeout(timeoutId);
       window.removeEventListener('resize', updateColumns);
     };
-  }, [notes.length, showEasyNotesSidebar, measureFirstColumnCapacity]);
+  }, [filteredNotes.length, showEasyNotesSidebar, measureFirstColumnCapacity]);
 
   // Split notes into columns, using measured first-column capacity
   const getNotesForColumn = (columnIndex: number) => {
@@ -568,13 +573,13 @@ const EasyNotesSidebar: React.FC<EasyNotesSidebarProps> = ({
     const otherColCapacity = getNotesPerColumn();
 
     if (columnIndex === 0) {
-      return notes.slice(0, col1Capacity);
+      return filteredNotes.slice(0, col1Capacity);
     }
 
     // For subsequent columns, offset by first column capacity then use standard capacity
     const startIndex = col1Capacity + (columnIndex - 1) * otherColCapacity;
     const endIndex = startIndex + otherColCapacity;
-    return notes.slice(startIndex, endIndex);
+    return filteredNotes.slice(startIndex, endIndex);
   };
 
   const sidebarWidth = Math.min(columnCount * 400, Math.floor(window.innerWidth * 0.95));
@@ -894,16 +899,44 @@ const EasyNotesSidebar: React.FC<EasyNotesSidebarProps> = ({
               title={syncing ? 'Syncing notes...' : 'Sync notes'}
             >
               <FaSync className={syncing ? 'fa-spin' : ''} />
-              {syncing && <span style={{ fontSize: '12px' }}>Syncing</span>}
+              <span style={{ fontSize: '12px' }}>{syncing ? 'Syncing' : 'Sync'}</span>
             </button>
           </div>
         </div>
 
         {/* Notes List - First Column */}
         <div ref={firstColumnNotesRef} style={{ borderTop: '1px solid var(--border-secondary)', paddingTop: '20px', flex: 1, overflow: 'hidden' }}>
-          <h3 style={{ fontSize: '1.2rem', marginBottom: '15px', color: 'var(--color-text-dropdown)' }}>
-            Notes ({notes.length})
+          <h3 style={{ fontSize: '1.2rem', marginBottom: '10px', color: 'var(--color-text-dropdown)' }}>
+            Notes ({filteredNotes.length})
           </h3>
+
+          {/* Provider filter tabs - only show when 2+ providers connected */}
+          {getConnectedProviders().length >= 2 && (
+            <div style={{ display: 'flex', gap: '4px', marginBottom: '12px', flexWrap: 'wrap' }}>
+              {[{ key: 'all', label: 'All', icon: '📋' }, ...getConnectedProviders().map(([name, meta]) => ({ key: name, label: meta.displayName, icon: meta.icon }))].map(({ key, label, icon }) => (
+                <button
+                  key={key}
+                  onClick={() => setActiveProviderFilter(key)}
+                  style={{
+                    padding: '4px 10px',
+                    fontSize: '12px',
+                    border: '1px solid var(--border-secondary)',
+                    borderRadius: '12px',
+                    cursor: 'pointer',
+                    backgroundColor: activeProviderFilter === key ? 'var(--bg-primary)' : 'var(--bg-dropdown-hover)',
+                    color: activeProviderFilter === key ? 'white' : 'var(--color-text-dropdown)',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '4px',
+                    transition: 'background-color 0.15s, color 0.15s'
+                  }}
+                >
+                  <span>{icon}</span>
+                  <span>{label}</span>
+                </button>
+              ))}
+            </div>
+          )}
 
           {loading && (
             <div style={{ textAlign: 'center', padding: '20px', color: 'var(--color-text-light)' }}>
@@ -912,16 +945,18 @@ const EasyNotesSidebar: React.FC<EasyNotesSidebarProps> = ({
             </div>
           )}
 
-          {!loading && notes.length === 0 && (
+          {!loading && filteredNotes.length === 0 && (
             <p style={{ color: 'var(--color-text-light)', fontSize: '14px', textAlign: 'center', padding: '20px' }}>
               {getConnectedProviders().length === 0
                 ? t('easynotes.connect_cloud_provider')
-                : 'No notes yet. Create your first note!'
+                : activeProviderFilter !== 'all'
+                  ? `No notes in ${providers[activeProviderFilter]?.displayName || activeProviderFilter}`
+                  : 'No notes yet. Create your first note!'
               }
             </p>
           )}
 
-          {!loading && notes.length > 0 && (
+          {!loading && filteredNotes.length > 0 && (
             <div>
               {getNotesForColumn(0).map((note) => renderNoteItem(note))}
             </div>
