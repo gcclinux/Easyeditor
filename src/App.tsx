@@ -9,7 +9,8 @@ import {
   FaImage,
   FaStickyNote,
   FaDownload,
-  FaCodeBranch
+  FaCodeBranch,
+  FaRobot
 } from 'react-icons/fa';
 import { VscSymbolKeyword } from "react-icons/vsc";
 import { GoTasklist } from "react-icons/go";
@@ -100,6 +101,7 @@ import GitModal from './components/GitModal';
 import TemplatesModal from './components/TemplatesModal';
 import AboutModal from './components/AboutModal';
 import EasyNotesSidebar from './components/EasyNotesSidebar';
+import EasyAIPanel from './components/EasyAIPanel';
 import FeaturesModal from './components/FeaturesModal';
 import ThemeModal from './components/ThemeModal';
 import ImportThemeModal from './components/ImportThemeModal';
@@ -209,6 +211,7 @@ const App = () => {
   const [showTaskModal, setShowTaskModal] = useState(false);
   const [showGitModal, setShowGitModal] = useState(false);
   const [showEasyNotesSidebar, setShowEasyNotesSidebar] = useState(false);
+  const [showEasyAIPanel, setShowEasyAIPanel] = useState(false);
   const easyNotesButtonRef = useRef<HTMLButtonElement | null>(null);
   const [isEditFull, setIsEditFull] = useState<boolean>(false);
   const [isPreviewFull, setIsPreviewFull] = useState<boolean>(false);
@@ -2469,6 +2472,20 @@ const App = () => {
         <div className="dropdown-container">
           <button
             className="help-menubar-btn"
+            onClick={(e) => {
+              e.preventDefault();
+              closeAllDropdowns();
+              setShowEasyAIPanel(!showEasyAIPanel);
+            }}
+            title="EasyAI"
+            style={{ backgroundColor: showEasyAIPanel ? '#4a5568' : undefined }}
+          >
+            <FaRobot /> &nbsp; EasyAI
+          </button>
+        </div>
+        <div className="dropdown-container">
+          <button
+            className="help-menubar-btn"
             onClick={() => {
               closeAllDropdowns();
               setShowEasyNotesSidebar(false);
@@ -2476,7 +2493,7 @@ const App = () => {
             }}
             title="Git Operations"
           >
-            <FaCodeBranch /> &nbsp; Git
+            <FaCodeBranch /> &nbsp; EasyGit
           </button>
         </div>
         {isGitRepo && (
@@ -3190,6 +3207,18 @@ const App = () => {
             />
           )
         }
+
+        <EasyAIPanel
+          showEasyAIPanel={showEasyAIPanel}
+          setShowEasyAIPanel={setShowEasyAIPanel}
+          showToast={showToast}
+          onActionSelect={(actionId, promptText) => {
+            const stubContent = `\n\n<!-- EasyAI Action: ${actionId} -->\n<!-- Prompt: ${promptText} -->\n\n`;
+            setEditorContent(prev => prev + stubContent);
+            showToast(`EasyAI (${actionId}) injected stub into editor.`, 'success');
+            setShowEasyAIPanel(false); // Optionally close after action
+          }}
+        />
 
         <div
           className={getEditorPreviewContainerClass()}
