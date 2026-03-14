@@ -50,14 +50,14 @@ const EasyAIPanel: React.FC<EasyAIPanelProps> = ({
   const panelWidth = 400; // Single panel width like EasyNotes
 
   const actionButtons = [
-    { id: 'markdown', label: 'Markdown' },
-    { id: 'mermaid', label: 'Mermaid' },
-    { id: 'user-story', label: 'User Story' },
-    { id: 'ascii-diag', label: 'ASCII Diag' },
-    { id: 'plantuml', label: 'PlantUML' },
-    { id: 'md-table', label: 'MD Table' },
-    { id: 'fix-code', label: 'Fix Code' },
-    { id: 'fix-diag', label: 'Fix Diag' }
+    { id: 'markdown', label: t('easyai.markdown') },
+    { id: 'mermaid', label: t('easyai.mermaid') },
+    { id: 'user-story', label: t('easyai.user_story') },
+    { id: 'ascii-diag', label: t('easyai.ascii_diag') },
+    { id: 'plantuml', label: t('easyai.plantuml') },
+    { id: 'md-table', label: t('easyai.md_table') },
+    { id: 'fix-code', label: t('easyai.fix_code') },
+    { id: 'fix-diag', label: t('easyai.fix_diag') }
   ];
 
   const handleActionClick = (actionId: string) => {
@@ -65,7 +65,7 @@ const EasyAIPanel: React.FC<EasyAIPanelProps> = ({
       showToast('Please enter a requirement for EasyAI first.', 'warning');
       return;
     }
-    
+
     if (onActionSelect) {
       onActionSelect(actionId, prompt);
     } else {
@@ -85,7 +85,7 @@ const EasyAIPanel: React.FC<EasyAIPanelProps> = ({
         height: 'calc(100vh - 120px)',
         backgroundColor: 'var(--bg-dropdown)',
         color: 'var(--color-text-dropdown)',
-        zIndex: 1000000, 
+        zIndex: 1000000,
         transition: 'right 0.3s ease-in-out',
         borderLeft: '2px solid var(--border-secondary)',
         boxShadow: showEasyAIPanel ? '-2px 0 10px var(--shadow-md)' : 'none',
@@ -164,7 +164,7 @@ const EasyAIPanel: React.FC<EasyAIPanelProps> = ({
               style={{
                 padding: '12px',
                 backgroundColor: 'var(--bg-dropdown-hover)',
-                color: 'var(--color-text-primary)',
+                color: '#ffffff',
                 border: '1px solid var(--border-secondary)',
                 borderRadius: '6px',
                 cursor: 'pointer',

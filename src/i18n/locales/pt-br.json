@@ -564,5 +564,15 @@
   },
   "modal": {
     "enter_note_title": "Digite o título da nota"
+  },
+  "easyai": {
+    "markdown": "Markdown",
+    "mermaid": "Mermaid",
+    "user_story": "História de Usuário",
+    "ascii_diag": "Diag ASCII",
+    "plantuml": "PlantUML",
+    "md_table": "Tabela MD",
+    "fix_code": "Corrigir Código",
+    "fix_diag": "Corrigir Diagrama"
   }
 }
