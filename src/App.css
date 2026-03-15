@@ -366,6 +366,11 @@ html,
   transform: none;
 }
 
+/* Narrower variant for Tasks and Export buttons */
+.fixed-menubar-btn.compact {
+  width: 120px;
+  font-size: 0.85em;
+}
 
 /* Help button: half the fixed size and light green */
 .help-menubar-btn {

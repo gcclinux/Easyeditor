@@ -91,7 +91,6 @@ import MermaidModal from './components/MermaidModal';
 import UMLModal from './components/UMLModal';
 import InsertModal from './components/InsertModal';
 import ImagesModal from './components/ImagesModal';
-import LinksModal from './components/LinksModal';
 import TablesModal from './components/TablesModal';
 import FootnoteModal from './components/FootnoteModal';
 import SymbolsModal from './components/SymbolsModal';
@@ -187,7 +186,6 @@ const App = () => {
   const [showSymbolsModal, setShowSymbolsModal] = useState(false);
   const [showIconsModal, setShowIconsModal] = useState(false);
   const [showAutoModal, setShowAutoModal] = useState(false);
-  const [showLinksModal, setShowLinksModal] = useState(false);
   const [showTablesModal, setShowTablesModal] = useState(false);
   const [showFootnoteModal, setShowFootnoteModal] = useState(false);
   const [showInsertModal, setShowInsertModal] = useState(false);
@@ -2542,7 +2540,7 @@ const App = () => {
         </button>
         <div className="dropdown-container">
           <button
-            className="menu-item fixed-menubar-btn"
+            className="menu-item fixed-menubar-btn compact"
             onClick={() => {
               closeAllDropdowns();
               setShowEasyNotesSidebar(false);
@@ -2555,7 +2553,7 @@ const App = () => {
         </div>
         <div className="dropdown-container">
           <button
-            className="menu-item fixed-menubar-btn"
+            className="menu-item fixed-menubar-btn compact"
             onClick={() => {
               cacheSelection();
               closeAllDropdowns();
@@ -2692,14 +2690,6 @@ const App = () => {
               onList2={handlerinsertList2Syntax}
               onInsertTemplate={handleInsertImageTemplate}
               onClose={() => setShowInsertModal(false)}
-            />
-          )
-        }
-        {
-          showLinksModal && (
-            <LinksModal
-              onInsertTemplate={handleInsertImageTemplate}
-              onClose={() => setShowLinksModal(false)}
             />
           )
         }
@@ -2938,10 +2928,6 @@ const App = () => {
           &#8741;
           <div className="dropdown-container">
             <button className="button-mermaid" onMouseDown={() => { cacheSelection(); closeAllDropdowns(); setShowInsertModal(true); }} title={t('toolbar.insert')}><MdOutlineInsertChartOutlined />&nbsp;{t('toolbar.insert')}</button>
-          </div>
-          &#8741;
-          <div className="dropdown-container">
-            <button className="button-mermaid" onMouseDown={() => { cacheSelection(); closeAllDropdowns(); setShowLinksModal(true); }} title={t('toolbar.links')}><FaLink />&nbsp;{t('toolbar.links')}</button>
           </div>
           &#8741;
           <div className="dropdown-container">
