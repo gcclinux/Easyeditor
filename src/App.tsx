@@ -101,6 +101,7 @@ import TemplatesModal from './components/TemplatesModal';
 import AboutModal from './components/AboutModal';
 import EasyNotesSidebar from './components/EasyNotesSidebar';
 import EasyAIPanel from './components/EasyAIPanel';
+import { buildSystemPrompt } from './components/easyai/aiPersonas';
 import FeaturesModal from './components/FeaturesModal';
 import ThemeModal from './components/ThemeModal';
 import ImportThemeModal from './components/ImportThemeModal';
@@ -3199,10 +3200,23 @@ const App = () => {
           setShowEasyAIPanel={setShowEasyAIPanel}
           showToast={showToast}
           onActionSelect={(actionId, promptText) => {
-            const stubContent = `\n\n<!-- EasyAI Action: ${actionId} -->\n<!-- Prompt: ${promptText} -->\n\n`;
+            const systemPrompt = buildSystemPrompt(actionId, editorContent);
+            if (!systemPrompt) {
+              showToast(`Unknown EasyAI action: ${actionId}`, 'error');
+              return;
+            }
+
+            // Log the constructed prompt for debugging until AI backend is wired
+            console.log(`[EasyAI] Action: ${actionId}`);
+            console.log(`[EasyAI] User Prompt: ${promptText}`);
+            console.log(`[EasyAI] System Prompt:\n${systemPrompt}`);
+
+            // TODO: Send systemPrompt + promptText to AI backend and append response to editor
+            // For now, inject a placeholder showing the prompt was built successfully
+            const stubContent = `\n\n<!-- EasyAI Action: ${actionId} -->\n<!-- User Prompt: ${promptText} -->\n<!-- System prompt built (${systemPrompt.length} chars) — AI backend not yet connected -->\n\n`;
             setEditorContent(prev => prev + stubContent);
-            showToast(`EasyAI (${actionId}) injected stub into editor.`, 'success');
-            setShowEasyAIPanel(false); // Optionally close after action
+            showToast(`EasyAI (${actionId}) prompt ready — AI backend not yet connected.`, 'info');
+            setShowEasyAIPanel(false);
           }}
         />
 

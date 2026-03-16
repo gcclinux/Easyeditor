@@ -1,6 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { FaRobot, FaTimes } from 'react-icons/fa';
 import { useLanguage } from '../i18n/LanguageContext';
+import { getPersonaDescription } from './easyai/aiPersonas';
 
 interface EasyAIPanelProps {
   showEasyAIPanel: boolean;
@@ -57,7 +58,7 @@ const EasyAIPanel: React.FC<EasyAIPanelProps> = ({
     { id: 'plantuml', label: t('easyai.plantuml') },
     { id: 'md-table', label: t('easyai.md_table') },
     { id: 'fix-code', label: t('easyai.fix_code') },
-    { id: 'fix-diag', label: t('easyai.fix_diag') }
+    { id: 'rewrite', label: t('easyai.rewrite') }
   ];
 
   const handleActionClick = (actionId: string) => {
@@ -161,6 +162,7 @@ const EasyAIPanel: React.FC<EasyAIPanelProps> = ({
             <button
               key={action.id}
               onClick={() => handleActionClick(action.id)}
+              title={getPersonaDescription(action.id) || action.label}
               style={{
                 padding: '12px',
                 backgroundColor: 'var(--bg-dropdown-hover)',

@@ -576,6 +576,6 @@
     "plantuml": "PlantUML",
     "md_table": "MD Table",
     "fix_code": "Fix Code",
-    "fix_diag": "Fix Diag"
+    "rewrite": "Rewrite"
   }
 }

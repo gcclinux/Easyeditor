@@ -573,6 +573,6 @@
     "plantuml": "PlantUML",
     "md_table": "MD Tabelle",
     "fix_code": "Code Korrigieren",
-    "fix_diag": "Diagramm Korrigieren"
+    "rewrite": "Herschreiben"
   }
 }
