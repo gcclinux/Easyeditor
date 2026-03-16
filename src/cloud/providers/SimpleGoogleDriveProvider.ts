@@ -36,7 +36,7 @@ export class SimpleGoogleDriveProvider implements CloudProvider {
   
   private clientId: string;
   private apiKey: string;
-  private scope: string = 'https://www.googleapis.com/auth/drive.file';
+  private scope: string = 'https://www.googleapis.com/auth/drive.file https://www.googleapis.com/auth/drive.readonly';
   
   constructor(clientId?: string, apiKey?: string) {
     this.clientId = clientId || GOOGLE_DRIVE_CONFIG.CLIENT_ID;
@@ -227,17 +227,31 @@ To get an access token manually:
   async listFiles(folderId: string): Promise<CloudFile[]> {
     try {
       const accessToken = await this.getValidAccessToken();
-      
-      const response: GoogleDriveResponse = await this.makeApiCall(
-        `/drive/v3/files?q=parents in '${folderId}' and mimeType='text/markdown' and trashed=false&fields=files(id,name,modifiedTime,size,mimeType,webContentLink)`,
-        {
-          headers: {
-            'Authorization': `Bearer ${accessToken}`,
-          }
-        }
-      );
 
-      return response.files.map(file => ({
+      const allFiles: GoogleDriveFile[] = [];
+      let pageToken: string | undefined;
+
+      do {
+        const pageParam = pageToken ? `&pageToken=${pageToken}` : '';
+        const response: GoogleDriveResponse = await this.makeApiCall(
+          `/drive/v3/files?q=parents in '${folderId}' and trashed=false&fields=nextPageToken,files(id,name,modifiedTime,size,mimeType,webContentLink)&pageSize=100${pageParam}`,
+          {
+            headers: {
+              'Authorization': `Bearer ${accessToken}`,
+            }
+          }
+        );
+        allFiles.push(...(response.files || []));
+        pageToken = response.nextPageToken;
+      } while (pageToken);
+
+      console.log(`[SimpleGoogleDriveProvider] Raw files from API: ${allFiles.length}`, allFiles.map(f => `${f.name} (${f.mimeType})`));
+
+      // Filter to only include .md and .sstp files by extension
+      const filtered = allFiles.filter(file => /\.(md|sstp)$/i.test(file.name));
+      console.log(`[SimpleGoogleDriveProvider] After extension filter: ${filtered.length} files`);
+
+      return filtered.map(file => ({
         id: file.id,
         name: file.name,
         modifiedTime: new Date(file.modifiedTime),

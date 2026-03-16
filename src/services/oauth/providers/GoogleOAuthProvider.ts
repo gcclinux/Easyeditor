@@ -23,7 +23,7 @@ export class GoogleOAuthProvider implements OAuthProvider {
       this.clientSecret = clientSecret;
       this.authorizationUrl = 'https://accounts.google.com/o/oauth2/v2/auth';
       this.tokenUrl = 'https://oauth2.googleapis.com/token';
-      this.scope = ['https://www.googleapis.com/auth/drive.file'];
+      this.scope = ['https://www.googleapis.com/auth/drive.file', 'https://www.googleapis.com/auth/drive.readonly'];
       this.additionalParams = {
         access_type: 'offline',
         prompt: 'consent'
@@ -34,7 +34,7 @@ export class GoogleOAuthProvider implements OAuthProvider {
       this.clientSecret = config.clientSecret || clientSecret;
       this.authorizationUrl = config.authorizationUrl || 'https://accounts.google.com/o/oauth2/v2/auth';
       this.tokenUrl = config.tokenUrl || 'https://oauth2.googleapis.com/token';
-      this.scope = config.scope || ['https://www.googleapis.com/auth/drive.file'];
+      this.scope = config.scope || ['https://www.googleapis.com/auth/drive.file', 'https://www.googleapis.com/auth/drive.readonly'];
       this.additionalParams = config.additionalParams || {
         access_type: 'offline',
         prompt: 'consent'

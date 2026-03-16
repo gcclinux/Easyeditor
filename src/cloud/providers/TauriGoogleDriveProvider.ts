@@ -36,7 +36,7 @@ export class TauriGoogleDriveProvider implements CloudProvider {
   readonly icon = '🗂️';
 
   private clientId: string;
-  private scope: string = 'https://www.googleapis.com/auth/drive.file';
+  private scope: string = 'https://www.googleapis.com/auth/drive.file https://www.googleapis.com/auth/drive.readonly';
   private redirectUri: string = 'http://localhost:8080/oauth/callback';
 
   constructor(clientId?: string, _apiKey?: string) {
@@ -298,16 +298,30 @@ export class TauriGoogleDriveProvider implements CloudProvider {
     try {
       const accessToken = await this.getValidAccessToken();
 
-      const response: GoogleDriveResponse = await this.makeApiCall(
-        `/drive/v3/files?q=parents in '${folderId}' and (mimeType='text/markdown' or mimeType='application/octet-stream') and trashed=false&fields=files(id,name,modifiedTime,size,mimeType,webContentLink)`,
-        {
-          headers: {
-            'Authorization': `Bearer ${accessToken}`,
-          }
-        }
-      );
+      const allFiles: GoogleDriveFile[] = [];
+      let pageToken: string | undefined;
 
-      return response.files.map(file => ({
+      do {
+        const pageParam = pageToken ? `&pageToken=${pageToken}` : '';
+        const response: GoogleDriveResponse = await this.makeApiCall(
+          `/drive/v3/files?q=parents in '${folderId}' and trashed=false&fields=nextPageToken,files(id,name,modifiedTime,size,mimeType,webContentLink)&pageSize=100${pageParam}`,
+          {
+            headers: {
+              'Authorization': `Bearer ${accessToken}`,
+            }
+          }
+        );
+        allFiles.push(...(response.files || []));
+        pageToken = response.nextPageToken;
+      } while (pageToken);
+
+      console.log(`[TauriGoogleDriveProvider] Raw files from API: ${allFiles.length}`, allFiles.map(f => `${f.name} (${f.mimeType})`));
+
+      // Filter to only include .md and .sstp files by extension
+      const filtered = allFiles.filter(file => /\.(md|sstp)$/i.test(file.name));
+      console.log(`[TauriGoogleDriveProvider] After extension filter: ${filtered.length} files`);
+
+      return filtered.map(file => ({
         id: file.id,
         name: file.name,
         modifiedTime: new Date(file.modifiedTime),

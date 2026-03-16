@@ -17,6 +17,7 @@ export const exampleOAuthConfig: OAuthConfig = {
       clientSecret: undefined,
       scope: [
         'https://www.googleapis.com/auth/drive.file',
+        'https://www.googleapis.com/auth/drive.readonly',
         'https://www.googleapis.com/auth/userinfo.profile'
       ],
       enabled: true,
@@ -70,7 +71,7 @@ export const minimalOAuthConfig: Partial<OAuthConfig> = {
   providers: {
     google: {
       clientId: process.env.GOOGLE_OAUTH_CLIENT_ID || '',
-      scope: ['https://www.googleapis.com/auth/drive.file'],
+      scope: ['https://www.googleapis.com/auth/drive.file', 'https://www.googleapis.com/auth/drive.readonly'],
       enabled: true
     }
   }

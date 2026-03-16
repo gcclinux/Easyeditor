@@ -70,10 +70,19 @@ export class MetadataManager {
   async addNote(note: NoteMetadata): Promise<void> {
     const notes = await this.loadMetadata();
     
-    // Check if note already exists
+    // Check if note already exists by id
     const existingIndex = notes.findIndex(n => n.id === note.id);
     if (existingIndex >= 0) {
       throw new Error(`Note with id ${note.id} already exists`);
+    }
+
+    // Check for duplicate cloudFileId (same cloud file already tracked)
+    if (note.cloudFileId) {
+      const duplicateCloudFile = notes.find(n => n.cloudFileId === note.cloudFileId);
+      if (duplicateCloudFile) {
+        console.log(`[MetadataManager] Note with cloudFileId ${note.cloudFileId} already exists (${duplicateCloudFile.title}), skipping`);
+        return;
+      }
     }
     
     // Validate note data

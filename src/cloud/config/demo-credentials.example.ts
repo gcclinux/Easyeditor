@@ -18,7 +18,8 @@ export const GOOGLE_DRIVE_CONFIG = {
     
   // OAuth scopes required by EasyEditor
   SCOPES: [
-    'https://www.googleapis.com/auth/drive.file' // Only access files created by EasyEditor
+    'https://www.googleapis.com/auth/drive.file',    // Create, edit, delete files the app creates
+    'https://www.googleapis.com/auth/drive.readonly'  // Read all files (needed to discover manually uploaded files)
   ],
   
   // Discovery document for Google Drive API v3
