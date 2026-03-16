@@ -183,7 +183,7 @@ export function AboutModal({ open, onClose }: AboutModalProps) {
                 </a>
               </div>
               <div style={{ flex: 1, borderLeft: '1px solid var(--border-color, #eee)', paddingLeft: '1rem' }}>
-                <h3>{t('about.license_info')} ({isLicenseValid ? t('about.license_premium') : t('about.license_free')})</h3>
+                <h3>{t('about.license_info')} ({isLicenseValid && type ? type : isLicenseValid ? t('about.license_premium') : t('about.license_free')})</h3>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '3px' }}>
                   <div>
                     <label style={{ display: 'block', fontSize: '0.9em', marginBottom: '4px' }}>{t('about.license_name')}</label>
