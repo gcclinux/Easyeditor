@@ -125,7 +125,8 @@
 }
 
 .license-name-input,
-.license-email-input {
+.license-email-input,
+.license-key-input {
   background-color: var(--license-input-bg) !important;
   color: var(--license-input-text) !important;
   border: 1px solid var(--border-card);

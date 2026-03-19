@@ -214,8 +214,11 @@
     "license_date_placeholder": "bijv. 1767633074989",
     "subscription_type": "Abonnementstype",
     "subscription_type_placeholder": "Abonnementsplan",
+    "license_key": "Licentiesleutel",
+    "license_key_placeholder": "Voer uw licentiesleutel in",
     "check_license": "Controleer Licentie",
-    "close": "Sluiten"
+    "close": "Sluiten",
+    "invalid_license": "Ongeldige licentie of e-mail"
   },
   "images": {
     "image": "Afbeelding",
@@ -470,7 +473,10 @@
     "gantt": "Auto Gantt",
     "gantt_desc": "Genereer Mermaid Gantt",
     "timeline": "Auto Tijdlijn",
-    "timeline_desc": "Genereer Mermaid tijdlijn"
+    "timeline_desc": "Genereer Mermaid tijdlijn",
+    "rows": "Rijen:",
+    "columns": "Kolommen:",
+    "insert": "Invoegen"
   },
   "icons": {
     "categories": {

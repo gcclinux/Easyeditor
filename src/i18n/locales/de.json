@@ -214,8 +214,11 @@
     "license_date_placeholder": "z.B. 1767633074989",
     "subscription_type": "Abonnement-Typ",
     "subscription_type_placeholder": "Abonnement-Plan",
+    "license_key": "Lizenzschlüssel",
+    "license_key_placeholder": "Geben Sie Ihren Lizenzschlüssel ein",
     "check_license": "Lizenz prüfen",
-    "close": "Schließen"
+    "close": "Schließen",
+    "invalid_license": "Ungültige Lizenz oder E-Mail"
   },
   "images": {
     "image": "Bild",
@@ -470,7 +473,10 @@
     "gantt": "Auto Gantt",
     "gantt_desc": "Mermaid Gantt generieren",
     "timeline": "Auto Zeitachse",
-    "timeline_desc": "Mermaid Zeitachse generieren"
+    "timeline_desc": "Mermaid Zeitachse generieren",
+    "rows": "Zeilen:",
+    "columns": "Spalten:",
+    "insert": "Einfügen"
   },
   "icons": {
     "categories": {

@@ -214,8 +214,11 @@
     "license_date_placeholder": "e.g. 1767633074989",
     "subscription_type": "Subscription Type",
     "subscription_type_placeholder": "Subscription Plan",
+    "license_key": "License Key",
+    "license_key_placeholder": "Enter your License Key",
     "check_license": "Check License",
-    "close": "Close"
+    "close": "Close",
+    "invalid_license": "Invalid license or email"
   },
   "images": {
     "image": "Image",

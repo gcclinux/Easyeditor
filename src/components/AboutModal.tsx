@@ -10,9 +10,10 @@ import { getRunningVersion, getAvailableVersion, compareVersions } from '../util
 interface AboutModalProps {
   open: boolean;
   onClose: () => void;
+  showToast?: (message: string, type: 'success' | 'error' | 'info' | 'warning') => void;
 }
 
-export function AboutModal({ open, onClose }: AboutModalProps) {
+export function AboutModal({ open, onClose, showToast }: AboutModalProps) {
   const { t } = useLanguage();
 
   const [lastUpdated, setLastUpdated] = React.useState<string>('Sun Dec 7 2025');
@@ -20,12 +21,15 @@ export function AboutModal({ open, onClose }: AboutModalProps) {
   const [availableVersion, setAvailableVersion] = React.useState<string>('');
   const [name, setName] = React.useState('');
   const [email, setEmail] = React.useState('');
+  const [licenseKey, setLicenseKey] = React.useState('');
   const [type, setType] = React.useState('');
   const [isLicenseValid, setIsLicenseValid] = React.useState(false);
 
   React.useEffect(() => {
     const storedEmail = LicenseManager.getStoredEmail();
     if (storedEmail) setEmail(storedEmail);
+    const storedLicenseKey = LicenseManager.getStoredLicenseKey();
+    if (storedLicenseKey) setLicenseKey(storedLicenseKey);
     const storedType = LicenseManager.getStoredType();
     if (storedType) setType(storedType);
     const storedName = localStorage.getItem('easyeditor-user-name');
@@ -48,9 +52,13 @@ export function AboutModal({ open, onClose }: AboutModalProps) {
 
   const handleSaveLicense = async () => {
     localStorage.setItem('easyeditor-user-name', name);
-    await LicenseManager.setLicenseData(email);
-    setIsLicenseValid(LicenseManager.hasActiveLicense());
+    await LicenseManager.setLicenseData(email, licenseKey);
+    const valid = LicenseManager.hasActiveLicense();
+    setIsLicenseValid(valid);
     setType(LicenseManager.getType());
+    if (!valid && showToast) {
+      showToast(t('about.invalid_license') || 'Invalid license or email', 'error');
+    }
   };
 
   React.useEffect(() => {
@@ -198,14 +206,14 @@ export function AboutModal({ open, onClose }: AboutModalProps) {
                     />
                   </div>
                   <div>
-                    <label style={{ display: 'block', fontSize: '0.9em', marginBottom: '4px' }}>{t('about.subscription_type')}</label>
+                    <label style={{ display: 'block', fontSize: '0.9em', marginBottom: '4px' }}>{t('about.license_key')}</label>
                     <input
                       type="text"
-                      value={type}
-                      readOnly
-                      className="license-plan-input"
+                      value={licenseKey}
+                      onChange={(e) => setLicenseKey(e.target.value)}
+                      className="license-key-input"
                       style={{ width: '95%', padding: '4px', borderRadius: '4px', border: '1px solid #ccc' }}
-                      placeholder={t('about.subscription_type_placeholder')}
+                      placeholder={t('about.license_key_placeholder')}
                     />
                   </div>
                   <button

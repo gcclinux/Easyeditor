@@ -10,6 +10,7 @@ class LicenseManager {
   private STORAGE_KEY_EMAIL = 'easyeditor-user-email';
   private STORAGE_KEY_DATE = 'easyeditor-user-purchase-date';
   private STORAGE_KEY_TYPE = 'easyeditor-user-type';
+  private STORAGE_KEY_LICENSE_KEY = 'easyeditor-user-license-key';
 
   private constructor() { }
 
@@ -38,14 +39,19 @@ class LicenseManager {
     return this.type;
   }
 
-  public async setLicenseData(email: string): Promise<void> {
+  public async setLicenseData(email: string, licenseKey: string): Promise<void> {
     localStorage.setItem(this.STORAGE_KEY_EMAIL, email);
+    localStorage.setItem(this.STORAGE_KEY_LICENSE_KEY, licenseKey);
     // We don't set purchase date manually anymore, it comes from the server
     await this.checkLicenseStatus();
   }
 
   public getStoredEmail(): string | null {
     return localStorage.getItem(this.STORAGE_KEY_EMAIL);
+  }
+
+  public getStoredLicenseKey(): string | null {
+    return localStorage.getItem(this.STORAGE_KEY_LICENSE_KEY);
   }
 
   public getStoredPurchaseDate(): string | null {
@@ -71,8 +77,9 @@ class LicenseManager {
 
   private async checkLicenseStatus(): Promise<void> {
     const email = this.getStoredEmail();
+    const licenseKey = this.getStoredLicenseKey();
 
-    if (!email) {
+    if (!email || !licenseKey) {
       const oldStatus = this.activeLicense;
       this.activeLicense = false;
       this.type = '';
@@ -84,12 +91,16 @@ class LicenseManager {
 
     try {
       const fetchFn = isTauriEnvironment() ? tauriFetch : fetch;
+      
+      // Try to get API key from VITE_LICENSE_API, fallback to LICENSE_API if configured that way
+      const apiKey = import.meta.env.VITE_LICENSE_API || import.meta.env.LICENSE_API || '';
 
       // Only send email as per new requirement
       const response = await fetchFn(this.API_ENDPOINT, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
+          'x-api-key': apiKey,
         },
         body: JSON.stringify({ email }),
       });
@@ -99,21 +110,28 @@ class LicenseManager {
 
       if (response.ok) {
         const data = await response.json();
-        // Check for "True" string or true boolean
-        this.activeLicense = data.hasActiveLicense === true || data.hasActiveLicense === 'True';
+        const isLicenseActive = data.hasActiveLicense === true || data.hasActiveLicense === 'True';
+        
+        // Match user's email and licenseKey against the returned linkedUserId
+        if (isLicenseActive && data.email === email && data.linkedUserId === licenseKey) {
+          this.activeLicense = true;
 
-        // Store type if available
-        if (data.type) {
-          this.type = data.type;
-          localStorage.setItem(this.STORAGE_KEY_TYPE, this.type);
+          // Store type if available
+          if (data.type) {
+            this.type = data.type;
+            localStorage.setItem(this.STORAGE_KEY_TYPE, this.type);
+          } else {
+            this.type = '';
+            localStorage.removeItem(this.STORAGE_KEY_TYPE);
+          }
+
+          // Store purchaseDate if available (returned from server)
+          if (data.purchaseDate) {
+            localStorage.setItem(this.STORAGE_KEY_DATE, data.purchaseDate.toString());
+          }
         } else {
+          this.activeLicense = false;
           this.type = '';
-          localStorage.removeItem(this.STORAGE_KEY_TYPE);
-        }
-
-        // Store purchaseDate if available (returned from server)
-        if (data.purchaseDate) {
-          localStorage.setItem(this.STORAGE_KEY_DATE, data.purchaseDate.toString());
         }
       } else {
         this.activeLicense = false;

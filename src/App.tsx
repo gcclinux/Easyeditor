@@ -5,7 +5,6 @@ import {
   FaExchangeAlt,
   FaFileImport,
   FaTable,
-  FaLink,
   FaImage,
   FaStickyNote,
   FaDownload,
@@ -2647,6 +2646,7 @@ const App = () => {
         <AboutModal
           open={aboutOpen}
           onClose={() => setAboutOpen(false)}
+          showToast={showToast}
         />
 
         <LanguageModal

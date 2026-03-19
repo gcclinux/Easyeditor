@@ -214,8 +214,11 @@
     "license_date_placeholder": "np. 1767633074989",
     "subscription_type": "Typ subskrypcji",
     "subscription_type_placeholder": "Plan subskrypcji",
+    "license_key": "Klucz licencyjny",
+    "license_key_placeholder": "Wprowadź swój klucz licencyjny",
     "check_license": "Sprawdź licencję",
-    "close": "Zamknij"
+    "close": "Zamknij",
+    "invalid_license": "Nieprawidłowa licencja lub e-mail"
   },
   "images": {
     "image": "Obraz",
@@ -470,7 +473,10 @@
     "gantt": "Auto Gantt",
     "gantt_desc": "Generuj wykres Gantt",
     "timeline": "Auto Oś Czasu",
-    "timeline_desc": "Generuj oś czasu"
+    "timeline_desc": "Generuj oś czasu",
+    "rows": "Wiersze:",
+    "columns": "Kolumny:",
+    "insert": "Wstaw"
   },
   "icons": {
     "categories": {
