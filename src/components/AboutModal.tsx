@@ -93,40 +93,30 @@ export function AboutModal({ open, onClose }: AboutModalProps) {
             </div>
           </div>
         </div>
-        <button className="icon-btn about-close" aria-label={t('actions.close')} title={t('actions.close')} onClick={onClose}>✕</button>
         <div className="about-grid">
           <div className="about-card">
             <h3>{t('about.what_it_is')}</h3>
             <p>
               {t('about.what_it_is_desc')}
             </p>
-            <p>
-              {t('about.support')} <a href="https://github.com/gcclinux/EasyEditor/discussions" target="_blank" rel="noopener noreferrer">GitHub Discussions</a>
-            </p>
           </div>
           <div className="about-card">
             <h3>{t('about.what_it_does')}</h3>
             <ul>
               <li>{t('about.what_it_does_li1')}</li>
-              <li>{t('about.what_it_does_li2')}</li>
               <li>{t('about.what_it_does_li3')}</li>
-              <li>{t('about.what_it_does_li4')}</li>
-              <li>{t('about.what_it_does_li5')}</li>
             </ul>
           </div>
           <div className="about-card">
-            <h3>{t('about.custom_themes')} & {t('about.why_like')}</h3>
+            <h3>{t('about.custom_themes')}</h3>
             <p>
               {t('about.custom_themes_desc1')}
             </p>
-            <p>{t('about.why_like_desc1')}</p>
           </div>
           <div className="about-card">
-            <h3>{t('about.git_integration')} &nbsp; {t('about.native_languages')}</h3>
+            <h3>{t('about.git_integration')}</h3>
             <p>
-              {t('about.git_integration_desc1')}&nbsp;{t('about.git_integration_desc2')}
-              <br />
-              {t('about.native_languages_desc')}
+              {t('about.git_integration_desc1')}
             </p>
           </div>
           <div className="about-card">
@@ -158,7 +148,7 @@ export function AboutModal({ open, onClose }: AboutModalProps) {
           </div>
           <div className="about-card">
             <div style={{ display: 'flex', gap: '1rem' }}>
-              <div style={{ flex: 1 }}>
+              <div style={{ flex: '0 0 45%' }}>
                 <h3>{t('about.premium_features')}</h3>
                 <ul style={{ paddingLeft: '20px', lineHeight: '1.6', fontSize: '0.9em' }}>
                   <li>{t('about.premium_features_li1')}</li>
@@ -182,8 +172,8 @@ export function AboutModal({ open, onClose }: AboutModalProps) {
                   View Pricing
                 </a>
               </div>
-              <div style={{ flex: 1, borderLeft: '1px solid var(--border-color, #eee)', paddingLeft: '1rem' }}>
-                <h3>{t('about.license_info')} ({isLicenseValid && type ? type : isLicenseValid ? t('about.license_premium') : t('about.license_free')})</h3>
+              <div style={{ flex: 1, borderLeft: '1px solid var(--border-color, #eee)', paddingLeft: '1rem', minWidth: 0 }}>
+                <h3 style={{ whiteSpace: 'nowrap' }}>{t('about.license_info')} ({isLicenseValid && type ? type : isLicenseValid ? t('about.license_premium') : t('about.license_free')})</h3>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '3px' }}>
                   <div>
                     <label style={{ display: 'block', fontSize: '0.9em', marginBottom: '4px' }}>{t('about.license_name')}</label>
