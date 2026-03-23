@@ -28,7 +28,7 @@
           "url": "https://easyeditor-premium.web.app/api/check-license"
         },
         {
-          "url": "https://wagemaker.uk:5555/api/credits/*"
+          "url": "https://easyai-gateway-846627640525.us-central1.run.app/api/credits/*"
         }
       ],
       "deny": []

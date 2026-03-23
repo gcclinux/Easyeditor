@@ -1,4 +1,3 @@
-import { fetch as tauriFetch } from '@tauri-apps/plugin-http';
 import { isTauriEnvironment } from '../utils/environment';
 
 class LicenseManager {
@@ -6,6 +5,7 @@ class LicenseManager {
   private activeLicense: boolean = false;
   private type: string = '';
   private checking: boolean = false;
+  private STORAGE_KEY_CACHED_LICENSE = 'easyeditor-license-cached-valid';
   private API_ENDPOINT = 'https://easyeditor-premium.web.app/api/check-license';
   private STORAGE_KEY_EMAIL = 'easyeditor-user-email';
   private STORAGE_KEY_DATE = 'easyeditor-user-purchase-date';
@@ -19,6 +19,26 @@ class LicenseManager {
       LicenseManager.instance = new LicenseManager();
     }
     return LicenseManager.instance;
+  }
+
+  /**
+   * Instantly restore last-known license state from localStorage.
+   * This is synchronous and should be called before app render so the
+   * UI can show the cached premium state without waiting for the network.
+   */
+  public restoreFromCache(): void {
+    const email = this.getStoredEmail();
+    const licenseKey = this.getStoredLicenseKey();
+    const cachedValid = localStorage.getItem(this.STORAGE_KEY_CACHED_LICENSE);
+    const storedType = this.getStoredType();
+
+    if (email && licenseKey && cachedValid === 'true') {
+      this.activeLicense = true;
+      this.type = storedType || '';
+    } else {
+      this.activeLicense = false;
+      this.type = '';
+    }
   }
 
   public async initialize(): Promise<void> {
@@ -83,6 +103,7 @@ class LicenseManager {
       const oldStatus = this.activeLicense;
       this.activeLicense = false;
       this.type = '';
+      localStorage.removeItem(this.STORAGE_KEY_CACHED_LICENSE);
       if (oldStatus !== this.activeLicense) {
         this.notifyListeners();
       }
@@ -90,7 +111,9 @@ class LicenseManager {
     }
 
     try {
-      const fetchFn = isTauriEnvironment() ? tauriFetch : fetch;
+      const fetchFn = isTauriEnvironment()
+        ? (await import('@tauri-apps/plugin-http')).fetch
+        : fetch;
       
       // Try to get API key from VITE_LICENSE_API, fallback to LICENSE_API if configured that way
       const apiKey = import.meta.env.VITE_LICENSE_API || import.meta.env.LICENSE_API || '';
@@ -115,6 +138,7 @@ class LicenseManager {
         // Match user's email and licenseKey against the returned linkedUserId
         if (isLicenseActive && data.email === email && data.linkedUserId === licenseKey) {
           this.activeLicense = true;
+          localStorage.setItem(this.STORAGE_KEY_CACHED_LICENSE, 'true');
 
           // Store type if available
           if (data.type) {
@@ -132,10 +156,12 @@ class LicenseManager {
         } else {
           this.activeLicense = false;
           this.type = '';
+          localStorage.removeItem(this.STORAGE_KEY_CACHED_LICENSE);
         }
       } else {
         this.activeLicense = false;
         this.type = '';
+        localStorage.removeItem(this.STORAGE_KEY_CACHED_LICENSE);
       }
 
       if (oldStatus !== this.activeLicense || oldType !== this.type) {
@@ -145,6 +171,7 @@ class LicenseManager {
       console.error('Error checking license status:', error);
       const oldStatus = this.activeLicense;
       this.activeLicense = false;
+      localStorage.removeItem(this.STORAGE_KEY_CACHED_LICENSE);
       // We keep the plan locally if we fail to check? Better to clear it to be safe or keep it cached?
       // For safety/validity, if check fails, we assume no license.
       // But maybe we should keep the cached values if network error?

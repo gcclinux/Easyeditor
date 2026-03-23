@@ -98,7 +98,7 @@ export function LicenseModal({ open, onClose, showToast }: LicenseModalProps) {
         try {
           const gateway = import.meta.env.VITE_TOKENS_GATEWAY;
           const primeKey = import.meta.env.VITE_GATEWAY_PRIME_KEY;
-          console.log('[LicenseModal] FetchCredits Triggered. Gateway:', gateway, ' Prime:', primeKey ? 'PRESENT' : 'MISSING', ' License:', licenseKey);
+          console.log('[LicenseModal] FetchCredits Triggered.');
 
           if (!gateway || !primeKey) {
             console.warn('[LicenseModal] Gateway or PrimeKey missing in Vite build context!');
@@ -326,8 +326,8 @@ export function LicenseModal({ open, onClose, showToast }: LicenseModalProps) {
             <div className="about-card">
               <h3>{t('about.easyai_credits')}</h3>
               <div style={{ marginTop: '10px' }}>
-                <p style={{ fontSize: '0.9em', margin: '4px 0' }}><strong>{t('about.credits_agent')}</strong> {agent}</p>
-                <p style={{ fontSize: '0.9em', margin: '4px 0' }}><strong>{t('about.credits_model')}</strong> {model}</p>
+                <p style={{ fontSize: '0.9em', margin: '4px 0' }}><strong>{t('about.credits_agent')}</strong> {isLicenseValid ? (import.meta.env.VITE_PREMIUM_AGENT || 'Gemini') : agent}</p>
+                <p style={{ fontSize: '0.9em', margin: '4px 0' }}><strong>{t('about.credits_model')}</strong> {isLicenseValid ? (import.meta.env.VITE_PREMIUM_MODEL || 'gemini-3.1-flash-lite-preview') : model}</p>
                 <p style={{ fontSize: '0.9em', margin: '4px 0' }}><strong>{t('about.credits_monthly')}</strong> {monthlyCredits !== null ? monthlyCredits : t('about.query_built')}</p>
                 <p style={{ fontSize: '0.9em', margin: '4px 0' }}><strong>{t('about.credits_topup')}</strong> {topUpCredits !== null ? topUpCredits : t('about.query_built')}</p>
                 <p style={{ fontSize: '0.9em', margin: '4px 0' }}><strong>{t('about.credits_used')}</strong> {usedCredits !== null ? usedCredits : t('about.query_built')}</p>

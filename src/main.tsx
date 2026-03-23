@@ -2,25 +2,18 @@ import React from 'react';
 import ReactDOM from 'react-dom/client';
 import App from './App';
 import { loadTheme, getCurrentTheme, isCurrentThemeCustom } from './themeLoader';
-import { Buffer } from 'buffer';
 import LicenseManager from './premium/LicenseManager';
 import { LanguageProvider } from './i18n/LanguageContext';
 
-// Initialize the LicenseManager
-LicenseManager.initialize();
+// Restore cached license state instantly (no network, no delay)
+LicenseManager.restoreFromCache();
 
-// Environment Variables Check
-// console.log('=== Environment Variables Check ===');
-// console.log('VITE_GOOGLE_CLIENT_ID:', import.meta.env.VITE_GOOGLE_CLIENT_ID ? 'SET' : 'NOT SET');
-// console.log('VITE_GOOGLE_CLIENT_APP:', import.meta.env.VITE_GOOGLE_CLIENT_APP ? 'SET' : 'NOT SET');
-// console.log('VITE_GOOGLE_CLIENT_SECRET:', import.meta.env.VITE_GOOGLE_CLIENT_SECRET ? 'SET' : 'NOT SET');
-// console.log('VITE_GOOGLE_API_KEY:', import.meta.env.VITE_GOOGLE_API_KEY ? 'SET' : 'NOT SET');
-// console.log('===================================');
-
-// Polyfill Buffer for browser environment
+// Polyfill Buffer for browser environment (deferred to avoid pulling heavy deps into critical path)
 if (typeof window !== 'undefined') {
-  (window as any).Buffer = Buffer;
   (window as any).global = window;
+  import('buffer').then(({ Buffer }) => {
+    (window as any).Buffer = Buffer;
+  });
 }
 
 // ============================================
