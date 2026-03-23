@@ -1,5 +1,5 @@
 import React from 'react';
-import { FaFileImport, FaSave, FaStar, FaGithub, FaHeart, FaPalette, FaGlobe, FaInfoCircle, FaTimes, FaFileAlt, FaLeaf } from 'react-icons/fa';
+import { FaFileImport, FaSave, FaStar, FaGithub, FaHeart, FaPalette, FaGlobe, FaInfoCircle, FaTimes, FaFileAlt, FaLeaf, FaIdCard } from 'react-icons/fa';
 import { BsFileEarmarkLockFill } from "react-icons/bs";
 import { useLanguage } from '../i18n/LanguageContext';
 import './fileModal.css';
@@ -15,6 +15,7 @@ type Props = {
     onBuyCoffee: () => void;
     onSelectTheme: () => void;
     onSelectLanguage: () => void;
+    onLicense: () => void;
     onAbout: () => void;
     onClose: () => void;
 };
@@ -30,6 +31,7 @@ export default function FileModal({
     onBuyCoffee,
     onSelectTheme,
     onSelectLanguage,
+    onLicense,
     onAbout,
     onClose
 }: Props) {
@@ -85,6 +87,7 @@ export default function FileModal({
                         {renderTile(<FaPalette />, 'menu.select_theme', 'menu.choose_theme', onSelectTheme)}
                         {renderTile(<FaGlobe />, 'menu.select_language', 'menu.choose_language', onSelectLanguage)}
                         {renderTile(<FaStar />, 'menu.features', 'menu.features_desc', onFeatures)}
+                        {renderTile(<FaIdCard />, 'License', 'about.check_license', onLicense)}
                         {renderTile(<FaInfoCircle />, 'menu.about', 'menu.version_info', onAbout)}
                     </div>
                 </div>

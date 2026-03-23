@@ -98,6 +98,7 @@ import AutoModal from './components/AutoModal';
 import GitModal from './components/GitModal';
 import TemplatesModal from './components/TemplatesModal';
 import AboutModal from './components/AboutModal';
+import LicenseModal from './components/LicenseModal';
 import EasyNotesSidebar from './components/EasyNotesSidebar';
 import EasyAIPanel from './components/EasyAIPanel';
 import { buildSystemPrompt } from './components/easyai/aiPersonas';
@@ -194,6 +195,7 @@ const App = () => {
   const [showTemplatesModal, setShowTemplatesModal] = useState(false);
   const [showFileModal, setShowFileModal] = useState(false);
   const [aboutOpen, setAboutOpen] = useState(false);
+  const [licenseOpen, setLicenseOpen] = useState(false);
   const [featuresOpen, setFeaturesOpen] = useState(false);
   const [themeOpen, setThemeOpen] = useState(false);
   const [importThemeOpen, setImportThemeOpen] = useState(false);
@@ -2605,6 +2607,7 @@ const App = () => {
               onBuyCoffee={handleBuyCoffee}
               onSelectTheme={() => setThemeOpen(true)}
               onSelectLanguage={() => setLanguageOpen(true)}
+              onLicense={() => setLicenseOpen(true)}
               onAbout={() => setAboutOpen(true)}
               onClose={() => setShowFileModal(false)}
             />
@@ -2646,6 +2649,10 @@ const App = () => {
         <AboutModal
           open={aboutOpen}
           onClose={() => setAboutOpen(false)}
+        />
+        <LicenseModal
+          open={licenseOpen}
+          onClose={() => setLicenseOpen(false)}
           showToast={showToast}
         />
 
