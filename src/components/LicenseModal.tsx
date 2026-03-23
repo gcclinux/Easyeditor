@@ -5,8 +5,6 @@ import logo from '../assets/128x128@2x.png';
 import { useLanguage } from '../i18n/LanguageContext';
 import LicenseManager from '../premium/LicenseManager';
 
-import { getRunningVersion, getAvailableVersion, compareVersions } from '../utils/version';
-
 interface LicenseModalProps {
   open: boolean;
   onClose: () => void;
@@ -16,14 +14,16 @@ interface LicenseModalProps {
 export function LicenseModal({ open, onClose, showToast }: LicenseModalProps) {
   const { t } = useLanguage();
 
-  const [lastUpdated, setLastUpdated] = React.useState<string>('Sun Dec 7 2025');
-  const [version, setVersion] = React.useState<string>('');
-  const [availableVersion, setAvailableVersion] = React.useState<string>('');
+
   const [name, setName] = React.useState('');
   const [email, setEmail] = React.useState('');
   const [licenseKey, setLicenseKey] = React.useState('');
   const [type, setType] = React.useState('');
   const [isLicenseValid, setIsLicenseValid] = React.useState(false);
+  const [agent, setAgent] = React.useState('Ollama');
+  const [host, setHost] = React.useState('http://localhost:11434');
+  const [model, setModel] = React.useState('ministral-3:3b');
+  const [apiKey, setApiKey] = React.useState('');
 
   React.useEffect(() => {
     const storedEmail = LicenseManager.getStoredEmail();
@@ -61,18 +61,41 @@ export function LicenseModal({ open, onClose, showToast }: LicenseModalProps) {
     }
   };
 
-  React.useEffect(() => {
-    (async () => {
-      const v = await getRunningVersion();
-      setVersion(v);
-
-      const avInfo = await getAvailableVersion();
-      setAvailableVersion(avInfo.version);
-      if (avInfo.date) {
-        setLastUpdated(avInfo.date);
+  const handleSaveApiConfig = async () => {
+    try {
+      const { save } = await import('@tauri-apps/plugin-dialog');
+      const { writeTextFile } = await import('@tauri-apps/plugin-fs');
+      
+      const filePath = await save({
+        filters: [{ name: 'Config File', extensions: ['env', 'json', 'txt'] }],
+        defaultPath: 'easyai-config.env'
+      });
+      
+      if (filePath) {
+        let content = '';
+        if (filePath.endsWith('.json')) {
+          content = JSON.stringify({ agent, host, model, apiKey }, null, 2);
+        } else {
+          content = `EASYAI_AGENT=${agent}\nEASYAI_HOST=${host}\nEASYAI_MODEL=${model}\nEASYAI_API_KEY=${apiKey}\n`;
+        }
+        await writeTextFile(filePath, content);
+        if (showToast) {
+          showToast('API Configuration saved successfully!', 'success');
+        } else {
+          alert('API Configuration saved successfully!');
+        }
       }
-    })();
-  }, []);
+    } catch (err) {
+      console.error('Failed to save API config:', err);
+      if (showToast) {
+        showToast('Failed to save configuration', 'error');
+      } else {
+        alert('Failed to save configuration');
+      }
+    }
+  };
+
+
   if (!open) return null;
 
   const content = (
@@ -91,139 +114,205 @@ export function LicenseModal({ open, onClose, showToast }: LicenseModalProps) {
               <span className="badge">{t('about.badge_markdown')}</span>
               <span className="badge">{t('about.badge_templates')}</span>
               <span className="badge">{t('about.badge_mermaid')}</span>
+              <span className="badge">{t('about.badge_import_docx')}</span>
               <span className="badge">{t('about.badge_export')}</span>
-              <span className="badge">{t('about.badge_hosted')}</span>
-              <span className="badge">{t('about.badge_git')}</span>
-              <span className="badge">{t('about.badge_cloud')}</span>
-              <a href="https://easyeditor.co.uk/" target="_blank" rel="noopener noreferrer" style={{ textDecoration: 'none' }}>
-                <span className="badge">{t('about.badge_roadmap')}</span>
-              </a>
+              <span className="badge">{t('about.badge_easygit')}</span>
+              <span className="badge">{t('about.badge_easynotes')}</span>
+              <span className="badge">{t('about.badge_easyai')}</span>
             </div>
           </div>
         </div>
-        <div className="about-grid">
-          <div className="about-card">
-            <h3>{t('about.what_it_is')}</h3>
-            <p>
-              {t('about.what_it_is_desc')}
-            </p>
-          </div>
-          <div className="about-card">
-            <h3>{t('about.what_it_does')}</h3>
-            <ul>
-              <li>{t('about.what_it_does_li1')}</li>
-              <li>{t('about.what_it_does_li3')}</li>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '16px' }}>
+          {/* Column 1: Free Features */}
+          <div className="about-card" style={{ display: 'flex', flexDirection: 'column' }}>
+            <h3>{t('about.free_features')}</h3>
+            <ul style={{ paddingLeft: '20px', lineHeight: '1.5', fontSize: '0.9em', marginTop: '10px' }}>
+              <li>{t('about.free_li1')}</li>
+              <li>{t('about.free_li2')}</li>
+              <li>{t('about.free_li3')}</li>
+              <li>{t('about.free_li4')}</li>
+              <li>{t('about.free_li5')}</li>
+              <li>{t('about.free_li6')}</li>
+              <li>{t('about.free_li7')}</li>
+              <li>{t('about.free_li8')}</li>
+              <li>{t('about.free_li9')}</li>
+              <li>{t('about.free_li10')}</li>
+              <li>{t('about.free_li11')}</li>
+              <li>{t('about.free_li12')}</li>
+              <li>{t('about.free_li13')}</li>
+              <li>{t('about.free_li14')}</li>
+              <li>{t('about.free_li15')}</li>
+              <li>{t('about.free_li16')}</li>
+            </ul>
+            <hr style={{ border: 'none', borderTop: '1px solid var(--border-color, #eee)', margin: '10px 0' }} />
+            <h3>{t('about.premium_features')}</h3>
+            <ul style={{ paddingLeft: '20px', lineHeight: '1.6', fontSize: '0.9em', marginTop: '10px', marginBottom: '10px' }}>
+              <li>{t('about.premium_li1')}</li>
+              <li>{t('about.premium_li2')}</li>
+              <li>{t('about.premium_li3')}</li>
+              <li>{t('about.premium_li4')}</li>
             </ul>
           </div>
-          <div className="about-card">
-            <h3>{t('about.custom_themes')}</h3>
-            <p>
-              {t('about.custom_themes_desc1')}
-            </p>
-          </div>
-          <div className="about-card">
-            <h3>{t('about.git_integration')}</h3>
-            <p>
-              {t('about.git_integration_desc1')}
-            </p>
-          </div>
-          <div className="about-card">
-            <div style={{ display: 'flex', gap: '1rem' }}>
-              <div style={{ flex: 1 }}>
-                <h3>{t('about.credits')}</h3>
-                <p>{t('about.built_by')}<br />
-                  <span className="muted">{t('about.last_updated')} {lastUpdated}</span>
-                </p>
-                <p>{t('about.license')} <a href="https://easyeditor.co.uk/license" target="_blank" rel="noopener noreferrer">Core - Open Source (MIT)</a><br />{t('about.running_version')} <strong>{version || '...'}</strong><br />{t('about.available_version')} <strong>{availableVersion || '...'}</strong>
-                  {version && availableVersion && compareVersions(version, availableVersion) < 0 && (
-                    <>
-                      <br />
-                      Latest Version: <a href="https://github.com/gcclinux/Easyeditor/releases/latest" target="_blank" rel="noopener noreferrer">Download Latest</a>
-                    </>
-                  )}
-                </p>
-              </div>
-              <div style={{ flex: 1, borderLeft: '1px solid var(--border-color, #eee)', paddingLeft: '1rem' }}>
-                <h3>{t('about.powered_by')}</h3>
-                <p>
-                  <a href="https://mermaid.js.org/" target="_blank" rel="noopener noreferrer"><b>Mermaid</b></a> - {t('about.official_module')}<br />
-                  <a href="https://daringfireball.net/projects/markdown/" target="_blank" rel="noopener noreferrer"><b>Markdown</b></a> - {t('about.official_module')}<br />
-                  <a href="https://plantuml.com/" target="_blank" rel="noopener noreferrer"><b>PlantUML</b></a> - {t('about.official_module')}<br />
-                  <a href="https://katex.org/" target="_blank" rel="noopener noreferrer"><b>KaTeX</b></a> - {t('about.official_module')}
-                </p>
+
+          {/* Column 2: PremiumPlus Features & License */}
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+            <div className="about-card" style={{ display: 'flex', flexDirection: 'column' }}>
+              <h3>{t('about.premiumplus_features')}</h3>
+              <ul style={{ paddingLeft: '20px', lineHeight: '1.6', fontSize: '0.9em', marginTop: '10px' }}>
+                <li>{t('about.premiumplus_li1')}</li>
+                <li>{t('about.premiumplus_li2')}
+                  <ul style={{ paddingLeft: '20px', marginTop: '4px', listStyleType: 'circle' }}>
+                    <li>{t('about.persona_li1')}</li>
+                    <li>{t('about.persona_li2')}</li>
+                    <li>{t('about.persona_li3')}</li>
+                    <li>{t('about.persona_li4')}</li>
+                    <li>{t('about.persona_li5')}</li>
+                    <li>{t('about.persona_li6')}</li>
+                    <li>{t('about.persona_li7')}</li>
+                    <li>{t('about.persona_li8')}</li>
+                  </ul>
+                </li>
+                <br></br>
+              </ul>
+            </div>
+
+            <div className="about-card" style={{ flex: 1 }}>
+              <h3 style={{ whiteSpace: 'nowrap' }}>{t('about.license_info')} ({isLicenseValid && type ? type : isLicenseValid ? t('about.license_premium') : t('about.license_free')}) </h3>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '3px', marginTop: '10px' }}>
+                <div>
+                  <label style={{ display: 'block', fontSize: '0.9em', marginBottom: '4px' }}>{t('about.license_name')}</label>
+                  <input
+                    type="text"
+                    value={name}
+                    onChange={(e) => setName(e.target.value)}
+                    className="license-name-input"
+                    style={{ width: '95%', padding: '4px', borderRadius: '4px', border: '1px solid var(--border-color, #ccc)' }}
+                    placeholder={t('about.license_name_placeholder')}
+                  />
+                </div>
+                <div>
+                  <label style={{ display: 'block', fontSize: '0.9em', marginBottom: '4px' }}>{t('about.license_email')}</label>
+                  <input
+                    type="email"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    className="license-email-input"
+                    style={{ width: '95%', padding: '4px', borderRadius: '4px', border: '1px solid var(--border-color, #ccc)' }}
+                    placeholder={t('about.license_email_placeholder')}
+                  />
+                </div>
+                <div>
+                  <label style={{ display: 'block', fontSize: '0.9em', marginBottom: '4px' }}>{t('about.license_key')}</label>
+                  <input
+                    type="text"
+                    value={licenseKey}
+                    onChange={(e) => setLicenseKey(e.target.value)}
+                    className="license-key-input"
+                    style={{ width: '95%', padding: '4px', borderRadius: '4px', border: '1px solid var(--border-color, #ccc)' }}
+                    placeholder={t('about.license_key_placeholder')}
+                  />
+                </div>
+                <button
+                  onClick={handleSaveLicense}
+                  className="btn secondary"
+                  style={{ marginTop: '5px', alignSelf: 'flex-start', padding: '6px 12px' }}
+                >
+                  {t('about.check_license')}
+                </button>
               </div>
             </div>
           </div>
-          <div className="about-card">
-            <div style={{ display: 'flex', gap: '1rem' }}>
-              <div style={{ flex: '0 0 45%' }}>
-                <h3>{t('about.premium_features')}</h3>
-                <ul style={{ paddingLeft: '20px', lineHeight: '1.6', fontSize: '0.9em' }}>
-                  <li>{t('about.premium_features_li1')}</li>
-                  <li>{t('about.premium_features_li2')}</li>
-                  <li>{t('about.premium_features_li3')}</li>
-                  <li>{t('about.premium_features_li4')}</li>
-                  <li>{t('about.premium_features_li5')}</li>
-                  <li>
-                    <a href="https://climate.stripe.com/cVP4Y7" target="_blank" rel="noopener noreferrer" style={{ color: 'inherit', textDecoration: 'none' }}>
-                      {t('about.premium_features_li6')} <span style={{ fontSize: '0.8em' }}>↗</span>
-                    </a>
-                  </li>
-                </ul>
+
+          {/* Column 3: API Hosting */}
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+
+            <div className="about-card">
+              <h3>{t('about.easyai_credits')}</h3>
+              <div style={{ marginTop: '10px' }}>
+                <p style={{ fontSize: '0.9em', margin: '4px 0' }}><strong>{t('about.credits_agent')}</strong> {t('about.query_built')}</p>
+                <p style={{ fontSize: '0.9em', margin: '4px 0' }}><strong>{t('about.credits_model')}</strong> {t('about.query_built')}</p>
+                <p style={{ fontSize: '0.9em', margin: '4px 0' }}><strong>{t('about.credits_monthly')}</strong> {t('about.query_built')}</p>
+                <p style={{ fontSize: '0.9em', margin: '4px 0' }}><strong>{t('about.credits_topup')}</strong> {t('about.query_built')}</p>
+                <p style={{ fontSize: '0.9em', margin: '4px 0' }}><strong>{t('about.credits_used')}</strong> {t('about.query_built')}</p>
                 <a
-                  href="https://www.easyeditor.co.uk/#pricing"
+                  href="https://buy.stripe.com/cNi14ng486TTfaK78LdZ602"
                   target="_blank"
                   rel="noopener noreferrer"
                   className="btn secondary"
-                  style={{ marginTop: '5px', padding: '6px 12px', display: 'inline-block', textDecoration: 'none' }}
+                  style={{ marginTop: '10px', display: 'inline-block', textDecoration: 'none', padding: '6px 12px' }}
                 >
-                  View Pricing
+                  {t('about.go_premiumplus')}
                 </a>
               </div>
-              <div style={{ flex: 1, borderLeft: '1px solid var(--border-color, #eee)', paddingLeft: '1rem', minWidth: 0 }}>
-                <h3 style={{ whiteSpace: 'nowrap' }}>{t('about.license_info')} ({isLicenseValid && type ? type : isLicenseValid ? t('about.license_premium') : t('about.license_free')})</h3>
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '3px' }}>
-                  <div>
-                    <label style={{ display: 'block', fontSize: '0.9em', marginBottom: '4px' }}>{t('about.license_name')}</label>
-                    <input
-                      type="text"
-                      value={name}
-                      onChange={(e) => setName(e.target.value)}
-                      className="license-name-input"
-                      style={{ width: '95%', padding: '4px', borderRadius: '4px', border: '1px solid #ccc', color: 'red !important' }}
-                      placeholder={t('about.license_name_placeholder')}
-                    />
-                  </div>
-                  <div>
-                    <label style={{ display: 'block', fontSize: '0.9em', marginBottom: '4px' }}>{t('about.license_email')}</label>
-                    <input
-                      type="email"
-                      value={email}
-                      onChange={(e) => setEmail(e.target.value)}
-                      className="license-email-input"
-                      style={{ width: '95%', padding: '4px', borderRadius: '4px', border: '1px solid #ccc' }}
-                      placeholder={t('about.license_email_placeholder')}
-                    />
-                  </div>
-                  <div>
-                    <label style={{ display: 'block', fontSize: '0.9em', marginBottom: '4px' }}>{t('about.license_key')}</label>
-                    <input
-                      type="text"
-                      value={licenseKey}
-                      onChange={(e) => setLicenseKey(e.target.value)}
-                      className="license-key-input"
-                      style={{ width: '95%', padding: '4px', borderRadius: '4px', border: '1px solid #ccc' }}
-                      placeholder={t('about.license_key_placeholder')}
-                    />
-                  </div>
-                  <button
-                    onClick={handleSaveLicense}
-                    className="btn secondary"
-                    style={{ marginTop: '5px', alignSelf: 'flex-start', padding: '6px 12px' }}
+              <br></br>
+            </div>
+
+            <div className="about-card" style={{ flex: 1 }}>
+              <h3>{t('about.api_hosting')}</h3>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '3px', marginTop: '10px' }}>
+                <div>
+                  <label style={{ display: 'block', fontSize: '0.9em', marginBottom: '4px' }}>{t('about.api_agent')}</label>
+                  <select
+                    className="license-name-input"
+                    style={{ width: '95%', boxSizing: 'border-box', padding: '4px', borderRadius: '4px', border: '1px solid var(--border-color, #ccc)' }}
+                    value={agent}
+                    onChange={(e) => setAgent(e.target.value)}
                   >
-                    {t('about.check_license')}
-                  </button>
+                    <option value="Ollama">Ollama</option>
+                    <option value="Gemini">Gemini</option>
+                    <option value="Bedrock">Bedrock</option>
+                    <option value="Claude">Claude</option>
+                  </select>
                 </div>
+                <div>
+                  <label style={{ display: 'block', fontSize: '0.9em', marginBottom: '4px' }}>{t('about.api_host')}</label>
+                  <input
+                    type="text"
+                    className="license-name-input"
+                    style={{
+                      width: '95%',
+                      boxSizing: 'border-box',
+                      padding: '4px',
+                      borderRadius: '4px',
+                      border: '1px solid var(--border-color, #ccc)',
+                      opacity: agent !== 'Ollama' ? 0.6 : 1,
+                      cursor: agent !== 'Ollama' ? 'not-allowed' : 'text'
+                    }}
+                    placeholder={t('about.api_host_placeholder')}
+                    readOnly={agent !== 'Ollama'}
+                    value={host}
+                    onChange={(e) => setHost(e.target.value)}
+                  />
+                </div>
+                <div>
+                  <label style={{ display: 'block', fontSize: '0.9em', marginBottom: '4px' }}>{t('about.api_model')}</label>
+                  <input 
+                    type="text" 
+                    className="license-name-input" 
+                    style={{ width: '95%', boxSizing: 'border-box', padding: '4px', borderRadius: '4px', border: '1px solid var(--border-color, #ccc)' }} 
+                    placeholder={t('about.api_model_placeholder')} 
+                    value={model}
+                    onChange={(e) => setModel(e.target.value)}
+                  />
+                </div>
+                <div>
+                  <label style={{ display: 'block', fontSize: '0.9em', marginBottom: '4px' }}>{t('about.api_key')}</label>
+                  <input 
+                    type="password" 
+                    className="license-name-input" 
+                    style={{ width: '95%', boxSizing: 'border-box', padding: '4px', borderRadius: '4px', border: '1px solid var(--border-color, #ccc)' }} 
+                    placeholder={t('about.api_key_placeholder')} 
+                    value={apiKey}
+                    onChange={(e) => setApiKey(e.target.value)}
+                  />
+                </div>
+                <button
+                  onClick={handleSaveApiConfig}
+                  className="btn secondary"
+                  style={{ marginTop: '10px', alignSelf: 'flex-start', padding: '6px 12px' }}
+                >
+                  Save Config
+                </button>
               </div>
             </div>
           </div>
