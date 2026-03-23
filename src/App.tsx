@@ -19,8 +19,11 @@ import { SiMermaid } from "react-icons/si";
 import { CgFormatText, CgFormatHeading } from "react-icons/cg";
 import { MdAutoAwesome, MdOutlineInsertChartOutlined } from "react-icons/md";
 
+import mermaid from 'mermaid';
 import debounce from 'lodash.debounce';
 import './App.css';
+import { saveAsPDF } from './saveAsPDF.tsx';
+import { saveAsPNG } from './saveAsPNG.ts';
 import {
   insertClassSyntax,
   insertGanttSyntax,
@@ -43,6 +46,10 @@ import {
 import { insertUMLProcessOfEliminationDiagram } from './templates/processEliminationUML.ts';
 import { insertUMLDatabaseReplicationDiagram } from './templates/databaseReplicationUML.ts';
 import { insertUMLLLMTrainingDiagram } from './templates/llmTrainingUML.ts';
+import { TableGenerator } from './autoGenerator/TableGenerator.tsx';
+import { GanttGenerator } from './autoGenerator/GanttGenerator.tsx';
+import { TimelineGenerator } from './autoGenerator/TimelineGenerator.tsx';
+import ContextMenu from './autoGenerator/ContextMenu.tsx';
 import {
   HistoryState,
   addToHistory,
@@ -76,59 +83,55 @@ import {
   insertStrikethroughSyntax
 } from './insertMarkdown.ts';
 import TextareaComponent from './components/TextareaComponent.tsx';
+import PreviewComponent from './components/PreviewComponent.tsx';
+import HeadersModal from './components/HeadersModal';
+import FormattingModal from './components/FormattingModal';
+import MermaidModal from './components/MermaidModal';
+import UMLModal from './components/UMLModal';
+import InsertModal from './components/InsertModal';
+import ImagesModal from './components/ImagesModal';
+import TablesModal from './components/TablesModal';
+import FootnoteModal from './components/FootnoteModal';
+import SymbolsModal from './components/SymbolsModal';
+import IconsModal from './components/IconsModal';
+import AutoModal from './components/AutoModal';
+import GitModal from './components/GitModal';
+import TemplatesModal from './components/TemplatesModal';
+import AboutModal from './components/AboutModal';
+import LicenseModal from './components/LicenseModal';
+import EasyNotesSidebar from './components/EasyNotesSidebar';
+import EasyAIPanel from './components/EasyAIPanel';
 import { buildSystemPrompt } from './components/easyai/aiPersonas';
+import FeaturesModal from './components/FeaturesModal';
+import ThemeModal from './components/ThemeModal';
+import ImportThemeModal from './components/ImportThemeModal';
 
+import { decryptFile } from './cryptoHandler';
+import PasswordModal from './components/PasswordModal';
 import { loadTheme, getCurrentTheme } from './themeLoader';
 import { saveCustomTheme } from './customThemeManager';
+import CloneModal from './components/CloneModal';
+import ImportMDModal from './components/ImportMDModal';
+import FileBrowserModal from './components/FileBrowserModal';
+import GitCredentialsModal from './components/GitCredentialsModal';
+import MasterPasswordModal from './components/MasterPasswordModal';
+import SaveLocationModal from './components/SaveLocationModal';
+import FileNameModal from './components/FileNameModal';
+import CommitModal from './components/CommitModal';
+import FileModal from './components/FileModal';
+import TaskModal from './components/TaskModal';
+import ExportModal from './components/ExportModal';
+import GitHistoryModal from './components/GitHistoryModal';
+import GitStatusIndicator from './components/GitStatusIndicator';
+import { getGitManager } from './gitManagerWrapper';
 import { gitCredentialManager } from './gitCredentialManager';
 import ToastContainer from './components/ToastContainer';
 import { isFeatureEnabled } from './config/features';
 import { useLanguage } from './i18n/LanguageContext';
+import LanguageModal from './components/LanguageModal';
 import LicenseManager from './premium/LicenseManager';
+import UpdateModal from './components/UpdateModal';
 import { getRunningVersion, getAvailableVersion, compareVersions } from './utils/version';
-import GitStatusIndicator from './components/GitStatusIndicator';
-
-// Lazy-loaded modals and panels (not needed on first paint)
-const PreviewComponent = React.lazy(() => import('./components/PreviewComponent.tsx'));
-const HeadersModal = React.lazy(() => import('./components/HeadersModal'));
-const FormattingModal = React.lazy(() => import('./components/FormattingModal'));
-const MermaidModal = React.lazy(() => import('./components/MermaidModal'));
-const UMLModal = React.lazy(() => import('./components/UMLModal'));
-const InsertModal = React.lazy(() => import('./components/InsertModal'));
-const ImagesModal = React.lazy(() => import('./components/ImagesModal'));
-const TablesModal = React.lazy(() => import('./components/TablesModal'));
-const FootnoteModal = React.lazy(() => import('./components/FootnoteModal'));
-const SymbolsModal = React.lazy(() => import('./components/SymbolsModal'));
-const IconsModal = React.lazy(() => import('./components/IconsModal'));
-const AutoModal = React.lazy(() => import('./components/AutoModal'));
-const GitModal = React.lazy(() => import('./components/GitModal'));
-const TemplatesModal = React.lazy(() => import('./components/TemplatesModal'));
-const AboutModal = React.lazy(() => import('./components/AboutModal'));
-const LicenseModal = React.lazy(() => import('./components/LicenseModal'));
-const EasyNotesSidebar = React.lazy(() => import('./components/EasyNotesSidebar'));
-const EasyAIPanel = React.lazy(() => import('./components/EasyAIPanel'));
-const FeaturesModal = React.lazy(() => import('./components/FeaturesModal'));
-const ThemeModal = React.lazy(() => import('./components/ThemeModal'));
-const ImportThemeModal = React.lazy(() => import('./components/ImportThemeModal'));
-const PasswordModal = React.lazy(() => import('./components/PasswordModal'));
-const CloneModal = React.lazy(() => import('./components/CloneModal'));
-const ImportMDModal = React.lazy(() => import('./components/ImportMDModal'));
-const FileBrowserModal = React.lazy(() => import('./components/FileBrowserModal'));
-const GitCredentialsModal = React.lazy(() => import('./components/GitCredentialsModal'));
-const MasterPasswordModal = React.lazy(() => import('./components/MasterPasswordModal'));
-const SaveLocationModal = React.lazy(() => import('./components/SaveLocationModal'));
-const FileNameModal = React.lazy(() => import('./components/FileNameModal'));
-const CommitModal = React.lazy(() => import('./components/CommitModal'));
-const FileModal = React.lazy(() => import('./components/FileModal'));
-const TaskModal = React.lazy(() => import('./components/TaskModal'));
-const ExportModal = React.lazy(() => import('./components/ExportModal'));
-const GitHistoryModal = React.lazy(() => import('./components/GitHistoryModal'));
-const LanguageModal = React.lazy(() => import('./components/LanguageModal'));
-const UpdateModal = React.lazy(() => import('./components/UpdateModal'));
-const TableGenerator = React.lazy(() => import('./autoGenerator/TableGenerator.tsx').then(m => ({ default: m.TableGenerator })));
-const GanttGenerator = React.lazy(() => import('./autoGenerator/GanttGenerator.tsx').then(m => ({ default: m.GanttGenerator })));
-const TimelineGenerator = React.lazy(() => import('./autoGenerator/TimelineGenerator.tsx').then(m => ({ default: m.TimelineGenerator })));
-const ContextMenu = React.lazy(() => import('./autoGenerator/ContextMenu.tsx'));
 
 const App = () => {
   const { t, isLoading } = useLanguage();
@@ -140,14 +143,6 @@ const App = () => {
     return LicenseManager.subscribe(() => {
       setLicenseUpdate(prev => prev + 1);
     });
-  }, []);
-
-  // Defer license network verification until after first paint
-  useEffect(() => {
-    const id = requestAnimationFrame(() => {
-      LicenseManager.initialize();
-    });
-    return () => cancelAnimationFrame(id);
   }, []);
 
   // Update Modal state
@@ -301,11 +296,9 @@ const App = () => {
 
   // Initialize git manager based on environment
   useEffect(() => {
-    import('./gitManagerWrapper').then(({ getGitManager }) =>
-      getGitManager().then(manager => {
-        setGitManager(manager);
-      })
-    );
+    getGitManager().then(manager => {
+      setGitManager(manager);
+    });
   }, []);
 
   // Web-only mode - no Electron detection needed
@@ -449,9 +442,8 @@ const App = () => {
 
   // Initialize Mermaid diagrams
   const initializeMermaid = useCallback(
-    debounce(async () => {
+    debounce(() => {
       if (previewRef.current) {
-        const mermaid = (await import('mermaid')).default;
         mermaid.initialize({
           startOnLoad: true,
           theme: 'default',
@@ -1963,8 +1955,7 @@ const App = () => {
     }
   };
 
-  const handleOpenEncrypted = async () => {
-    const { decryptFile } = await import('./cryptoHandler');
+  const handleOpenEncrypted = () => {
     const showPrompt = (onSubmit: (password: string) => void) =>
       showPasswordPrompt(t('menu.decrypt_file_title'), t('menu.decrypt_file_prompt'), onSubmit);
     decryptFile(setEditorContent, showPrompt, showToast);
@@ -2140,13 +2131,11 @@ const App = () => {
   };
 
   /* Export Functions */
-  const handleSaveAsPDF = async () => {
-    const { saveAsPDF } = await import('./saveAsPDF.tsx');
+  const handleSaveAsPDF = () => {
     saveAsPDF(isPreviewFull ? 'preview-content' : (isEditFull ? 'editor-textarea' : 'preview-content'));
   };
 
-  const handleSaveAsPNG = async () => {
-    const { saveAsPNG } = await import('./saveAsPNG.ts');
+  const handleSaveAsPNG = () => {
     saveAsPNG(isPreviewFull ? 'preview-content' : (isEditFull ? 'editor-textarea' : 'preview-content'));
   };
 
@@ -2447,7 +2436,6 @@ const App = () => {
   };
 
   return (
-    <React.Suspense fallback={null}>
     <div className="container">
       <div className="menubar">
         <div className="dropdown-container">
@@ -3317,7 +3305,6 @@ const App = () => {
         )}
       </div>
     </div>
-    </React.Suspense>
   );
 };
 
