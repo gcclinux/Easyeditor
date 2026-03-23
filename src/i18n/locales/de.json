@@ -251,6 +251,7 @@
     "credits_monthly": "Monatliche Credits:",
     "credits_topup": "Zusätzliche Credits:",
     "credits_used": "Verbrauchte Credits:",
+    "credits_balance": "Verfügbare Credits:",
     "query_built": "(Abfrage wird erstellt)",
     "go_premiumplus": "Zu PremiumPlus wechseln",
     "api_hosting": "EasyAI API Hosting (Kostenlos)",

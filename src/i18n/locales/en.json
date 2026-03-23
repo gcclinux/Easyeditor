@@ -251,6 +251,7 @@
     "credits_monthly": "MonthlyCredits:",
     "credits_topup": "TopUpCredits:",
     "credits_used": "UsedCredits:",
+    "credits_balance": "BalanceCredits:",
     "query_built": "(query to be built)",
     "go_premiumplus": "Go PremiumPlus",
     "api_hosting": "EasyAI API Hosting (Free)",
