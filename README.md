@@ -139,6 +139,36 @@ Clean and responsive table rendering.
 
 ---
 
+
+## *License*
+This project is licensed under the Open Source (MIT) license with Commons Clause and Trademark Protection.
+
+### *What this means:*
+
+✅ Open Source - Anyone can view, modify, and use the code  
+✅ Community Contributions - Improvements must be shared back  
+✅ Free to Use - No cost for personal or internal use  
+❌ No Commercial Sale - Cannot sell WhizCode or derivatives  
+❌ No Rebranding - Cannot rebrand as "WhizCode Pro" or similar  
+❌ No Proprietary Forks - Cannot create closed-source versions  
+
+### *You can:*
+
+Use Easyeditor for any purpose (free)  
+Modify the code for your needs  
+Use it in your projects (non-commercially)  
+Distribute modified versions (non-commercially, with attribution)  
+Contribute improvements back to the project  
+
+### *You cannot:*
+
+Sell Easyeditor or any derivative  
+Offer Easyeditor as a paid service  
+Charge for hosting or support  
+Rebrand it as your own product  
+Create proprietary versions  
+Remove attribution or license notices  
+
 ## *Quick Links*
 
 [![Home](https://img.shields.io/badge/🏠_Home-Visit_Site-blue?style=for-the-badge)](https://www.easyeditor.co.uk) 

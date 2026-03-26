@@ -54,7 +54,7 @@ const EasyAIPanel: React.FC<EasyAIPanelProps> = ({
     { id: 'markdown', label: t('easyai.markdown') },
     { id: 'mermaid', label: t('easyai.mermaid') },
     { id: 'user-story', label: t('easyai.user_story') },
-    { id: 'ascii-diag', label: t('easyai.ascii_diag') },
+    { id: 'documentation', label: t('easyai.documentation') },
     { id: 'plantuml', label: t('easyai.plantuml') },
     { id: 'md-table', label: t('easyai.md_table') },
     { id: 'fix-code', label: t('easyai.fix_code') },
