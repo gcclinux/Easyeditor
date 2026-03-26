@@ -148,8 +148,8 @@ This project is licensed under the Open Source (MIT) license with Commons Clause
 ✅ Open Source - Anyone can view, modify, and use the code  
 ✅ Community Contributions - Improvements must be shared back  
 ✅ Free to Use - No cost for personal or internal use  
-❌ No Commercial Sale - Cannot sell WhizCode or derivatives  
-❌ No Rebranding - Cannot rebrand as "WhizCode Pro" or similar  
+❌ No Commercial Sale - Cannot sell EasyEditor or derivatives  
+❌ No Rebranding - Cannot rebrand as "EasyEditor Pro" or similar  
 ❌ No Proprietary Forks - Cannot create closed-source versions  
 
 ### *You can:*
