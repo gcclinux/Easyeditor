@@ -1,5 +1,9 @@
  ## *Easyeditor* 🚀
 
+ 
+
+[🏠 Home](https://easyeditor.co.uk/) | [💻 Code](https://github.com/gcclinux/easyeditor.git) | [🌐 WebApp](https://easyedit-cloud.web.app/)
+
 **The Ultimate Real-Time Markdown Editor for Professionals, Developers & Writers**
 
 Easyeditor is not just another Markdown editor—it's a **powerhouse** for your documentation needs. Write Markdown (MD), create stunning diagrams with **Mermaid** & **UML**, render mathematical equations with **KaTeX**, and preview it all in **real-time**! 
@@ -39,7 +43,7 @@ Prefer a containerized environment? getting up and running is as simple as one c
 ```bash
 # Pull and run the latest version
 docker pull ghcr.io/gcclinux/easyeditor:latest
-docker run -d --name EASYEDITOR -p 3024:3024 ghcr.io/gcclinux/easyeditor:main
+docker run -d --name EASYEDITOR -p 3024:3024 ghcr.io/gcclinux/easyeditor:latest
 ```
 *Access it at: `http://localhost:3024`*
 
@@ -80,17 +84,22 @@ npm run app
 To build the native desktop application provided by Tauri:
 
 **First, set up your environment:**
+
+*   **All Platforms**: Install Visual Studio Code, Kiro, Antigravity, VSCodium or any other prefered IDE
 *   **Linux**: Install `libwebkit2gtk-4.1-dev`, `build-essential`, `curl`, `wget`, `libssl-dev`, `libayatana-appindicator3-dev`, `librsvg2-dev`.
-*   **Windows**: Install Visual Studio Build Tools with C++ workload.
+*   **Windows**: Install additional extention C++ workload would help.
 *   **macOS**: `xcode-select --install`
 
 **Then run:**
 ```bash
 # Development
-npm run tauri:dev
+npm run dev
 
 # Production Build
-npm run tauri:build
+scripts\build-tauri.bat
+scripts\build-snap.sh
+scripts\build-docker.sh
+npm run tauri:build `**Linux Specific**`
 ```
 
 ---
@@ -113,7 +122,7 @@ Visualize your ideas with **Mermaid** charts and **KaTeX** equations.
 
 <a><img src="screenshots\KaTeX-example-online.png" alt="Online Templates" width="720" height="400"></a>
 
-### 🐙 Git Integration
+### 🐙 EasyGit Integration
 Seamlessly manage your version control without leaving the editor.
 
 <a><img src="screenshots/git_feature.png" alt="Git Feature" width="720" height="400"></a>
@@ -129,6 +138,36 @@ Clean and responsive table rendering.
 | **SSTP Encryption** | ✅ |
 
 ---
+
+
+## *License*
+This project is licensed under the Open Source (MIT) license with Commons Clause and Trademark Protection.
+
+### *What this means:*
+
+✅ Open Source - Anyone can view, modify, and use the code  
+✅ Community Contributions - Improvements must be shared back  
+✅ Free to Use - No cost for personal or internal use  
+❌ No Commercial Sale - Cannot sell EasyEditor or derivatives  
+❌ No Rebranding - Cannot rebrand as "EasyEditor Pro" or similar  
+❌ No Proprietary Forks - Cannot create closed-source versions  
+
+### *You can:*
+
+Use Easyeditor for any purpose (free)  
+Modify the code for your needs  
+Use it in your projects (non-commercially)  
+Distribute modified versions (non-commercially, with attribution)  
+Contribute improvements back to the project  
+
+### *You cannot:*
+
+Sell Easyeditor or any derivative  
+Offer Easyeditor as a paid service  
+Charge for hosting or support  
+Rebrand it as your own product  
+Create proprietary versions  
+Remove attribution or license notices  
 
 ## *Quick Links*
 
