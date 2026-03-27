@@ -32,7 +32,7 @@ export const detectGitRepoInDirectory = async (dirHandle: any): Promise<boolean>
   if (!dirHandle) return false;
 
   try {
-    // Try to access .git directory
+    // Try to access .git directory directly
     const gitDir = await dirHandle.getDirectoryHandle('.git', { create: false });
     if (gitDir) {
       console.log('[GitDetection] Found .git directory in:', dirHandle.name);
@@ -40,7 +40,20 @@ export const detectGitRepoInDirectory = async (dirHandle: any): Promise<boolean>
     }
     return false;
   } catch (e) {
-    // .git not found
+    // Direct access failed — try iterating entries as fallback
+    // (some browsers/environments may not support getDirectoryHandle for dotfiles)
+    try {
+      if (dirHandle.entries) {
+        for await (const [name, handle] of dirHandle.entries()) {
+          if (name === '.git' && handle.kind === 'directory') {
+            console.log('[GitDetection] Found .git directory via entries() in:', dirHandle.name);
+            return true;
+          }
+        }
+      }
+    } catch (iterErr) {
+      console.log('[GitDetection] entries() fallback also failed:', iterErr);
+    }
     console.log('[GitDetection] No .git directory found in:', dirHandle.name);
     return false;
   }

@@ -103,6 +103,8 @@ import EasyNotesSidebar from './components/EasyNotesSidebar';
 import EasyAIPanel from './components/EasyAIPanel';
 import { buildSystemPrompt, parseFixTarget, extractBlock, extractTable } from './components/easyai/aiPersonas';
 import { queryEasyAI } from './components/easyai/aiService';
+import { scanRepository } from './components/easyai/repoScanner';
+import { generateDocumentation } from './components/easyai/docGenerator';
 import FeaturesModal from './components/FeaturesModal';
 import ThemeModal from './components/ThemeModal';
 import ImportThemeModal from './components/ImportThemeModal';
@@ -256,6 +258,16 @@ const App = () => {
   const [pendingCredentialAction, setPendingCredentialAction] = useState<(() => void) | null>(null);
   const [prefillCredentials, setPrefillCredentials] = useState<{ username: string; token: string } | null>(null);
   const [currentDirHandle, setCurrentDirHandle] = useState<any>(null); // For web File System Access API
+
+  // Repo scan progress state
+  const [scanProgress, setScanProgress] = useState<{
+    isScanning: boolean;
+    currentFile: string;
+    filesProcessed: number;
+    totalFiles: number;
+  }>({ isScanning: false, currentFile: '', filesProcessed: 0, totalFiles: 0 });
+  const scanAbortControllerRef = useRef<AbortController | null>(null);
+
   const [confirmModalConfig, setConfirmModalConfig] = useState<{
     open: boolean;
     title: string;
@@ -3220,11 +3232,170 @@ const App = () => {
           )
         }
 
+        {scanProgress.isScanning && (
+          <div style={{
+            position: 'fixed',
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            backgroundColor: 'rgba(0, 0, 0, 0.5)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            zIndex: 10000,
+          }}>
+            <div style={{
+              background: 'var(--bg-color, #1e1e1e)',
+              color: 'var(--text-color, #ccc)',
+              borderRadius: '8px',
+              padding: '24px 32px',
+              minWidth: '360px',
+              maxWidth: '480px',
+              boxShadow: '0 4px 24px rgba(0,0,0,0.4)',
+            }}>
+              <h3 style={{ margin: '0 0 16px 0', fontSize: '16px' }}>Scanning Repository…</h3>
+              <div style={{
+                background: 'var(--border-color, #333)',
+                borderRadius: '4px',
+                height: '8px',
+                overflow: 'hidden',
+                marginBottom: '12px',
+              }}>
+                <div style={{
+                  background: 'var(--accent-color, #007acc)',
+                  height: '100%',
+                  width: `${scanProgress.totalFiles > 0 ? (scanProgress.filesProcessed / scanProgress.totalFiles) * 100 : 0}%`,
+                  transition: 'width 0.3s ease',
+                  borderRadius: '4px',
+                }} />
+              </div>
+              <div style={{ fontSize: '13px', marginBottom: '8px' }}>
+                {scanProgress.filesProcessed} / {scanProgress.totalFiles} files
+              </div>
+              <div style={{
+                fontSize: '12px',
+                color: 'var(--text-muted, #888)',
+                marginBottom: '16px',
+                overflow: 'hidden',
+                textOverflow: 'ellipsis',
+                whiteSpace: 'nowrap',
+              }}>
+                {scanProgress.currentFile || 'Preparing…'}
+              </div>
+              <button
+                onClick={() => scanAbortControllerRef.current?.abort()}
+                style={{
+                  background: 'var(--danger-color, #d32f2f)',
+                  color: '#fff',
+                  border: 'none',
+                  borderRadius: '4px',
+                  padding: '6px 18px',
+                  cursor: 'pointer',
+                  fontSize: '13px',
+                }}
+              >
+                Cancel
+              </button>
+            </div>
+          </div>
+        )}
+
         <EasyAIPanel
           showEasyAIPanel={showEasyAIPanel}
           setShowEasyAIPanel={setShowEasyAIPanel}
           showToast={showToast}
           onActionSelect={async (actionId, promptText) => {
+            // ── Documentation persona with repo scanning ──
+            if (actionId === 'documentation') {
+              const isTauri = !!(window as any).__TAURI_INTERNALS__;
+              console.log('[EasyAI-Doc] Documentation action triggered');
+              console.log('[EasyAI-Doc] isTauri:', isTauri);
+              console.log('[EasyAI-Doc] currentRepoPath:', currentRepoPath);
+              console.log('[EasyAI-Doc] currentDirHandle:', currentDirHandle);
+              console.log('[EasyAI-Doc] isGitRepo state:', isGitRepo);
+
+              // Tauri uses file paths; web uses FileSystemDirectoryHandle
+              const hasTauriRepo = isTauri && currentRepoPath;
+              const hasWebRepo = !isTauri && currentDirHandle;
+
+              if (!hasTauriRepo && !hasWebRepo) {
+                console.warn('[EasyAI-Doc] No repository available — aborting');
+                showToast('No Git repository loaded. Please open a repository first via EasyGit.', 'warning');
+                return;
+              }
+
+              const controller = new AbortController();
+              scanAbortControllerRef.current = controller;
+
+              setScanProgress({ isScanning: true, currentFile: '', filesProcessed: 0, totalFiles: 0 });
+              setShowEasyAIPanel(false);
+
+              try {
+                let scanResult;
+
+                if (hasTauriRepo) {
+                  console.log('[EasyAI-Doc] Using Tauri scanner for path:', currentRepoPath);
+                  const { scanRepositoryTauri } = await import('./components/easyai/tauriRepoScanner');
+                  scanResult = await scanRepositoryTauri({
+                    repoPath: currentRepoPath!,
+                    userPrompt: promptText,
+                    onProgress: (current, total, filePath) => {
+                      setScanProgress({ isScanning: true, currentFile: filePath, filesProcessed: current, totalFiles: total });
+                    },
+                    signal: controller.signal,
+                  });
+                } else {
+                  console.log('[EasyAI-Doc] Using web scanner with dirHandle:', currentDirHandle.name);
+                  scanResult = await scanRepository({
+                    dirHandle: currentDirHandle,
+                    userPrompt: promptText,
+                    onProgress: (current, total, filePath) => {
+                      setScanProgress({ isScanning: true, currentFile: filePath, filesProcessed: current, totalFiles: total });
+                    },
+                    signal: controller.signal,
+                  });
+                }
+
+                if (scanResult.cancelled) {
+                  showToast('Scan cancelled.', 'info');
+                  setScanProgress({ isScanning: false, currentFile: '', filesProcessed: 0, totalFiles: 0 });
+                  return;
+                }
+
+                if (scanResult.cache.size <= 1) {
+                  showToast('No scannable files found in the repository.', 'warning');
+                  setScanProgress({ isScanning: false, currentFile: '', filesProcessed: 0, totalFiles: 0 });
+                  return;
+                }
+
+                // Log scan results for debugging
+                console.log(`[RepoScanner] Cache contains ${scanResult.cache.size - 1} file summaries`);
+
+                setScanProgress(prev => ({ ...prev, currentFile: 'Generating documentation…' }));
+                const doc = await generateDocumentation({
+                  cache: scanResult.cache,
+                  userPrompt: promptText,
+                  signal: controller.signal,
+                });
+
+                if (doc) {
+                  setEditorContent(doc + '\n');
+                  showToast('EasyAI (documentation) — documentation generated.', 'success');
+                } else {
+                  showToast('EasyAI (documentation) — empty response.', 'warning');
+                }
+              } catch (err: any) {
+                const msg = err.message || 'Scan failed';
+                console.error('[EasyAI-Doc] Scan error:', msg, err);
+                showToast(msg, 'error');
+              } finally {
+                setScanProgress({ isScanning: false, currentFile: '', filesProcessed: 0, totalFiles: 0 });
+                scanAbortControllerRef.current = null;
+              }
+              return;
+            }
+
             const systemPrompt = buildSystemPrompt(actionId, editorContent, promptText);
             if (!systemPrompt) {
               showToast(`Unknown EasyAI action: ${actionId}`, 'error');
