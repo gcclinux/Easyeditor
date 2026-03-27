@@ -277,7 +277,9 @@
     "license_key_placeholder": "Voer uw licentiesleutel in",
     "check_license": "Controleer Licentie",
     "close": "Sluiten",
-    "invalid_license": "Ongeldige licentie of e-mail"
+    "invalid_license": "Ongeldige licentie of e-mail",
+    "save_config": "Configuratie opslaan",
+    "premium_not_implemented": "De agenten \"Premium\" en \"PremiumPlus\" zijn nog niet beschikbaar. Binnenkort beschikbaar!"
   },
   "images": {
     "image": "Afbeelding",

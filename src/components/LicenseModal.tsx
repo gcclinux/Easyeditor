@@ -353,12 +353,25 @@ export function LicenseModal({ open, onClose, showToast }: LicenseModalProps) {
                     className="license-name-input"
                     style={{ width: '95%', boxSizing: 'border-box', padding: '4px', borderRadius: '4px', border: '1px solid var(--border-color, #ccc)' }}
                     value={agent}
-                    onChange={(e) => setAgent(e.target.value)}
+                    onChange={(e) => {
+                      const selected = e.target.value;
+                      if (selected === 'Premium' || selected === 'PremiumPlus') {
+                        if (showToast) {
+                          showToast(t('about.premium_not_implemented'), 'warning');
+                        }
+                        // Revert the select back to current agent
+                        e.target.value = agent;
+                        return;
+                      }
+                      setAgent(selected);
+                    }}
                   >
                     <option value="Ollama">Ollama</option>
                     <option value="Gemini">Gemini</option>
                     <option value="Bedrock">Bedrock</option>
                     <option value="Claude">Claude</option>
+                    <option value="Premium">Premium</option>
+                    <option value="PremiumPlus">PremiumPlus</option>
                   </select>
                 </div>
                 <div>
@@ -372,11 +385,11 @@ export function LicenseModal({ open, onClose, showToast }: LicenseModalProps) {
                       padding: '4px',
                       borderRadius: '4px',
                       border: '1px solid var(--border-color, #ccc)',
-                      opacity: agent !== 'Ollama' ? 0.6 : 1,
-                      cursor: agent !== 'Ollama' ? 'not-allowed' : 'text'
+                      opacity: agent === 'Gemini' ? 0.6 : 1,
+                      cursor: agent === 'Gemini' ? 'not-allowed' : 'text'
                     }}
                     placeholder={t('about.api_host_placeholder')}
-                    readOnly={agent !== 'Ollama'}
+                    readOnly={agent === 'Gemini'}
                     value={host}
                     onChange={(e) => setHost(e.target.value)}
                   />
@@ -408,7 +421,7 @@ export function LicenseModal({ open, onClose, showToast }: LicenseModalProps) {
                   className="btn secondary"
                   style={{ marginTop: '10px', alignSelf: 'flex-start', padding: '6px 12px' }}
                 >
-                  Save Config
+                  {t('about.save_config')}
                 </button>
               </div>
             </div>

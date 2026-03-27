@@ -277,7 +277,9 @@
     "license_key_placeholder": "Geben Sie Ihren Lizenzschlüssel ein",
     "check_license": "Lizenz prüfen",
     "close": "Schließen",
-    "invalid_license": "Ungültige Lizenz oder E-Mail"
+    "invalid_license": "Ungültige Lizenz oder E-Mail",
+    "save_config": "Konfiguration speichern",
+    "premium_not_implemented": "Die Agenten \"Premium\" und \"PremiumPlus\" sind noch nicht verfügbar. Demnächst verfügbar!"
   },
   "images": {
     "image": "Bild",

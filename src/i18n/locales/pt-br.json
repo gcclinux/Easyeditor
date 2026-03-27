@@ -277,7 +277,9 @@
     "license_key_placeholder": "Insira sua Chave de Licença",
     "check_license": "Verificar Licença",
     "close": "Fechar",
-    "invalid_license": "Licença ou e-mail inválido"
+    "invalid_license": "Licença ou e-mail inválido",
+    "save_config": "Salvar Configuração",
+    "premium_not_implemented": "Os agentes \"Premium\" e \"PremiumPlus\" ainda não estão disponíveis. Em breve!"
   },
   "images": {
     "image": "Imagem",
