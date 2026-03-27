@@ -140,8 +140,8 @@
     "process_elimination_desc": "Fehlersuch-Flussdiagramm",
     "db_replication": "DB Replikation",
     "db_replication_desc": "Master-Slave Architektur",
-    "llm_training": "LLM Training",
-    "llm_training_desc": "Training Pipeline & Checklist"
+    "llm_training": "LLM-Training",
+    "llm_training_desc": "Trainings-Pipeline & Checkliste"
   },
   "insert": {
     "date": "Datum",
@@ -198,7 +198,7 @@
     "license": "Lizenz:",
     "running_version": "Laufende Version:",
     "available_version": "Verfügbare Version:",
-    "native_languages": "Native Languages Integration",
+    "native_languages": "Integration nativer Sprachen",
     "native_languages_desc": "Integrierte Unterstützung für EN, BR, DE, NL und PL — erweiterbar, damit die Community jederzeit neue Sprachen hinzufügen kann.",
     "premium_features": "Premium Funktionen",
     "premium_features_li1": "EasyNotes Cloud-Integration",
@@ -206,7 +206,7 @@
     "premium_features_li3": "Dropbox Synchronisierung",
     "premium_features_li4": "Premium Support",
     "premium_features_li5": "Anfragen für benutzerdefinierte Funktionen",
-    "premium_features_li6": "Commitment to Support Climate",
+    "premium_features_li6": "Engagement für Klimaschutz",
     "premium_features_desc1": "<strong>Nahtlose Cloud-Synchronisierung:</strong> Schalten Sie reibungslose Workflows mit unseren Premium-Cloud-Integrationen frei! Wir unterstützen derzeit Google Drive und Dropbox, um Ihre Dateien perfekt synchron zu halten. Bleiben Sie dran, während wir unser Ökosystem erweitern – NetDocuments, CloudMe und Box stehen bereits auf unserer Roadmap!",
     "premium_features_desc2": "<strong>Entfesseln Sie Ihren KI-Assistenten:</strong> Steigern Sie Ihre Produktivität mit integrierter KI! Während Sie in unserer kostenlosen Stufe Ihren eigenen LLM-API-Schlüssel verwenden können, erhalten Premium-Nutzer ein exklusives Token-Kontingent für das fortschrittliche Gemini-LLM. Suchen Sie nach grenzenlosen Möglichkeiten? PremiumPlus bietet eine massive Token-Zuteilung, damit Ihre Ideen niemals aufhören müssen.",
     "premium_features_desc3": "<strong>Premium-Vorteile:</strong> Bleiben Sie mit regelmäßigen frühen Updates, vorrangigem Kundensupport zur blitzschnellen Lösung von Problemen und der exklusiven Möglichkeit, maßgeschneiderte benutzerdefinierte Funktionen anzufordern, immer einen Schritt voraus.",
@@ -254,7 +254,7 @@
     "credits_topup": "Zusätzliche Credits:",
     "credits_used": "Verbrauchte Credits:",
     "credits_balance": "Verfügbare Credits:",
-    "query_built": "(Abfrage wird erstellt)",
+    "query_built": "(demnächst verfügbar)",
     "go_premiumplus": "Zu PremiumPlus wechseln",
     "api_hosting": "EasyAI API Hosting (Kostenlos)",
     "api_agent": "Agent",
@@ -636,6 +636,9 @@
     "plantuml": "PlantUML",
     "md_table": "MD Tabelle",
     "fix_code": "Code Korrigieren",
-    "rewrite": "Herschreiben"
+    "rewrite": "Herschreiben",
+    "prompt_placeholder": "Stellen Sie hier Ihre Anforderungen an EasyAI...\nFür Code Korrigieren verwenden Sie: /fix plantuml, /fix mermaid, /fix table, /fix markdown, /fix language (Rechtschreibung), /fix code, oder /fix all",
+    "toast_empty_prompt": "Bitte geben Sie zuerst eine Anforderung für EasyAI ein.",
+    "toast_action_not_bound": "Ausgewählte Aktion: {{action}}. Logik noch nicht mit dem Editor verbunden."
   }
 }

@@ -326,14 +326,14 @@ export function LicenseModal({ open, onClose, showToast }: LicenseModalProps) {
             <div className="about-card">
               <h3>{t('about.easyai_credits')}</h3>
               <div style={{ marginTop: '10px' }}>
-                <p style={{ fontSize: '0.9em', margin: '4px 0' }}><strong>{t('about.credits_agent')}</strong> {isLicenseValid ? (import.meta.env.VITE_PREMIUM_AGENT || 'Gemini') : agent}</p>
-                <p style={{ fontSize: '0.9em', margin: '4px 0' }}><strong>{t('about.credits_model')}</strong> {isLicenseValid ? (import.meta.env.VITE_PREMIUM_MODEL || 'gemini-3.1-flash-lite-preview') : model}</p>
+                <p style={{ fontSize: '0.9em', margin: '4px 0' }}><strong>{t('about.credits_agent')}</strong> {isLicenseValid ? (import.meta.env.VITE_PREMIUM_AGENT || 'Ollama') : agent}</p>
+                <p style={{ fontSize: '0.9em', margin: '4px 0' }}><strong>{t('about.credits_model')}</strong> {isLicenseValid ? (import.meta.env.VITE_PREMIUM_MODEL || 'ministral-3:3b') : model}</p>
                 <p style={{ fontSize: '0.9em', margin: '4px 0' }}><strong>{t('about.credits_monthly')}</strong> {monthlyCredits !== null ? monthlyCredits : t('about.query_built')}</p>
                 <p style={{ fontSize: '0.9em', margin: '4px 0' }}><strong>{t('about.credits_topup')}</strong> {topUpCredits !== null ? topUpCredits : t('about.query_built')}</p>
                 <p style={{ fontSize: '0.9em', margin: '4px 0' }}><strong>{t('about.credits_used')}</strong> {usedCredits !== null ? usedCredits : t('about.query_built')}</p>
                 <p style={{ fontSize: '0.9em', margin: '4px 0' }}><strong>{t('about.credits_balance')}</strong> {balanceCredits !== null ? balanceCredits : t('about.query_built')}</p>
                 <a
-                  href="https://buy.stripe.com/cNi14ng486TTfaK78LdZ602"
+                  // href="https://buy.stripe.com/cNi14ng486TTfaK78LdZ602"
                   target="_blank"
                   rel="noopener noreferrer"
                   className="btn secondary"

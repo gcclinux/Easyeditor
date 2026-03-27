@@ -112,21 +112,26 @@ const documentationPersona: AIPersona = {
 
 const plantumlPersona: AIPersona = {
   id: 'plantuml',
-  role: 'You are a PlantUML Diagram Specialist.',
-  goal: 'Generate syntactically correct PlantUML diagram code based on the user\'s requirement.',
+  role: 'You are a Nomnoml Diagram Specialist. You generate diagrams using Nomnoml syntax inside ```plantuml fenced code blocks.',
+  goal: 'Generate syntactically correct Nomnoml diagram code based on the user\'s requirement. The output is rendered by the Nomnoml library, NOT by PlantUML.',
   editorAwareness:
     'Read editor content for domain entities and relationships. Do NOT modify existing content — only append the new diagram block.',
-  outputFormat: 'PlantUML fenced code block (```plantuml ... ```) with @startuml/@enduml',
-  description: 'Generate PlantUML diagram code',
+  outputFormat: 'Nomnoml code inside a Markdown fenced code block tagged as plantuml: ```plantuml ... ```',
+  description: 'Generate Nomnoml diagram code (rendered as UML)',
   rules: [
-    'Output must be wrapped in a Markdown fenced code block with language plantuml: ```plantuml ... ```.',
-    'Begin the PlantUML block with @startuml and end with @enduml.',
-    'Supported diagram types: sequence, use case, class, activity, component, state, object, deployment, timing, and wireframe (salt).',
-    'Choose the most suitable diagram type for the requirement. Honour the user\'s explicit request if specified.',
-    'Use meaningful participant / class / component names — not abbreviations.',
-    'Apply skinparam styling for readability (e.g. skinparam handwritten false, skinparam shadowing false).',
+    'Output must be wrapped in a Markdown fenced code block with language tag plantuml: ```plantuml ... ```.',
+    'Do NOT use @startuml, @enduml, skinparam, or any standard PlantUML syntax. The renderer is Nomnoml, not PlantUML.',
+    'Start the diagram with #title: and #direction: directives (e.g. #title: My Diagram, #direction: down or #direction: right).',
+    'Nodes are defined with square brackets: [NodeName] for simple nodes, [NodeName|field1;field2|method1();method2()] for class nodes with compartments.',
+    'Relationships use arrow syntax between nodes: [A] -> [B] (association), [A] --> [B] (dependency), [A] <:- [B] (inheritance/extends), [A] o- [B] (composition), [A] - [B] (simple link).',
+    'Supported stereotypes inside brackets: [<actor> Name], [<start> Start], [<end> End], [<choice> Decision], [<package> Name | ...nested...], [<database> Name | ...nested...].',
+    'For class diagrams: use [ClassName|field: type;field2: type|method();method2()] with pipe separators for compartments and semicolons between members.',
+    'For sequence-style diagrams: use [A] -> [B] with #direction: right.',
+    'For activity diagrams: use [<start> Start] -> [Step] -> [<choice> Condition] with yes/no labels, ending with [<end> End].',
+    'Choose the most suitable diagram layout for the requirement. Honour the user\'s explicit request if specified.',
+    'Use meaningful, descriptive node names — not single-letter abbreviations.',
     'Precede the code block with a Markdown heading and one-line description.',
-    'The output must compile without errors in PlantUML v1.2024+.',
+    'Here is a complete class diagram example for reference:\n```plantuml\n#title: Class Diagram Example\n#direction: down\n\n[Animal|age: int;gender: string|isMammal();mate()]\n[Duck|beakColor: string|swim();quack()]\n[Animal] <:- [Duck]\n```',
   ],
 };
 
@@ -152,22 +157,28 @@ const mdTablePersona: AIPersona = {
 
 const fixCodePersona: AIPersona = {
   id: 'fix-code',
-  role: 'You are a Code Review and Fix Specialist.',
-  goal: 'Analyse code found in the editor content, identify bugs, issues, or improvements, and provide corrected code.',
+  role: 'You are a Targeted Code and Content Fix Specialist for the EasyEditor application.',
+  goal: 'Fix ONLY the specific block or content type the user identifies. Output ONLY the corrected block — no explanations, no summaries, no surrounding content.',
   editorAwareness:
-    'This persona READS the existing editor content as its primary input. The editor content IS the code to analyse. ' +
-    'The user\'s prompt in the EasyAI input provides additional context (e.g. "fix the sorting function", "handle null values").',
-  outputFormat: 'Markdown with fenced code blocks (language-tagged) and optional diff blocks',
-  description: 'Analyse and fix code from the editor',
+    'This persona READS the existing editor content as its primary input. ' +
+    'The user\'s prompt specifies WHAT to fix using /fix directives (e.g. "/fix plantuml", "/fix mermaid", "/fix markdown", "/fix table", "/fix language"). ' +
+    'If no /fix directive is given, output a help hint instead of guessing.',
+  outputFormat: 'The corrected block only, in its original format — ready to be swapped in-place',
+  description: 'Fix a specific block in the editor (use /fix plantuml, /fix mermaid, etc.)',
   rules: [
-    'Identify the programming language(s) from the editor content automatically.',
-    'Output the corrected/fixed code inside a Markdown fenced code block with the appropriate language tag.',
-    'Before the code block, provide a brief Markdown summary listing each issue found and what was fixed, using a numbered list.',
-    'Preserve the original code structure and style — make minimal, targeted fixes. Do not refactor unrelated code.',
-    'If no bugs are found, state that clearly and suggest potential improvements instead.',
-    'If the code is incomplete or context is missing, state your assumptions.',
-    'Append the analysis and corrected code to the document — do NOT replace the original code block in the editor.',
-    'Use Markdown diff format (```diff) when showing small, targeted changes as an alternative view.',
+    'Parse the user prompt for a /fix directive: /fix plantuml, /fix mermaid, /fix markdown, /fix table, /fix language, /fix code, or /fix all.',
+    'If a /fix directive is found, locate the FIRST matching block in the editor content and fix ONLY that block.',
+    '/fix plantuml — find the ```plantuml ... ``` block, fix Nomnoml syntax errors. Remember: this editor uses Nomnoml (bracket syntax [Node|fields|methods], #title:, #direction:), NOT standard PlantUML (@startuml/@enduml). Fix accordingly.',
+    '/fix mermaid — find the ```mermaid ... ``` block, fix Mermaid.js syntax errors.',
+    '/fix table — find Markdown pipe tables and fix alignment, missing separators, or structural issues.',
+    '/fix markdown — fix Markdown formatting issues (broken links, heading hierarchy, list syntax, etc.) in the prose sections outside of fenced code blocks.',
+    '/fix language — act as a spell-checker and grammar fixer for the natural-language prose. Do not touch code blocks or diagram blocks.',
+    '/fix code — find fenced code blocks (```js, ```python, etc.) and fix programming errors.',
+    '/fix all — review and fix the entire document, all block types.',
+    'Output ONLY the fixed block content (including its fencing markers like ```plantuml ... ```). Do NOT output the rest of the document. Do NOT add explanations, summaries, or diff views.',
+    'Preserve everything outside the targeted block exactly as-is — the application will handle the replacement.',
+    'If the targeted block type is not found in the editor content, respond with a short message: "No [type] block found in the document."',
+    'If no /fix directive is provided and the user prompt is vague, output ONLY this help text:\n"Use a /fix directive to target what to fix:\n- /fix plantuml — fix PlantUML (Nomnoml) diagram\n- /fix mermaid — fix Mermaid diagram\n- /fix table — fix Markdown tables\n- /fix markdown — fix Markdown formatting\n- /fix language — fix spelling and grammar\n- /fix code — fix code blocks\n- /fix all — review entire document"',
   ],
 };
 
@@ -193,6 +204,97 @@ const rewritePersona: AIPersona = {
 };
 
 // ---------------------------------------------------------------------------
+// Fix-code helpers: parse /fix directives and extract targeted blocks
+// ---------------------------------------------------------------------------
+
+/** Recognised /fix target types */
+export type FixTarget = 'plantuml' | 'mermaid' | 'table' | 'markdown' | 'language' | 'code' | 'all' | null;
+
+/**
+ * Parse a user prompt for a /fix directive.
+ * Returns the target type and the remaining prompt text (without the directive).
+ */
+export function parseFixTarget(prompt: string): { target: FixTarget; cleanPrompt: string } {
+  const match = prompt.match(/\/fix\s+(plantuml|mermaid|table|markdown|language|code|all)\b/i);
+  if (!match) return { target: null, cleanPrompt: prompt };
+  const target = match[1].toLowerCase() as FixTarget;
+  const cleanPrompt = prompt.replace(match[0], '').trim();
+  return { target, cleanPrompt };
+}
+
+/**
+ * Extract the first fenced code block of a given type from editor content.
+ * Returns the full block (including fences) and its start/end indices, or null.
+ */
+export function extractBlock(
+  editorContent: string,
+  blockType: string
+): { block: string; start: number; end: number } | null {
+  // Match ```blockType ... ``` (handles optional trailing text on opening fence)
+  const regex = new RegExp('(```' + blockType + '[^\\n]*\\n[\\s\\S]*?```)', 'i');
+  const match = editorContent.match(regex);
+  if (!match || match.index === undefined) return null;
+  return {
+    block: match[1],
+    start: match.index,
+    end: match.index + match[1].length,
+  };
+}
+
+/**
+ * Extract the first Markdown pipe table from editor content.
+ * A table starts with a line containing | and is followed by a separator row |---|.
+ */
+export function extractTable(
+  editorContent: string
+): { block: string; start: number; end: number } | null {
+  const regex = /(\|[^\n]+\|\n\|[\s:|-]+\|\n(?:\|[^\n]+\|\n?)*)/;
+  const match = editorContent.match(regex);
+  if (!match || match.index === undefined) return null;
+  return {
+    block: match[1],
+    start: match.index,
+    end: match.index + match[1].length,
+  };
+}
+
+/**
+ * Extract all prose segments (text outside fenced code blocks, HTML comments,
+ * and tables) from editor content. Returns an array of segments with their
+ * positions so they can be replaced in-place.
+ */
+export function extractProseSegments(
+  editorContent: string
+): { text: string; start: number; end: number }[] {
+  const segments: { text: string; start: number; end: number }[] = [];
+  // Match fenced code blocks and HTML comments to skip them
+  const skipRegex = /```[\s\S]*?```|<!--[\s\S]*?-->/g;
+  let lastEnd = 0;
+  let match: RegExpExecArray | null;
+
+  while ((match = skipRegex.exec(editorContent)) !== null) {
+    if (match.index > lastEnd) {
+      const text = editorContent.substring(lastEnd, match.index);
+      // Only include segments that have actual prose (not just whitespace)
+      if (text.trim().length > 0) {
+        segments.push({ text, start: lastEnd, end: match.index });
+      }
+    }
+    lastEnd = match.index + match[0].length;
+  }
+
+  // Capture trailing prose after the last code block
+  if (lastEnd < editorContent.length) {
+    const text = editorContent.substring(lastEnd);
+    if (text.trim().length > 0) {
+      segments.push({ text, start: lastEnd, end: editorContent.length });
+    }
+  }
+
+  return segments;
+}
+
+// ---------------------------------------------------------------------------
 // Exported map & helpers
 // ---------------------------------------------------------------------------
 
@@ -211,11 +313,15 @@ export const aiPersonas: Record<string, AIPersona> = {
  * Build a complete system prompt for the AI model from a persona config
  * and the current editor content.
  *
+ * For fix-code with a /fix directive, only the targeted block is included
+ * in the editor section to focus the model's attention.
+ *
  * @param actionId  - The button action ID (e.g. 'markdown', 'fix-code')
  * @param editorContent - Current content of the editor panel
+ * @param userPrompt - Optional user prompt text (used by fix-code to parse /fix directives)
  * @returns A fully-formed system prompt string, or null if the actionId is unknown
  */
-export function buildSystemPrompt(actionId: string, editorContent: string): string | null {
+export function buildSystemPrompt(actionId: string, editorContent: string, userPrompt?: string): string | null {
   const persona = aiPersonas[actionId];
   if (!persona) return null;
 
@@ -223,9 +329,50 @@ export function buildSystemPrompt(actionId: string, editorContent: string): stri
     .map((rule, i) => `${i + 1}. ${rule}`)
     .join('\n');
 
-  const editorSection = editorContent.trim()
-    ? `\n\n## Current Editor Content (Reference)\n\`\`\`\n${editorContent}\n\`\`\``
-    : '\n\n## Current Editor Content\nThe editor is currently empty. You are creating new content from scratch.';
+  let editorSection: string;
+
+  if (actionId === 'fix-code' && userPrompt) {
+    const { target } = parseFixTarget(userPrompt);
+    let extracted: { block: string; start: number; end: number } | null = null;
+
+    if (target === 'plantuml') {
+      extracted = extractBlock(editorContent, 'plantuml');
+    } else if (target === 'mermaid') {
+      extracted = extractBlock(editorContent, 'mermaid');
+    } else if (target === 'table') {
+      extracted = extractTable(editorContent);
+    } else if (target === 'code') {
+      // Match any fenced code block that is NOT plantuml/mermaid
+      const codeRegex = /(```(?!plantuml|mermaid)[a-zA-Z]*\n[\s\S]*?```)/i;
+      const match = editorContent.match(codeRegex);
+      if (match && match.index !== undefined) {
+        extracted = { block: match[1], start: match.index, end: match.index + match[1].length };
+      }
+    }
+
+    if (target && target !== 'all' && target !== 'markdown' && target !== 'language' && extracted) {
+      // Provide only the targeted block to the model
+      editorSection = `\n\n## Targeted Block to Fix\nThe user asked to fix the ${target} block. Here is ONLY that block:\n\`\`\`\n${extracted.block}\n\`\`\`\n\nOutput ONLY the corrected version of this block (including its fencing markers). Do not output anything else.`;
+    } else if (target === 'language' || target === 'markdown') {
+      // Send the FULL document but instruct the model to only fix prose
+      if (editorContent.trim()) {
+        const fixType = target === 'language'
+          ? 'Fix ONLY spelling, grammar, and language errors in the natural-language prose.'
+          : 'Fix ONLY Markdown formatting issues (broken links, heading hierarchy, list syntax, etc.) in the prose.';
+        editorSection = `\n\n## FULL Document — Fix Prose Only\n${fixType}\n\nCRITICAL RULES FOR THIS MODE:\n- Output the COMPLETE document exactly as provided below.\n- Fix ONLY the prose / natural-language text.\n- Do NOT modify, remove, or reformat ANY fenced code blocks (\`\`\`plantuml, \`\`\`mermaid, \`\`\`js, etc.) — copy them byte-for-byte.\n- Do NOT modify, remove, or reformat ANY HTML comments (<!-- ... -->).\n- Do NOT modify, remove, or reformat ANY Markdown tables.\n- Do NOT add explanations, summaries, or notes about what you changed.\n- The output must be the full document, ready to replace the editor content.\n\n\`\`\`\n${editorContent}\n\`\`\``;
+      } else {
+        editorSection = '\n\n## Current Editor Content\nThe editor is currently empty. Nothing to fix.';
+      }
+    } else if (editorContent.trim()) {
+      editorSection = `\n\n## Current Editor Content (Full Document)\n\`\`\`\n${editorContent}\n\`\`\``;
+    } else {
+      editorSection = '\n\n## Current Editor Content\nThe editor is currently empty. Nothing to fix.';
+    }
+  } else {
+    editorSection = editorContent.trim()
+      ? `\n\n## Current Editor Content (Reference)\n\`\`\`\n${editorContent}\n\`\`\``
+      : '\n\n## Current Editor Content\nThe editor is currently empty. You are creating new content from scratch.';
+  }
 
   return [
     `# System Prompt`,

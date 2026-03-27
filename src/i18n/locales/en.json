@@ -254,7 +254,7 @@
     "credits_topup": "TopUpCredits:",
     "credits_used": "UsedCredits:",
     "credits_balance": "BalanceCredits:",
-    "query_built": "(query to be built)",
+    "query_built": "(coming soon)",
     "go_premiumplus": "Go PremiumPlus",
     "api_hosting": "EasyAI API Hosting (Free)",
     "api_agent": "Agent",
@@ -636,6 +636,9 @@
     "plantuml": "PlantUML",
     "md_table": "MD Table",
     "fix_code": "Fix Code",
-    "rewrite": "Rewrite"
+    "rewrite": "Rewrite",
+    "prompt_placeholder": "Ask EasyAI your requirements here...\nFor Fix Code use: /fix plantuml, /fix mermaid, /fix table, /fix markdown, /fix language (spelling), /fix code, or /fix all",
+    "toast_empty_prompt": "Please enter a requirement for EasyAI first.",
+    "toast_action_not_bound": "Selected Action: {{action}}. Logic not yet bound to editor."
   }
 }

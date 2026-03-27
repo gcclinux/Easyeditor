@@ -2,6 +2,7 @@ import React, { useState, useRef, useEffect } from 'react';
 import { FaRobot, FaTimes } from 'react-icons/fa';
 import { useLanguage } from '../i18n/LanguageContext';
 import { getPersonaDescription } from './easyai/aiPersonas';
+import { loadEasyAIConfig, EasyAIConfig } from './easyai/aiService';
 
 interface EasyAIPanelProps {
   showEasyAIPanel: boolean;
@@ -18,8 +19,16 @@ const EasyAIPanel: React.FC<EasyAIPanelProps> = ({
 }) => {
   const { t } = useLanguage();
   const [prompt, setPrompt] = useState('');
+  const [aiConfig, setAiConfig] = useState<EasyAIConfig | null>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const panelRef = useRef<HTMLDivElement>(null);
+
+  // Load AI config when panel opens
+  useEffect(() => {
+    if (showEasyAIPanel) {
+      loadEasyAIConfig().then(setAiConfig).catch(() => setAiConfig(null));
+    }
+  }, [showEasyAIPanel]);
 
   // Auto-resize textarea
   useEffect(() => {
@@ -48,7 +57,7 @@ const EasyAIPanel: React.FC<EasyAIPanelProps> = ({
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, [showEasyAIPanel, setShowEasyAIPanel]);
 
-  const panelWidth = 400; // Single panel width like EasyNotes
+  const panelWidth = 480; // Single panel width like EasyNotes
 
   const actionButtons = [
     { id: 'markdown', label: t('easyai.markdown') },
@@ -63,14 +72,14 @@ const EasyAIPanel: React.FC<EasyAIPanelProps> = ({
 
   const handleActionClick = (actionId: string) => {
     if (!prompt.trim()) {
-      showToast('Please enter a requirement for EasyAI first.', 'warning');
+      showToast(t('easyai.toast_empty_prompt'), 'warning');
       return;
     }
 
     if (onActionSelect) {
       onActionSelect(actionId, prompt);
     } else {
-      showToast(`Selected Action: ${actionId}. Logic not yet bound to editor.`, 'info');
+      showToast(t('easyai.toast_action_not_bound').replace('{{action}}', actionId), 'info');
     }
   };
 
@@ -103,11 +112,18 @@ const EasyAIPanel: React.FC<EasyAIPanelProps> = ({
         boxSizing: 'border-box'
       }}>
         {/* Header */}
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
-          <h2 style={{ margin: 0, fontSize: '1.5rem', display: 'flex', alignItems: 'center' }}>
-            <FaRobot style={{ marginRight: '10px' }} />
-            EasyAI
-          </h2>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '20px' }}>
+          <div>
+            <h2 style={{ margin: 0, fontSize: '1.5rem', display: 'flex', alignItems: 'center' }}>
+              <FaRobot style={{ marginRight: '10px' }} />
+              EasyAI (Beta)
+            </h2>
+            {aiConfig && (
+              <p style={{ margin: '4px 0 0 0', fontSize: '0.75rem', color: 'var(--color-text-secondary, #888)', display: 'flex', alignItems: 'center', gap: '4px' }}>
+                <span style={{ color: '#48bb78' }}>✓</span> {aiConfig.agent} ({aiConfig.agent === 'Ollama' ? `host: ${aiConfig.host.replace(/^https?:\/\//, '')}, ` : ''}model: {aiConfig.model})
+              </p>
+            )}
+          </div>
           <button
             onClick={() => setShowEasyAIPanel(false)}
             style={{
@@ -131,7 +147,7 @@ const EasyAIPanel: React.FC<EasyAIPanelProps> = ({
             rows={5}
             value={prompt}
             onChange={(e) => setPrompt(e.target.value)}
-            placeholder="Ask EasyAI your requirements here... (e.g. Generate a sequence diagram for a login flow)"
+            placeholder={t('easyai.prompt_placeholder')}
             style={{
               width: '100%',
               backgroundColor: 'var(--bg-primary-light)',
