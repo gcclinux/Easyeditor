@@ -182,6 +182,7 @@ const App = () => {
   const [timelineModalOpen, setTimelineModalOpen] = useState(false);
   const [showHeaderModal, setShowHeaderModal] = useState(false);
   const [showFormattingModal, setShowFormattingModal] = useState(false);
+  const [plainTextPreview, setPlainTextPreview] = useState(false);
   const [showMermaidModal, setShowMermaidModal] = useState(false);
   const [showUMLModal, setShowUMLModal] = useState(false);
   const [showSymbolsModal, setShowSymbolsModal] = useState(false);
@@ -704,6 +705,11 @@ const App = () => {
   // insertNewLineSyntax function inserts a new line syntax for Markdown
   const handleNewLineSyntax = () => {
     insertNewLineSyntax(textareaRef, editorContent, setEditorContent);
+  };
+
+  // handleClearText toggles plain text preview mode (no markdown rendering)
+  const handleClearText = () => {
+    setPlainTextPreview(prev => !prev);
   };
 
   // insertItalicSyntax function inserts an italic syntax for Markdown
@@ -2684,6 +2690,7 @@ const App = () => {
               onCodeLine={handlerinsertCodeSyntax}
               onCodeBlock={handlerinsertBlockCodeSyntax}
               onNewLine={handleNewLineSyntax}
+              onClearText={handleClearText}
               onClose={() => setShowFormattingModal(false)}
             />
           )
@@ -3262,6 +3269,7 @@ const App = () => {
               isPreviewFull={isPreviewFull}
               isHorizontal={isHorizontal}
               initializeMermaid={initializeMermaid}
+              plainTextPreview={plainTextPreview}
             />
           )}
         </div>

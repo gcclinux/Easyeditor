@@ -99,7 +99,9 @@
     "strike": "Doorhalen",
     "strike_desc": "~~Doorhalen~~",
     "newline": "Nieuwe Regel",
-    "newline_desc": "Regel 2 (twee spaties + Enter)"
+    "newline_desc": "Regel 2 (twee spaties + Enter)",
+    "clear_text": "Platte Tekst",
+    "clear_text_desc": "Schakel platte tekst voorbeeld"
   },
   "mermaid": {
     "journey": "Reis",

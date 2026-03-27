@@ -99,7 +99,9 @@
     "strike": "Przekreślenie",
     "strike_desc": "~~Przekreślenie~~",
     "newline": "Nowa linia",
-    "newline_desc": "Linia 2 (dwie spacje + Enter)"
+    "newline_desc": "Linia 2 (dwie spacje + Enter)",
+    "clear_text": "Czysty Tekst",
+    "clear_text_desc": "Przełącz podgląd tekstu"
   },
   "mermaid": {
     "journey": "Podróż",

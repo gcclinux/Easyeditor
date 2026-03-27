@@ -99,7 +99,9 @@
     "strike": "Durchgestrichen",
     "strike_desc": "~~Durchgestrichen~~",
     "newline": "Neue Zeile",
-    "newline_desc": "Zeile 2 (zwei Leerzeichen + Enter)"
+    "newline_desc": "Zeile 2 (zwei Leerzeichen + Enter)",
+    "clear_text": "Klartext",
+    "clear_text_desc": "Klartextvorschau umschalten"
   },
   "mermaid": {
     "journey": "Reise",

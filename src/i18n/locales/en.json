@@ -99,7 +99,9 @@
     "strike": "Strike",
     "strike_desc": "~~Strike~~",
     "newline": "NewLine",
-    "newline_desc": "Line 2 (two spaces + Enter)"
+    "newline_desc": "Line 2 (two spaces + Enter)",
+    "clear_text": "Clear Text",
+    "clear_text_desc": "Toggle plain text preview"
   },
   "mermaid": {
     "journey": "Journey",

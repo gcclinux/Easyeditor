@@ -99,7 +99,9 @@
     "strike": "Tachado",
     "strike_desc": "~~Tachado~~",
     "newline": "Nova Linha",
-    "newline_desc": "Linha 2 (dois espaços + Enter)"
+    "newline_desc": "Linha 2 (dois espaços + Enter)",
+    "clear_text": "Texto Limpo",
+    "clear_text_desc": "Alternar visualização em texto simples"
   },
   "mermaid": {
     "journey": "Jornada",

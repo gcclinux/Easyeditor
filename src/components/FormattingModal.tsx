@@ -1,5 +1,5 @@
 import React from 'react';
-import { FaBold, FaItalic, FaStrikethrough, FaCode, FaFileCode, FaLevelDownAlt, FaTimes, FaFont } from 'react-icons/fa';
+import { FaBold, FaItalic, FaStrikethrough, FaCode, FaFileCode, FaLevelDownAlt, FaTimes, FaFont, FaEraser } from 'react-icons/fa';
 import { useLanguage } from '../i18n/LanguageContext';
 import './formattingModal.css';
 
@@ -10,6 +10,7 @@ type Props = {
     onItalic: () => void;
     onStrike: () => void;
     onNewLine: () => void;
+    onClearText: () => void;
     onClose: () => void;
 };
 
@@ -20,6 +21,7 @@ export default function FormattingModal({
     onItalic,
     onStrike,
     onNewLine,
+    onClearText,
     onClose
 }: Props) {
     const { t } = useLanguage();
@@ -62,6 +64,7 @@ export default function FormattingModal({
                         {renderTile(<FaCode />, 'format.codeline', 'format.codeline_desc', onCodeLine)}
                         {renderTile(<FaFileCode />, 'format.codeblock', 'format.codeblock_desc', onCodeBlock)}
                         {renderTile(<FaLevelDownAlt />, 'format.newline', 'format.newline_desc', onNewLine)}
+                        {renderTile(<FaEraser />, 'format.clear_text', 'format.clear_text_desc', onClearText)}
                     </div>
                 </div>
 
