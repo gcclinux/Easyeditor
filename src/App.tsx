@@ -992,12 +992,12 @@ const App = () => {
       cancelLabel: 'Cancel',
       onConfirm: async () => {
         try {
-          await gitCredentialManager.clearCredentials();
+          await gitCredentialManager.clearMasterPassword();
           if (gitManager) {
             gitManager.clearCredentials();
           }
           setHasStoredCredentials(false);
-          showToast('Credentials cleared successfully.', 'success');
+          showToast('Credentials and master password cleared successfully.', 'success');
         } catch (error) {
           showToast(`Failed to clear credentials: ${(error as Error).message}`, 'error');
         }
@@ -2909,6 +2909,16 @@ const App = () => {
           open={masterPasswordModalOpen}
           onClose={() => setMasterPasswordModalOpen(false)}
           onSubmit={handleMasterPasswordSubmit}
+          onReset={async () => {
+            setMasterPasswordModalOpen(false);
+            await gitCredentialManager.clearMasterPassword();
+            if (gitManager) {
+              gitManager.clearCredentials();
+            }
+            setHasStoredCredentials(false);
+            showToast('Credentials reset. Please set up new credentials.', 'info');
+            setTimeout(() => handleSetupCredentials(), 300);
+          }}
           isSetup={isMasterPasswordSetup}
           showToast={showToast}
         />

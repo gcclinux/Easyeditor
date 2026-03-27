@@ -111,6 +111,12 @@ const GitCredentialsModal: React.FC<GitCredentialsModalProps> = ({
             >
               {t('modals.git_credentials.how_to_token')}
             </a>
+            <span style={{ margin: '0 4px', color: '#666' }}>|</span>
+            <a href="#" onClick={(e) => { e.preventDefault(); window.open('https://docs.gitlab.com/user/profile/personal_access_tokens.html', '_blank'); }}>GitLab</a>
+            <span style={{ margin: '0 4px', color: '#666' }}>|</span>
+            <a href="#" onClick={(e) => { e.preventDefault(); window.open('https://support.atlassian.com/bitbucket-cloud/docs/create-an-app-password/', '_blank'); }}>Bitbucket</a>
+            <span style={{ margin: '0 4px', color: '#666' }}>|</span>
+            <a href="#" onClick={(e) => { e.preventDefault(); window.open('https://docs.gitea.com/development/api-usage#generating-and-listing-api-tokens', '_blank'); }}>Gitea</a>
           </small>
         </div>
 

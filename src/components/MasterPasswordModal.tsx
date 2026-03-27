@@ -5,6 +5,7 @@ interface MasterPasswordModalProps {
   open: boolean;
   onClose: () => void;
   onSubmit: (password: string) => void;
+  onReset?: () => void;
   isSetup: boolean; // true if creating new master password, false if unlocking
   showToast: (message: string, type?: 'success' | 'error' | 'info' | 'warning') => void;
 }
@@ -13,6 +14,7 @@ const MasterPasswordModal: React.FC<MasterPasswordModalProps> = ({
   open,
   onClose,
   onSubmit,
+  onReset,
   isSetup,
   showToast
 }) => {
@@ -114,6 +116,21 @@ const MasterPasswordModal: React.FC<MasterPasswordModalProps> = ({
           <div className="warning-box">
             <strong>⚠️ Important:</strong> Remember this password! If you forget it,
             you'll need to clear your saved credentials and set them up again.
+          </div>
+        )}
+
+        {!isSetup && onReset && (
+          <div style={{ textAlign: 'center', marginBottom: '8px' }}>
+            <a
+              href="#"
+              onClick={(e) => {
+                e.preventDefault();
+                onReset();
+              }}
+              style={{ fontSize: '0.85em', color: '#888' }}
+            >
+              Forgot password? Reset credentials
+            </a>
           </div>
         )}
 
