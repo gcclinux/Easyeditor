@@ -11,8 +11,13 @@
 
 </head>
 
-<body>
-  <div id="root"></div>
+<body style="margin:0;padding:0;background:#1e1e2e">
+  <div id="root">
+    <div id="app-loader" style="display:flex;align-items:center;justify-content:center;height:100vh;background:#1e1e2e;color:#cdd6f4;font-family:system-ui,sans-serif;font-size:14px;gap:10px">
+      <img src="./public/32x32.png" alt="" width="32" height="32" onerror="this.style.display='none'"/>
+      <span>Loading EasyEditor...</span>
+    </div>
+  </div>
   <script type="module" src="/src/main.tsx"></script>
 </body>
 

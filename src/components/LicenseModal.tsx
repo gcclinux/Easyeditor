@@ -25,6 +25,11 @@ export function LicenseModal({ open, onClose, showToast }: LicenseModalProps) {
   const [model, setModel] = React.useState('ministral-3:3b');
   const [apiKey, setApiKey] = React.useState('');
 
+  const [monthlyCredits, setMonthlyCredits] = React.useState<number | null>(null);
+  const [topUpCredits, setTopUpCredits] = React.useState<number | null>(null);
+  const [usedCredits, setUsedCredits] = React.useState<number | null>(null);
+  const [balanceCredits, setBalanceCredits] = React.useState<number | null>(null);
+
   React.useEffect(() => {
     const storedEmail = LicenseManager.getStoredEmail();
     if (storedEmail) setEmail(storedEmail);
@@ -34,6 +39,43 @@ export function LicenseModal({ open, onClose, showToast }: LicenseModalProps) {
     if (storedType) setType(storedType);
     const storedName = localStorage.getItem('easyeditor-user-name');
     if (storedName) setName(storedName);
+
+    // Load initial EasyAI API Config Native or Web Hybrid
+    const loadApiConfig = async () => {
+      const isTauri = !!(window as any).__TAURI__;
+      try {
+        if (isTauri) {
+          const { homeDir, join } = await import('@tauri-apps/api/path');
+          const { readTextFile, exists } = await import('@tauri-apps/plugin-fs');
+          const homePath = await homeDir();
+          const configPath = await join(homePath, '.easyeditor', 'easyai-config.env');
+
+          if (await exists(configPath)) {
+            const content = await readTextFile(configPath);
+            const getEnv = (key: string, defaultVal: string) => {
+              const match = content.match(new RegExp(`${key}=(.*)`));
+              return match ? match[1].trim() : defaultVal;
+            };
+            setAgent(getEnv('EASYAI_AGENT', 'Ollama'));
+            setHost(getEnv('EASYAI_HOST', 'http://localhost:11434'));
+            setModel(getEnv('EASYAI_MODEL', 'ministral-3:3b'));
+            setApiKey(getEnv('EASYAI_API_KEY', ''));
+          }
+        } else {
+          const webConfigStr = localStorage.getItem('easyai-config');
+          if (webConfigStr) {
+            const webConfig = JSON.parse(webConfigStr);
+            if (webConfig.agent) setAgent(webConfig.agent);
+            if (webConfig.host) setHost(webConfig.host);
+            if (webConfig.model) setModel(webConfig.model);
+            if (webConfig.apiKey != null) setApiKey(webConfig.apiKey);
+          }
+        }
+      } catch (err) {
+        console.warn('Could not load API config init:', err);
+      }
+    };
+    loadApiConfig();
 
     // Check initial license state
     if (LicenseManager.hasActiveLicense()) {
@@ -50,6 +92,54 @@ export function LicenseModal({ open, onClose, showToast }: LicenseModalProps) {
     return () => unsubscribe();
   }, []);
 
+  React.useEffect(() => {
+    if (isLicenseValid && licenseKey) {
+      const fetchCredits = async () => {
+        try {
+          const gateway = import.meta.env.VITE_TOKENS_GATEWAY;
+          const primeKey = import.meta.env.VITE_GATEWAY_PRIME_KEY;
+          console.log('[LicenseModal] FetchCredits Triggered.');
+
+          if (!gateway || !primeKey) {
+            console.warn('[LicenseModal] Gateway or PrimeKey missing in Vite build context!');
+            return;
+          }
+
+          const isTauri = typeof window !== 'undefined' && ((window as any).__TAURI__ !== undefined || (window as any).__TAURI_INTERNALS__ !== undefined);
+          let res;
+
+          if (isTauri) {
+            const { fetch: tauriFetch } = await import('@tauri-apps/plugin-http');
+            res = await tauriFetch(`${gateway}/api/credits/${licenseKey}`, {
+              method: 'GET',
+              headers: {
+                'X-API-Key': primeKey
+              }
+            });
+          } else {
+            res = await fetch(`${gateway}/api/credits/${licenseKey}`, {
+              method: 'GET',
+              headers: {
+                'X-API-Key': primeKey
+              }
+            });
+          }
+          
+          if (res.ok) {
+            const data = await res.json();
+            setMonthlyCredits(data.monthlyToken ?? 0);
+            setTopUpCredits(data.topUpToken ?? 0);
+            setUsedCredits(data.usedToken ?? 0);
+            setBalanceCredits(data.availableToken ?? 0);
+          }
+        } catch (e) {
+          console.error("Failed to fetch EasyAI credits", e);
+        }
+      };
+      fetchCredits();
+    }
+  }, [isLicenseValid, licenseKey]);
+
   const handleSaveLicense = async () => {
     localStorage.setItem('easyeditor-user-name', name);
     await LicenseManager.setLicenseData(email, licenseKey);
@@ -63,26 +153,33 @@ export function LicenseModal({ open, onClose, showToast }: LicenseModalProps) {
 
   const handleSaveApiConfig = async () => {
     try {
-      const { save } = await import('@tauri-apps/plugin-dialog');
-      const { writeTextFile } = await import('@tauri-apps/plugin-fs');
-      
-      const filePath = await save({
-        filters: [{ name: 'Config File', extensions: ['env', 'json', 'txt'] }],
-        defaultPath: 'easyai-config.env'
-      });
-      
-      if (filePath) {
-        let content = '';
-        if (filePath.endsWith('.json')) {
-          content = JSON.stringify({ agent, host, model, apiKey }, null, 2);
-        } else {
-          content = `EASYAI_AGENT=${agent}\nEASYAI_HOST=${host}\nEASYAI_MODEL=${model}\nEASYAI_API_KEY=${apiKey}\n`;
+      const isTauri = !!(window as any).__TAURI__;
+      const content = `EASYAI_AGENT=${agent}\nEASYAI_HOST=${host}\nEASYAI_MODEL=${model}\nEASYAI_API_KEY=${apiKey}\n`;
+
+      if (isTauri) {
+        const { homeDir, join } = await import('@tauri-apps/api/path');
+        const { writeTextFile, mkdir, exists } = await import('@tauri-apps/plugin-fs');
+        const homePath = await homeDir();
+        const easyEditorDir = await join(homePath, '.easyeditor');
+        const configPath = await join(easyEditorDir, 'easyai-config.env');
+
+        if (!(await exists(easyEditorDir))) {
+          await mkdir(easyEditorDir, { recursive: true });
         }
-        await writeTextFile(filePath, content);
+
+        await writeTextFile(configPath, content);
+
         if (showToast) {
-          showToast('API Configuration saved successfully!', 'success');
+          showToast(`API Config natively saved to ${configPath}`, 'success');
         } else {
           alert('API Configuration saved successfully!');
+        }
+      } else {
+        localStorage.setItem('easyai-config', JSON.stringify({ agent, host, model, apiKey }));
+        if (showToast) {
+          showToast('API Config secured to browser local storage!', 'success');
+        } else {
+          alert('API Configuration saved securely to browser!');
         }
       }
     } catch (err) {
@@ -229,13 +326,14 @@ export function LicenseModal({ open, onClose, showToast }: LicenseModalProps) {
             <div className="about-card">
               <h3>{t('about.easyai_credits')}</h3>
               <div style={{ marginTop: '10px' }}>
-                <p style={{ fontSize: '0.9em', margin: '4px 0' }}><strong>{t('about.credits_agent')}</strong> {t('about.query_built')}</p>
-                <p style={{ fontSize: '0.9em', margin: '4px 0' }}><strong>{t('about.credits_model')}</strong> {t('about.query_built')}</p>
-                <p style={{ fontSize: '0.9em', margin: '4px 0' }}><strong>{t('about.credits_monthly')}</strong> {t('about.query_built')}</p>
-                <p style={{ fontSize: '0.9em', margin: '4px 0' }}><strong>{t('about.credits_topup')}</strong> {t('about.query_built')}</p>
-                <p style={{ fontSize: '0.9em', margin: '4px 0' }}><strong>{t('about.credits_used')}</strong> {t('about.query_built')}</p>
+                <p style={{ fontSize: '0.9em', margin: '4px 0' }}><strong>{t('about.credits_agent')}</strong> {isLicenseValid ? (import.meta.env.VITE_PREMIUM_AGENT || 'Ollama') : agent}</p>
+                <p style={{ fontSize: '0.9em', margin: '4px 0' }}><strong>{t('about.credits_model')}</strong> {isLicenseValid ? (import.meta.env.VITE_PREMIUM_MODEL || 'ministral-3:3b') : model}</p>
+                <p style={{ fontSize: '0.9em', margin: '4px 0' }}><strong>{t('about.credits_monthly')}</strong> {monthlyCredits !== null ? monthlyCredits : t('about.query_built')}</p>
+                <p style={{ fontSize: '0.9em', margin: '4px 0' }}><strong>{t('about.credits_topup')}</strong> {topUpCredits !== null ? topUpCredits : t('about.query_built')}</p>
+                <p style={{ fontSize: '0.9em', margin: '4px 0' }}><strong>{t('about.credits_used')}</strong> {usedCredits !== null ? usedCredits : t('about.query_built')}</p>
+                <p style={{ fontSize: '0.9em', margin: '4px 0' }}><strong>{t('about.credits_balance')}</strong> {balanceCredits !== null ? balanceCredits : t('about.query_built')}</p>
                 <a
-                  href="https://buy.stripe.com/cNi14ng486TTfaK78LdZ602"
+                  // href="https://buy.stripe.com/cNi14ng486TTfaK78LdZ602"
                   target="_blank"
                   rel="noopener noreferrer"
                   className="btn secondary"
@@ -244,7 +342,6 @@ export function LicenseModal({ open, onClose, showToast }: LicenseModalProps) {
                   {t('about.go_premiumplus')}
                 </a>
               </div>
-              <br></br>
             </div>
 
             <div className="about-card" style={{ flex: 1 }}>
@@ -256,12 +353,25 @@ export function LicenseModal({ open, onClose, showToast }: LicenseModalProps) {
                     className="license-name-input"
                     style={{ width: '95%', boxSizing: 'border-box', padding: '4px', borderRadius: '4px', border: '1px solid var(--border-color, #ccc)' }}
                     value={agent}
-                    onChange={(e) => setAgent(e.target.value)}
+                    onChange={(e) => {
+                      const selected = e.target.value;
+                      if (selected === 'Premium' || selected === 'PremiumPlus') {
+                        if (showToast) {
+                          showToast(t('about.premium_not_implemented'), 'warning');
+                        }
+                        // Revert the select back to current agent
+                        e.target.value = agent;
+                        return;
+                      }
+                      setAgent(selected);
+                    }}
                   >
                     <option value="Ollama">Ollama</option>
                     <option value="Gemini">Gemini</option>
                     <option value="Bedrock">Bedrock</option>
                     <option value="Claude">Claude</option>
+                    <option value="Premium">Premium</option>
+                    <option value="PremiumPlus">PremiumPlus</option>
                   </select>
                 </div>
                 <div>
@@ -275,33 +385,33 @@ export function LicenseModal({ open, onClose, showToast }: LicenseModalProps) {
                       padding: '4px',
                       borderRadius: '4px',
                       border: '1px solid var(--border-color, #ccc)',
-                      opacity: agent !== 'Ollama' ? 0.6 : 1,
-                      cursor: agent !== 'Ollama' ? 'not-allowed' : 'text'
+                      opacity: agent === 'Gemini' ? 0.6 : 1,
+                      cursor: agent === 'Gemini' ? 'not-allowed' : 'text'
                     }}
                     placeholder={t('about.api_host_placeholder')}
-                    readOnly={agent !== 'Ollama'}
+                    readOnly={agent === 'Gemini'}
                     value={host}
                     onChange={(e) => setHost(e.target.value)}
                   />
                 </div>
                 <div>
                   <label style={{ display: 'block', fontSize: '0.9em', marginBottom: '4px' }}>{t('about.api_model')}</label>
-                  <input 
-                    type="text" 
-                    className="license-name-input" 
-                    style={{ width: '95%', boxSizing: 'border-box', padding: '4px', borderRadius: '4px', border: '1px solid var(--border-color, #ccc)' }} 
-                    placeholder={t('about.api_model_placeholder')} 
+                  <input
+                    type="text"
+                    className="license-name-input"
+                    style={{ width: '95%', boxSizing: 'border-box', padding: '4px', borderRadius: '4px', border: '1px solid var(--border-color, #ccc)' }}
+                    placeholder={t('about.api_model_placeholder')}
                     value={model}
                     onChange={(e) => setModel(e.target.value)}
                   />
                 </div>
                 <div>
                   <label style={{ display: 'block', fontSize: '0.9em', marginBottom: '4px' }}>{t('about.api_key')}</label>
-                  <input 
-                    type="password" 
-                    className="license-name-input" 
-                    style={{ width: '95%', boxSizing: 'border-box', padding: '4px', borderRadius: '4px', border: '1px solid var(--border-color, #ccc)' }} 
-                    placeholder={t('about.api_key_placeholder')} 
+                  <input
+                    type="password"
+                    className="license-name-input"
+                    style={{ width: '95%', boxSizing: 'border-box', padding: '4px', borderRadius: '4px', border: '1px solid var(--border-color, #ccc)' }}
+                    placeholder={t('about.api_key_placeholder')}
                     value={apiKey}
                     onChange={(e) => setApiKey(e.target.value)}
                   />
@@ -311,7 +421,7 @@ export function LicenseModal({ open, onClose, showToast }: LicenseModalProps) {
                   className="btn secondary"
                   style={{ marginTop: '10px', alignSelf: 'flex-start', padding: '6px 12px' }}
                 >
-                  Save Config
+                  {t('about.save_config')}
                 </button>
               </div>
             </div>

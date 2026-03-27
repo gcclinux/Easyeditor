@@ -99,7 +99,9 @@
     "strike": "Strike",
     "strike_desc": "~~Strike~~",
     "newline": "NewLine",
-    "newline_desc": "Line 2 (two spaces + Enter)"
+    "newline_desc": "Line 2 (two spaces + Enter)",
+    "clear_text": "Clear Text",
+    "clear_text_desc": "Toggle plain text preview"
   },
   "mermaid": {
     "journey": "Journey",
@@ -241,7 +243,7 @@
     "persona_li2": "Mermaid creation",
     "persona_li3": "User Story creation",
     "persona_li4": "PlantUML creation",
-    "persona_li5": "ASCII Diag creation",
+    "persona_li5": "Documentation generation",
     "persona_li6": "Document Repo",
     "persona_li7": "Fix / Rewrite Doc",
     "persona_li8": "Markdown Tables",
@@ -251,7 +253,8 @@
     "credits_monthly": "MonthlyCredits:",
     "credits_topup": "TopUpCredits:",
     "credits_used": "UsedCredits:",
-    "query_built": "(query to be built)",
+    "credits_balance": "BalanceCredits:",
+    "query_built": "(coming soon)",
     "go_premiumplus": "Go PremiumPlus",
     "api_hosting": "EasyAI API Hosting (Free)",
     "api_agent": "Agent",
@@ -274,7 +277,9 @@
     "license_key_placeholder": "Enter your License Key",
     "check_license": "Check License",
     "close": "Close",
-    "invalid_license": "Invalid license or email"
+    "invalid_license": "Invalid license or email",
+    "save_config": "Save Config",
+    "premium_not_implemented": "\"Premium\" and \"PremiumPlus\" agents are not yet implemented. Coming soon!"
   },
   "images": {
     "image": "Image",
@@ -412,13 +417,13 @@
     "git_credentials": {
       "title_setup": "Setup Git Credentials",
       "title_required": "Git Credentials Required",
-      "desc_setup": "Enter your GitHub credentials to authenticate with remote repositories.",
+      "desc_setup": "Enter your Git credentials to authenticate with remote repositories (GitHub, GitLab, Bitbucket, Gitea, etc.).",
       "desc_required": "Please provide your credentials to continue with this Git operation.",
-      "username_label": "GitHub Username (not email)",
-      "username_placeholder": "your-github-username (e.g., gcclinux)",
-      "username_help": "⚠️ Use your GitHub username (e.g., <strong>gcclinux</strong>), NOT your email address",
-      "token_label": "Personal Access Token (not password)",
-      "token_placeholder": "ghp_xxxxxxxxxxxxxxxxxxxx",
+      "username_label": "Git Username (not email)",
+      "username_placeholder": "your-git-username",
+      "username_help": "⚠️ Use your Git provider username (e.g., <strong>gcclinux</strong>), NOT your email address",
+      "token_label": "Personal Access Token or App Password",
+      "token_placeholder": "your-access-token",
       "show_token": "Show token",
       "hide_token": "Hide token",
       "how_to_token": "How to create a personal access token",
@@ -431,7 +436,7 @@
       "title": "Clone Git Repository",
       "subtitle": "Clone from GitHub, GitLab, Bitbucket, or any public Git repository",
       "repo_url": "Repository URL",
-      "repo_url_placeholder": "https://github.com/username/repository.git",
+      "repo_url_placeholder": "https://github.com/user/repo.git or https://gitlab.com/user/repo.git",
       "repo_url_note": "Note: Public repositories work best in web mode",
       "target_dir": "Target Directory",
       "target_dir_placeholder": "Select folder or enter directory name",
@@ -629,10 +634,13 @@
     "markdown": "Markdown",
     "mermaid": "Mermaid",
     "user_story": "User Story",
-    "ascii_diag": "ASCII Diag",
+    "documentation": "Documentation",
     "plantuml": "PlantUML",
     "md_table": "MD Table",
     "fix_code": "Fix Code",
-    "rewrite": "Rewrite"
+    "rewrite": "Rewrite",
+    "prompt_placeholder": "Ask EasyAI your requirements here...\nFor Fix Code use: /fix plantuml, /fix mermaid, /fix table, /fix markdown, /fix language (spelling), /fix code, or /fix all",
+    "toast_empty_prompt": "Please enter a requirement for EasyAI first.",
+    "toast_action_not_bound": "Selected Action: {{action}}. Logic not yet bound to editor."
   }
 }

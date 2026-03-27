@@ -43,10 +43,11 @@ export function AboutModal({ open, onClose }: AboutModalProps) {
               <span className="badge">{t('about.badge_markdown')}</span>
               <span className="badge">{t('about.badge_templates')}</span>
               <span className="badge">{t('about.badge_mermaid')}</span>
+              <span className="badge">{t('about.badge_import_docx')}</span>
               <span className="badge">{t('about.badge_export')}</span>
-              <span className="badge">{t('about.badge_hosted')}</span>
-              <span className="badge">{t('about.badge_git')}</span>
-              <span className="badge">{t('about.badge_cloud')}</span>
+              <span className="badge">{t('about.badge_easygit')}</span>
+              <span className="badge">{t('about.badge_easynotes')}</span>
+              <span className="badge">{t('about.badge_easyai')}</span>
               <a href="https://easyeditor.co.uk/" target="_blank" rel="noopener noreferrer" style={{ textDecoration: 'none' }}>
                 <span className="badge">{t('about.badge_roadmap')}</span>
               </a>

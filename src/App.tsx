@@ -101,7 +101,10 @@ import AboutModal from './components/AboutModal';
 import LicenseModal from './components/LicenseModal';
 import EasyNotesSidebar from './components/EasyNotesSidebar';
 import EasyAIPanel from './components/EasyAIPanel';
-import { buildSystemPrompt } from './components/easyai/aiPersonas';
+import { buildSystemPrompt, parseFixTarget, extractBlock, extractTable } from './components/easyai/aiPersonas';
+import { queryEasyAI } from './components/easyai/aiService';
+import { scanRepository } from './components/easyai/repoScanner';
+import { generateDocumentation } from './components/easyai/docGenerator';
 import FeaturesModal from './components/FeaturesModal';
 import ThemeModal from './components/ThemeModal';
 import ImportThemeModal from './components/ImportThemeModal';
@@ -182,6 +185,7 @@ const App = () => {
   const [timelineModalOpen, setTimelineModalOpen] = useState(false);
   const [showHeaderModal, setShowHeaderModal] = useState(false);
   const [showFormattingModal, setShowFormattingModal] = useState(false);
+  const [plainTextPreview, setPlainTextPreview] = useState(false);
   const [showMermaidModal, setShowMermaidModal] = useState(false);
   const [showUMLModal, setShowUMLModal] = useState(false);
   const [showSymbolsModal, setShowSymbolsModal] = useState(false);
@@ -254,6 +258,16 @@ const App = () => {
   const [pendingCredentialAction, setPendingCredentialAction] = useState<(() => void) | null>(null);
   const [prefillCredentials, setPrefillCredentials] = useState<{ username: string; token: string } | null>(null);
   const [currentDirHandle, setCurrentDirHandle] = useState<any>(null); // For web File System Access API
+
+  // Repo scan progress state
+  const [scanProgress, setScanProgress] = useState<{
+    isScanning: boolean;
+    currentFile: string;
+    filesProcessed: number;
+    totalFiles: number;
+  }>({ isScanning: false, currentFile: '', filesProcessed: 0, totalFiles: 0 });
+  const scanAbortControllerRef = useRef<AbortController | null>(null);
+
   const [confirmModalConfig, setConfirmModalConfig] = useState<{
     open: boolean;
     title: string;
@@ -706,6 +720,11 @@ const App = () => {
     insertNewLineSyntax(textareaRef, editorContent, setEditorContent);
   };
 
+  // handleClearText toggles plain text preview mode (no markdown rendering)
+  const handleClearText = () => {
+    setPlainTextPreview(prev => !prev);
+  };
+
   // insertItalicSyntax function inserts an italic syntax for Markdown
   const handlerItalicSyntax = () => {
     insertItalicSyntax(textareaRef, editorContent, setEditorContent, cursorPositionRef);
@@ -992,12 +1011,12 @@ const App = () => {
       cancelLabel: 'Cancel',
       onConfirm: async () => {
         try {
-          await gitCredentialManager.clearCredentials();
+          await gitCredentialManager.clearMasterPassword();
           if (gitManager) {
             gitManager.clearCredentials();
           }
           setHasStoredCredentials(false);
-          showToast('Credentials cleared successfully.', 'success');
+          showToast('Credentials and master password cleared successfully.', 'success');
         } catch (error) {
           showToast(`Failed to clear credentials: ${(error as Error).message}`, 'error');
         }
@@ -2684,6 +2703,7 @@ const App = () => {
               onCodeLine={handlerinsertCodeSyntax}
               onCodeBlock={handlerinsertBlockCodeSyntax}
               onNewLine={handleNewLineSyntax}
+              onClearText={handleClearText}
               onClose={() => setShowFormattingModal(false)}
             />
           )
@@ -2909,6 +2929,16 @@ const App = () => {
           open={masterPasswordModalOpen}
           onClose={() => setMasterPasswordModalOpen(false)}
           onSubmit={handleMasterPasswordSubmit}
+          onReset={async () => {
+            setMasterPasswordModalOpen(false);
+            await gitCredentialManager.clearMasterPassword();
+            if (gitManager) {
+              gitManager.clearCredentials();
+            }
+            setHasStoredCredentials(false);
+            showToast('Credentials reset. Please set up new credentials.', 'info');
+            setTimeout(() => handleSetupCredentials(), 300);
+          }}
           isSetup={isMasterPasswordSetup}
           showToast={showToast}
         />
@@ -3202,28 +3232,237 @@ const App = () => {
           )
         }
 
+        {scanProgress.isScanning && (
+          <div style={{
+            position: 'fixed',
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            backgroundColor: 'rgba(0, 0, 0, 0.5)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            zIndex: 10000,
+          }}>
+            <div style={{
+              background: 'var(--bg-color, #1e1e1e)',
+              color: 'var(--text-color, #ccc)',
+              borderRadius: '8px',
+              padding: '24px 32px',
+              minWidth: '360px',
+              maxWidth: '480px',
+              boxShadow: '0 4px 24px rgba(0,0,0,0.4)',
+            }}>
+              <h3 style={{ margin: '0 0 16px 0', fontSize: '16px' }}>Scanning Repository…</h3>
+              <div style={{
+                background: 'var(--border-color, #333)',
+                borderRadius: '4px',
+                height: '8px',
+                overflow: 'hidden',
+                marginBottom: '12px',
+              }}>
+                <div style={{
+                  background: 'var(--accent-color, #007acc)',
+                  height: '100%',
+                  width: `${scanProgress.totalFiles > 0 ? (scanProgress.filesProcessed / scanProgress.totalFiles) * 100 : 0}%`,
+                  transition: 'width 0.3s ease',
+                  borderRadius: '4px',
+                }} />
+              </div>
+              <div style={{ fontSize: '13px', marginBottom: '8px' }}>
+                {scanProgress.filesProcessed} / {scanProgress.totalFiles} files
+              </div>
+              <div style={{
+                fontSize: '12px',
+                color: 'var(--text-muted, #888)',
+                marginBottom: '16px',
+                overflow: 'hidden',
+                textOverflow: 'ellipsis',
+                whiteSpace: 'nowrap',
+              }}>
+                {scanProgress.currentFile || 'Preparing…'}
+              </div>
+              <button
+                onClick={() => scanAbortControllerRef.current?.abort()}
+                style={{
+                  background: 'var(--danger-color, #d32f2f)',
+                  color: '#fff',
+                  border: 'none',
+                  borderRadius: '4px',
+                  padding: '6px 18px',
+                  cursor: 'pointer',
+                  fontSize: '13px',
+                }}
+              >
+                Cancel
+              </button>
+            </div>
+          </div>
+        )}
+
         <EasyAIPanel
           showEasyAIPanel={showEasyAIPanel}
           setShowEasyAIPanel={setShowEasyAIPanel}
           showToast={showToast}
-          onActionSelect={(actionId, promptText) => {
-            const systemPrompt = buildSystemPrompt(actionId, editorContent);
+          onActionSelect={async (actionId, promptText) => {
+            // ── Documentation persona with repo scanning ──
+            if (actionId === 'documentation') {
+              const isTauri = !!(window as any).__TAURI_INTERNALS__;
+              console.log('[EasyAI-Doc] Documentation action triggered');
+              console.log('[EasyAI-Doc] isTauri:', isTauri);
+              console.log('[EasyAI-Doc] currentRepoPath:', currentRepoPath);
+              console.log('[EasyAI-Doc] currentDirHandle:', currentDirHandle);
+              console.log('[EasyAI-Doc] isGitRepo state:', isGitRepo);
+
+              // Tauri uses file paths; web uses FileSystemDirectoryHandle
+              const hasTauriRepo = isTauri && currentRepoPath;
+              const hasWebRepo = !isTauri && currentDirHandle;
+
+              if (!hasTauriRepo && !hasWebRepo) {
+                console.warn('[EasyAI-Doc] No repository available — aborting');
+                showToast('No Git repository loaded. Please open a repository first via EasyGit.', 'warning');
+                return;
+              }
+
+              const controller = new AbortController();
+              scanAbortControllerRef.current = controller;
+
+              setScanProgress({ isScanning: true, currentFile: '', filesProcessed: 0, totalFiles: 0 });
+              setShowEasyAIPanel(false);
+
+              try {
+                let scanResult;
+
+                if (hasTauriRepo) {
+                  console.log('[EasyAI-Doc] Using Tauri scanner for path:', currentRepoPath);
+                  const { scanRepositoryTauri } = await import('./components/easyai/tauriRepoScanner');
+                  scanResult = await scanRepositoryTauri({
+                    repoPath: currentRepoPath!,
+                    userPrompt: promptText,
+                    onProgress: (current, total, filePath) => {
+                      setScanProgress({ isScanning: true, currentFile: filePath, filesProcessed: current, totalFiles: total });
+                    },
+                    signal: controller.signal,
+                  });
+                } else {
+                  console.log('[EasyAI-Doc] Using web scanner with dirHandle:', currentDirHandle.name);
+                  scanResult = await scanRepository({
+                    dirHandle: currentDirHandle,
+                    userPrompt: promptText,
+                    onProgress: (current, total, filePath) => {
+                      setScanProgress({ isScanning: true, currentFile: filePath, filesProcessed: current, totalFiles: total });
+                    },
+                    signal: controller.signal,
+                  });
+                }
+
+                if (scanResult.cancelled) {
+                  showToast('Scan cancelled.', 'info');
+                  setScanProgress({ isScanning: false, currentFile: '', filesProcessed: 0, totalFiles: 0 });
+                  return;
+                }
+
+                if (scanResult.cache.size <= 1) {
+                  showToast('No scannable files found in the repository.', 'warning');
+                  setScanProgress({ isScanning: false, currentFile: '', filesProcessed: 0, totalFiles: 0 });
+                  return;
+                }
+
+                // Log scan results for debugging
+                console.log(`[RepoScanner] Cache contains ${scanResult.cache.size - 1} file summaries`);
+
+                setScanProgress(prev => ({ ...prev, currentFile: 'Generating documentation…' }));
+                const doc = await generateDocumentation({
+                  cache: scanResult.cache,
+                  userPrompt: promptText,
+                  signal: controller.signal,
+                });
+
+                if (doc) {
+                  setEditorContent(doc + '\n');
+                  showToast('EasyAI (documentation) — documentation generated.', 'success');
+                } else {
+                  showToast('EasyAI (documentation) — empty response.', 'warning');
+                }
+              } catch (err: any) {
+                const msg = err.message || 'Scan failed';
+                console.error('[EasyAI-Doc] Scan error:', msg, err);
+                showToast(msg, 'error');
+              } finally {
+                setScanProgress({ isScanning: false, currentFile: '', filesProcessed: 0, totalFiles: 0 });
+                scanAbortControllerRef.current = null;
+              }
+              return;
+            }
+
+            const systemPrompt = buildSystemPrompt(actionId, editorContent, promptText);
             if (!systemPrompt) {
               showToast(`Unknown EasyAI action: ${actionId}`, 'error');
               return;
             }
 
-            // Log the constructed prompt for debugging until AI backend is wired
+            // Log the constructed prompt for debugging
             console.log(`[EasyAI] Action: ${actionId}`);
             console.log(`[EasyAI] User Prompt: ${promptText}`);
             console.log(`[EasyAI] System Prompt:\n${systemPrompt}`);
 
-            // TODO: Send systemPrompt + promptText to AI backend and append response to editor
-            // For now, inject a placeholder showing the prompt was built successfully
-            const stubContent = `\n\n<!-- EasyAI Action: ${actionId} -->\n<!-- User Prompt: ${promptText} -->\n<!-- System prompt built (${systemPrompt.length} chars) — AI backend not yet connected -->\n\n`;
+            // Keep the debug comment in editor so user sees what was sent
+            const stubContent = `\n\n<!-- EasyAI Action: ${actionId} -->\n<!-- User Prompt: ${promptText} -->\n<!-- System prompt built (${systemPrompt.length} chars) -->\n\n`;
             setEditorContent(prev => prev + stubContent);
-            showToast(`EasyAI (${actionId}) prompt ready — AI backend not yet connected.`, 'info');
+            showToast(`EasyAI (${actionId}) — sending to AI backend...`, 'info');
             setShowEasyAIPanel(false);
+
+            try {
+              const aiResponse = await queryEasyAI(systemPrompt, promptText);
+              if (aiResponse.trim()) {
+                if (actionId === 'rewrite') {
+                  // Rewrite replaces the entire editor content
+                  setEditorContent(aiResponse + '\n');
+                } else if (actionId === 'fix-code') {
+                  // Fix-code: replace the targeted block in-place
+                  const { target } = parseFixTarget(promptText);
+                  let extracted: { block: string; start: number; end: number } | null = null;
+
+                  if (target === 'plantuml') {
+                    extracted = extractBlock(editorContent, 'plantuml');
+                  } else if (target === 'mermaid') {
+                    extracted = extractBlock(editorContent, 'mermaid');
+                  } else if (target === 'table') {
+                    extracted = extractTable(editorContent);
+                  } else if (target === 'code') {
+                    const codeRegex = /(```(?!plantuml|mermaid)[a-zA-Z]*\n[\s\S]*?```)/i;
+                    const match = editorContent.match(codeRegex);
+                    if (match && match.index !== undefined) {
+                      extracted = { block: match[1], start: match.index, end: match.index + match[1].length };
+                    }
+                  }
+
+                  if (target && target !== 'all' && target !== 'markdown' && target !== 'language' && extracted) {
+                    // Strip the stub comment we appended, then replace the targeted block
+                    setEditorContent(prev => {
+                      const withoutStub = prev.replace(stubContent, '');
+                      const fixedResponse = aiResponse.trim();
+                      return withoutStub.substring(0, extracted!.start) + fixedResponse + withoutStub.substring(extracted!.end);
+                    });
+                  } else if (target === 'all' || target === 'language' || target === 'markdown') {
+                    // Model returns the full document with only targeted content fixed
+                    setEditorContent(aiResponse.trim() + '\n');
+                  } else {
+                    // No /fix directive or block not found — append the help/response
+                    setEditorContent(prev => prev + aiResponse + '\n');
+                  }
+                } else {
+                  setEditorContent(prev => prev + aiResponse + '\n');
+                }
+                showToast(`EasyAI (${actionId}) — response received.`, 'success');
+              } else {
+                showToast(`EasyAI (${actionId}) — empty response from AI.`, 'warning');
+              }
+            } catch (err: any) {
+              console.error('[EasyAI] Backend error:', err);
+              showToast(`EasyAI error: ${err.message || 'Connection failed'}`, 'error');
+            }
           }}
         />
 
@@ -3252,6 +3491,7 @@ const App = () => {
               isPreviewFull={isPreviewFull}
               isHorizontal={isHorizontal}
               initializeMermaid={initializeMermaid}
+              plainTextPreview={plainTextPreview}
             />
           )}
         </div>

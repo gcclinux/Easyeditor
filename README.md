@@ -19,6 +19,7 @@ From simple notes to complex technical documentation, Easyeditor has you covered
 *   **Export Power**: Export to **PNG**, **TXT**, **PDF**, **MD** and secure **SSTP Encryption**.
 *   **Customizable**: Choose from beautiful themes or create your own!
 *   **SSTP Encryption**: SSTP (Simple Security Text Protocol) protection using modern AES-256-CBC encryption!
+*   **EasyAI Personas**: Built-in AI personas for documentation, diagrams, code fixes, and more — with full repo scanning that reads your project file-by-file to generate accurate, context-aware documentation.
 
 [![Infographic](https://img.shields.io/badge/📊_Infographic-View_PDF-orange?style=for-the-badge)](docs/Easyeditor-Infographic.pdf)
 
@@ -126,6 +127,15 @@ Visualize your ideas with **Mermaid** charts and **KaTeX** equations.
 Seamlessly manage your version control without leaving the editor.
 
 <a><img src="screenshots/git_feature.png" alt="Git Feature" width="720" height="400"></a>
+
+### 🤖 EasyAI Personas
+Multiple AI personas for documentation, diagrams, code fixes, user stories, and more. The Documentation persona scans your entire Git repository file-by-file to produce accurate, project-specific documentation.
+
+<a><img src="screenshots/easyai-new-feature-many-personas.png" alt="EasyAI Personas" width="720" height="400"></a>
+
+**Repo Scanning for Documentation:**
+
+<a><img src="screenshots/easyai-scanning-repo-ofr-documentation.png" alt="EasyAI Repo Scanning" width="720" height="400"></a>
 
 ### 📝 Table Support
 Clean and responsive table rendering.

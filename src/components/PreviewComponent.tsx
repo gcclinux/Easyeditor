@@ -16,6 +16,7 @@ interface PreviewComponentProps {
   isPreviewFull: boolean;
   isHorizontal: boolean;
   initializeMermaid: () => void;
+  plainTextPreview?: boolean;
 }
 
 const PreviewComponent: React.FC<PreviewComponentProps> = React.memo(({
@@ -23,7 +24,8 @@ const PreviewComponent: React.FC<PreviewComponentProps> = React.memo(({
   editorContent,
   isPreviewFull,
   isHorizontal,
-  initializeMermaid
+  initializeMermaid,
+  plainTextPreview
 }) => {
   // Custom remark plugin to preserve blank lines between list items
   const preserveListBreaks = () => {
@@ -136,6 +138,11 @@ const PreviewComponent: React.FC<PreviewComponentProps> = React.memo(({
       ref={previewRef}
       id="preview-content"
     >
+      {plainTextPreview ? (
+        <pre style={{ whiteSpace: 'pre-wrap', wordWrap: 'break-word', margin: 0, fontFamily: 'monospace', padding: '1em' }}>
+          {editorContent}
+        </pre>
+      ) : (
       <ReactMarkdown
         remarkPlugins={[remarkGfm, remarkEmoji, remarkMath, preserveListBreaks]}
         rehypePlugins={[rehypeRaw, rehypeKatex]}
@@ -255,6 +262,7 @@ const PreviewComponent: React.FC<PreviewComponentProps> = React.memo(({
       >
         {editorContent}
       </ReactMarkdown>
+      )}
     </div >
   );
 });
