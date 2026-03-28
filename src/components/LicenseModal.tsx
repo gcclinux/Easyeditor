@@ -20,6 +20,7 @@ export function LicenseModal({ open, onClose, showToast }: LicenseModalProps) {
   const [licenseKey, setLicenseKey] = React.useState('');
   const [type, setType] = React.useState('');
   const [isLicenseValid, setIsLicenseValid] = React.useState(false);
+  const [licenseChecked, setLicenseChecked] = React.useState(false);
   const [agent, setAgent] = React.useState('Ollama');
   const [host, setHost] = React.useState('http://localhost:11434');
   const [model, setModel] = React.useState('ministral-3:3b');
@@ -77,9 +78,12 @@ export function LicenseModal({ open, onClose, showToast }: LicenseModalProps) {
     };
     loadApiConfig();
 
-    // Check initial license state
+    // Check initial license state (restore from cache synchronously first)
+    LicenseManager.restoreFromCache();
     if (LicenseManager.hasActiveLicense()) {
       setIsLicenseValid(true);
+      setType(LicenseManager.getType());
+      setLicenseChecked(true);
     }
 
     // Subscribe to license changes to update type
@@ -87,6 +91,7 @@ export function LicenseModal({ open, onClose, showToast }: LicenseModalProps) {
       setIsLicenseValid(LicenseManager.hasActiveLicense());
       const updatedType = LicenseManager.getType();
       setType(updatedType);
+      setLicenseChecked(true);
     });
 
     return () => unsubscribe();
@@ -139,6 +144,18 @@ export function LicenseModal({ open, onClose, showToast }: LicenseModalProps) {
       fetchCredits();
     }
   }, [isLicenseValid, licenseKey]);
+
+  // Derive license tier: Free, Premium, or PremiumPlus
+  const licenseTier: 'Free' | 'Premium' | 'PremiumPlus' = isLicenseValid
+    ? (type === 'PremiumPlus' ? 'PremiumPlus' : 'Premium')
+    : 'Free';
+
+  // When license tier is Free, force agent to Ollama (only after initial license check)
+  React.useEffect(() => {
+    if (licenseChecked && licenseTier === 'Free' && agent !== 'Ollama') {
+      setAgent('Ollama');
+    }
+  }, [licenseChecked, licenseTier, agent]);
 
   const handleSaveLicense = async () => {
     localStorage.setItem('easyeditor-user-name', name);
@@ -326,8 +343,8 @@ export function LicenseModal({ open, onClose, showToast }: LicenseModalProps) {
             <div className="about-card">
               <h3>{t('about.easyai_credits')}</h3>
               <div style={{ marginTop: '10px' }}>
-                <p style={{ fontSize: '0.9em', margin: '4px 0' }}><strong>{t('about.credits_agent')}</strong> {isLicenseValid ? (import.meta.env.VITE_PREMIUM_AGENT || 'Ollama') : agent}</p>
-                <p style={{ fontSize: '0.9em', margin: '4px 0' }}><strong>{t('about.credits_model')}</strong> {isLicenseValid ? (import.meta.env.VITE_PREMIUM_MODEL || 'ministral-3:3b') : model}</p>
+                <p style={{ fontSize: '0.9em', margin: '4px 0' }}><strong>{t('about.credits_agent')}</strong> {t('about.query_built')}</p>
+                <p style={{ fontSize: '0.9em', margin: '4px 0' }}><strong>{t('about.credits_model')}</strong> {t('about.query_built')}</p>
                 <p style={{ fontSize: '0.9em', margin: '4px 0' }}><strong>{t('about.credits_monthly')}</strong> {monthlyCredits !== null ? monthlyCredits : t('about.query_built')}</p>
                 <p style={{ fontSize: '0.9em', margin: '4px 0' }}><strong>{t('about.credits_topup')}</strong> {topUpCredits !== null ? topUpCredits : t('about.query_built')}</p>
                 <p style={{ fontSize: '0.9em', margin: '4px 0' }}><strong>{t('about.credits_used')}</strong> {usedCredits !== null ? usedCredits : t('about.query_built')}</p>
@@ -345,7 +362,7 @@ export function LicenseModal({ open, onClose, showToast }: LicenseModalProps) {
             </div>
 
             <div className="about-card" style={{ flex: 1 }}>
-              <h3>{t('about.api_hosting')}</h3>
+              <h3>{t('about.api_hosting')} ({licenseTier === 'PremiumPlus' ? 'PremiumPlus' : licenseTier === 'Premium' ? 'Premium' : 'Free'})</h3>
               <div style={{ display: 'flex', flexDirection: 'column', gap: '3px', marginTop: '10px' }}>
                 <div>
                   <label style={{ display: 'block', fontSize: '0.9em', marginBottom: '4px' }}>{t('about.api_agent')}</label>
@@ -353,68 +370,90 @@ export function LicenseModal({ open, onClose, showToast }: LicenseModalProps) {
                     className="license-name-input"
                     style={{ width: '95%', boxSizing: 'border-box', padding: '4px', borderRadius: '4px', border: '1px solid var(--border-color, #ccc)' }}
                     value={agent}
-                    onChange={(e) => {
-                      const selected = e.target.value;
-                      if (selected === 'Premium' || selected === 'PremiumPlus') {
-                        if (showToast) {
-                          showToast(t('about.premium_not_implemented'), 'warning');
-                        }
-                        // Revert the select back to current agent
-                        e.target.value = agent;
-                        return;
-                      }
-                      setAgent(selected);
-                    }}
+                    disabled={licenseTier === 'Free'}
+                    onChange={(e) => setAgent(e.target.value)}
                   >
                     <option value="Ollama">Ollama</option>
-                    <option value="Gemini">Gemini</option>
-                    <option value="Bedrock">Bedrock</option>
-                    <option value="Claude">Claude</option>
-                    <option value="Premium">Premium</option>
-                    <option value="PremiumPlus">PremiumPlus</option>
+                    {licenseTier !== 'Free' && (
+                      <>
+                        <option value="Gemini">Gemini</option>
+                        <option value="Bedrock">Bedrock</option>
+                        <option value="Claude">Claude</option>
+                      </>
+                    )}
+                    {licenseTier === 'PremiumPlus' && (
+                      <option value="PremiumPlus">PremiumPlus</option>
+                    )}
                   </select>
                 </div>
-                <div>
-                  <label style={{ display: 'block', fontSize: '0.9em', marginBottom: '4px' }}>{t('about.api_host')}</label>
-                  <input
-                    type="text"
-                    className="license-name-input"
-                    style={{
-                      width: '95%',
-                      boxSizing: 'border-box',
-                      padding: '4px',
-                      borderRadius: '4px',
-                      border: '1px solid var(--border-color, #ccc)',
-                      opacity: agent === 'Gemini' ? 0.6 : 1,
-                      cursor: agent === 'Gemini' ? 'not-allowed' : 'text'
-                    }}
-                    placeholder={t('about.api_host_placeholder')}
-                    readOnly={agent === 'Gemini'}
-                    value={host}
-                    onChange={(e) => setHost(e.target.value)}
-                  />
-                </div>
+                {agent === 'Ollama' && (
+                  <div>
+                    <label style={{ display: 'block', fontSize: '0.9em', marginBottom: '4px' }}>{t('about.api_host')}</label>
+                    <input
+                      type="text"
+                      className="license-name-input"
+                      style={{
+                        width: '95%',
+                        boxSizing: 'border-box',
+                        padding: '4px',
+                        borderRadius: '4px',
+                        border: '1px solid var(--border-color, #ccc)',
+                      }}
+                      placeholder={t('about.api_host_placeholder')}
+                      value={host}
+                      onChange={(e) => setHost(e.target.value)}
+                    />
+                  </div>
+                )}
                 <div>
                   <label style={{ display: 'block', fontSize: '0.9em', marginBottom: '4px' }}>{t('about.api_model')}</label>
-                  <input
-                    type="text"
-                    className="license-name-input"
-                    style={{ width: '95%', boxSizing: 'border-box', padding: '4px', borderRadius: '4px', border: '1px solid var(--border-color, #ccc)' }}
-                    placeholder={t('about.api_model_placeholder')}
-                    value={model}
-                    onChange={(e) => setModel(e.target.value)}
-                  />
+                  {agent === 'PremiumPlus' ? (
+                    <input
+                      type="text"
+                      className="license-name-input"
+                      style={{ width: '95%', boxSizing: 'border-box', padding: '4px', borderRadius: '4px', border: '1px solid var(--border-color, #ccc)', opacity: 0.6, cursor: 'not-allowed' }}
+                      readOnly
+                      value="Coming soon"
+                    />
+                  ) : (
+                    <input
+                      type="text"
+                      className="license-name-input"
+                      style={{ width: '95%', boxSizing: 'border-box', padding: '4px', borderRadius: '4px', border: '1px solid var(--border-color, #ccc)' }}
+                      placeholder={t('about.api_model_placeholder')}
+                      value={model}
+                      onChange={(e) => setModel(e.target.value)}
+                    />
+                  )}
                 </div>
                 <div>
                   <label style={{ display: 'block', fontSize: '0.9em', marginBottom: '4px' }}>{t('about.api_key')}</label>
-                  <input
-                    type="password"
-                    className="license-name-input"
-                    style={{ width: '95%', boxSizing: 'border-box', padding: '4px', borderRadius: '4px', border: '1px solid var(--border-color, #ccc)' }}
-                    placeholder={t('about.api_key_placeholder')}
-                    value={apiKey}
-                    onChange={(e) => setApiKey(e.target.value)}
-                  />
+                  {licenseTier === 'Free' ? (
+                    <input
+                      type="text"
+                      className="license-name-input"
+                      style={{ width: '95%', boxSizing: 'border-box', padding: '4px', borderRadius: '4px', border: '1px solid var(--border-color, #ccc)', opacity: 0.6, cursor: 'not-allowed', fontStyle: 'italic' }}
+                      readOnly
+                      value="Available with Premium subscription"
+                    />
+                  ) : agent === 'PremiumPlus' ? (
+                    <input
+                      type="text"
+                      className="license-name-input"
+                      style={{ width: '95%', boxSizing: 'border-box', padding: '4px', borderRadius: '4px', border: '1px solid var(--border-color, #ccc)', opacity: 0.6, cursor: 'not-allowed' }}
+                      readOnly
+                      value="Coming soon"
+                    />
+                  ) : (
+                    <input
+                      type="password"
+                      className="license-name-input"
+                      style={{ width: '95%', boxSizing: 'border-box', padding: '4px', borderRadius: '4px', border: '1px solid var(--border-color, #ccc)' }}
+                      placeholder={t('about.api_key_placeholder')}
+                      value={apiKey}
+                      onChange={(e) => setApiKey(e.target.value)}
+                    />
+                  )}
                 </div>
                 <button
                   onClick={handleSaveApiConfig}
