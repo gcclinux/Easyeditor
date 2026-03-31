@@ -36,7 +36,7 @@ export class TauriGoogleDriveProvider implements CloudProvider {
   readonly icon = '🗂️';
 
   private clientId: string;
-  private scope: string = 'https://www.googleapis.com/auth/drive.file https://www.googleapis.com/auth/drive.readonly';
+  private scope: string = 'https://www.googleapis.com/auth/drive';
   private redirectUri: string = 'http://localhost:8080/oauth/callback';
 
   constructor(clientId?: string, _apiKey?: string) {

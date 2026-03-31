@@ -33,7 +33,7 @@ describe('OAuth Workflow Integration Tests', () => {
         'google': {
           clientId: 'google-test-client-id',
           enabled: true,
-          scope: ['https://www.googleapis.com/auth/drive.file']
+          scope: ['https://www.googleapis.com/auth/drive']
         },
         'github': {
           clientId: 'github-test-client-id',
@@ -602,7 +602,7 @@ describe('OAuth Workflow Integration Tests', () => {
         displayName: 'Google',
         authorizationUrl: 'https://accounts.google.com/o/oauth2/v2/auth',
         tokenUrl: 'https://oauth2.googleapis.com/token',
-        scope: ['https://www.googleapis.com/auth/drive.file'],
+        scope: ['https://www.googleapis.com/auth/drive'],
         clientId: 'valid-google-client-id'
       },
       {

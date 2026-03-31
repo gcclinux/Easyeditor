@@ -201,9 +201,14 @@ export const GOOGLE_DRIVE_CONFIG: GoogleDriveConfig = (() => {
     REDIRECT_URI: envConfig.REDIRECT_URI,
 
     // OAuth scopes required by EasyEditor
+    // NOTE: We use the full 'drive' scope instead of 'drive.file' + 'drive.readonly'
+    // because drive.file only grants write access to files created by the *current*
+    // OAuth session. When a user disconnects and reconnects, the per-file grants
+    // are lost and previously created files become read-only (403 appNotAuthorizedToFile).
+    // The full 'drive' scope ensures the app can always read/write/delete files in
+    // its Easyeditor folder, regardless of which OAuth session created them.
     SCOPES: [
-      'https://www.googleapis.com/auth/drive.file',    // Create, edit, delete files the app creates
-      'https://www.googleapis.com/auth/drive.readonly'  // Read all files (needed to discover manually uploaded files)
+      'https://www.googleapis.com/auth/drive',
     ],
 
     // Discovery document for Google Drive API v3

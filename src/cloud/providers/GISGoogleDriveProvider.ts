@@ -38,7 +38,7 @@ export class GISGoogleDriveProvider implements CloudProvider {
   readonly icon = '🗂️';
 
   private clientId: string;
-  private scope: string = 'https://www.googleapis.com/auth/drive.file https://www.googleapis.com/auth/drive.readonly';
+  private scope: string = 'https://www.googleapis.com/auth/drive';
   private tokenClient: any = null;
   private isGISLoaded: boolean = false;
 

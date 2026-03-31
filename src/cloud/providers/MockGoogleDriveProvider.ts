@@ -19,7 +19,7 @@ export class MockGoogleDriveProvider implements CloudProvider {
       provider: this.name,
       accessToken: 'fake-access-token-' + Date.now(),
       expiresAt: new Date(Date.now() + 3600000), // 1 hour from now
-      scope: 'https://www.googleapis.com/auth/drive.file'
+      scope: 'https://www.googleapis.com/auth/drive'
     };
 
     // Save the fake credentials

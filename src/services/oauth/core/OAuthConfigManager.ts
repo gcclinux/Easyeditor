@@ -281,7 +281,7 @@ export class OAuthConfigManager {
       config.providers.google = {
         clientId: this.environmentVars.GOOGLE_OAUTH_CLIENT_ID,
         clientSecret: this.environmentVars.GOOGLE_OAUTH_CLIENT_SECRET,
-        scope: ['https://www.googleapis.com/auth/drive.file', 'https://www.googleapis.com/auth/drive.readonly'],
+        scope: ['https://www.googleapis.com/auth/drive'],
         authorizationUrl: 'https://accounts.google.com/o/oauth2/v2/auth',
         tokenUrl: 'https://oauth2.googleapis.com/token',
         enabled: true,
