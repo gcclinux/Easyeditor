@@ -102,7 +102,12 @@ const EasyNotesSidebar: React.FC<EasyNotesSidebarProps> = ({
   // Load notes and provider status on component mount
   useEffect(() => {
     if (showEasyNotesSidebar) {
-      console.log('[EasyNotesSidebar] Sidebar opened, checking for post-redirect authentication...');
+      // Re-check license state when sidebar opens (in case it changed while
+      // the sidebar was hidden, e.g. user activated license in LicenseModal)
+      const currentLicenseState = LicenseManager.hasActiveLicense();
+      console.log('[EasyNotesSidebar] Sidebar opened, license active:', currentLicenseState);
+      setHasLicense(currentLicenseState);
+
       checkPostRedirectAuth();
       loadNotesAndProviders();
     }

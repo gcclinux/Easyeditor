@@ -159,11 +159,16 @@ export function LicenseModal({ open, onClose, showToast }: LicenseModalProps) {
 
   const handleSaveLicense = async () => {
     localStorage.setItem('easyeditor-user-name', name);
+    console.log('[LicenseModal] Checking license for email:', email);
     await LicenseManager.setLicenseData(email, licenseKey);
     const valid = LicenseManager.hasActiveLicense();
+    const licType = LicenseManager.getType();
+    console.log('[LicenseModal] License check result: valid=', valid, ', type=', licType);
     setIsLicenseValid(valid);
-    setType(LicenseManager.getType());
-    if (!valid && showToast) {
+    setType(licType);
+    if (valid && showToast) {
+      showToast(`License activated: ${licType || 'Premium'}`, 'success');
+    } else if (!valid && showToast) {
       showToast(t('about.invalid_license') || 'Invalid license or email', 'error');
     }
   };

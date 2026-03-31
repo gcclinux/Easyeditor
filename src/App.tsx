@@ -3226,7 +3226,7 @@ const App = () => {
               }}
               onUpgradeClick={() => {
                 setShowEasyNotesSidebar(false);
-                setAboutOpen(true);
+                setLicenseOpen(true);
               }}
             />
           )
