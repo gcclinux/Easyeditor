@@ -641,6 +641,28 @@
     "rewrite": "Herschreiben",
     "prompt_placeholder": "Stellen Sie hier Ihre Anforderungen an EasyAI...\nFür Code Korrigieren verwenden Sie: /fix plantuml, /fix mermaid, /fix table, /fix markdown, /fix language (Rechtschreibung), /fix code, oder /fix all",
     "toast_empty_prompt": "Bitte geben Sie zuerst eine Anforderung für EasyAI ein.",
-    "toast_action_not_bound": "Ausgewählte Aktion: {{action}}. Logik noch nicht mit dem Editor verbunden."
+    "toast_action_not_bound": "Ausgewählte Aktion: {{action}}. Logik noch nicht mit dem Editor verbunden.",
+    "report": {
+      "button": "Inhalt melden",
+      "title": "KI-Inhalt melden",
+      "category_label": "Kategorie auswählen",
+      "category_offensive": "Beleidigend oder hasserfüllt",
+      "category_inaccurate": "Ungenau oder irreführend",
+      "category_harmful": "Schädlich oder gefährlich",
+      "category_explicit": "Sexuell explizit",
+      "category_spam": "Spam oder irrelevant",
+      "category_other": "Sonstiges",
+      "description_placeholder": "Beschreiben Sie das Problem (optional)...",
+      "description_label": "Beschreibung (optional)",
+      "submit": "Meldung absenden",
+      "cancel": "Abbrechen",
+      "validation_no_category": "Bitte wählen Sie eine Kategorie",
+      "toast_success": "Meldung erfolgreich gesendet",
+      "toast_error": "Meldung konnte nicht gesendet werden",
+      "char_count": "{{count}}/{{max}}",
+      "download_button": "Meldungen herunterladen",
+      "toast_file_warning": "Meldung lokal gespeichert, aber Dateiprotokollierung fehlgeschlagen",
+      "download_empty_tooltip": "Keine Meldungen zum Herunterladen verfügbar"
+    }
   }
 }

@@ -216,6 +216,7 @@ const App = () => {
   const [showGitModal, setShowGitModal] = useState(false);
   const [showEasyNotesSidebar, setShowEasyNotesSidebar] = useState(false);
   const [showEasyAIPanel, setShowEasyAIPanel] = useState(false);
+  const [lastAIAction, setLastAIAction] = useState<string | null>(null);
   const easyNotesButtonRef = useRef<HTMLButtonElement | null>(null);
   const [isEditFull, setIsEditFull] = useState<boolean>(false);
   const [isPreviewFull, setIsPreviewFull] = useState<boolean>(false);
@@ -3305,7 +3306,9 @@ const App = () => {
           showEasyAIPanel={showEasyAIPanel}
           setShowEasyAIPanel={setShowEasyAIPanel}
           showToast={showToast}
+          lastAIAction={lastAIAction}
           onActionSelect={async (actionId, promptText) => {
+            setLastAIAction(actionId);
             // ── Documentation persona with repo scanning ──
             if (actionId === 'documentation') {
               const isTauri = !!(window as any).__TAURI_INTERNALS__;

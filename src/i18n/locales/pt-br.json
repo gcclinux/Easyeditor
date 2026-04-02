@@ -641,6 +641,28 @@
     "rewrite": "Reescrever",
     "prompt_placeholder": "Faça aqui suas solicitações ao EasyAI...\nPara Corrigir Código use: /fix plantuml, /fix mermaid, /fix table, /fix markdown, /fix language (ortografia), /fix code, ou /fix all",
     "toast_empty_prompt": "Por favor, insira primeiro um requisito para o EasyAI.",
-    "toast_action_not_bound": "Ação selecionada: {{action}}. Lógica ainda não vinculada ao editor."
+    "toast_action_not_bound": "Ação selecionada: {{action}}. Lógica ainda não vinculada ao editor.",
+    "report": {
+      "button": "Reportar Conteúdo",
+      "title": "Reportar Conteúdo de IA",
+      "category_label": "Selecione uma categoria",
+      "category_offensive": "Ofensivo ou odioso",
+      "category_inaccurate": "Impreciso ou enganoso",
+      "category_harmful": "Prejudicial ou perigoso",
+      "category_explicit": "Sexualmente explícito",
+      "category_spam": "Spam ou irrelevante",
+      "category_other": "Outro",
+      "description_placeholder": "Descreva o problema (opcional)...",
+      "description_label": "Descrição (opcional)",
+      "submit": "Enviar Relatório",
+      "cancel": "Cancelar",
+      "validation_no_category": "Por favor, selecione uma categoria",
+      "toast_success": "Relatório enviado com sucesso",
+      "toast_error": "Falha ao enviar relatório",
+      "char_count": "{{count}}/{{max}}",
+      "download_button": "Baixar Relatórios",
+      "toast_file_warning": "Relatório salvo localmente, mas o registro em arquivo falhou",
+      "download_empty_tooltip": "Nenhum relatório disponível para download"
+    }
   }
 }

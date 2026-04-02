@@ -641,6 +641,28 @@
     "rewrite": "Rewrite",
     "prompt_placeholder": "Ask EasyAI your requirements here...\nFor Fix Code use: /fix plantuml, /fix mermaid, /fix table, /fix markdown, /fix language (spelling), /fix code, or /fix all",
     "toast_empty_prompt": "Please enter a requirement for EasyAI first.",
-    "toast_action_not_bound": "Selected Action: {{action}}. Logic not yet bound to editor."
+    "toast_action_not_bound": "Selected Action: {{action}}. Logic not yet bound to editor.",
+    "report": {
+      "button": "Report Content",
+      "title": "Report AI Content",
+      "category_label": "Select a category",
+      "category_offensive": "Offensive or Hateful",
+      "category_inaccurate": "Inaccurate or Misleading",
+      "category_harmful": "Harmful or Dangerous",
+      "category_explicit": "Sexually Explicit",
+      "category_spam": "Spam or Irrelevant",
+      "category_other": "Other",
+      "description_placeholder": "Describe the issue (optional)...",
+      "description_label": "Description (optional)",
+      "submit": "Submit Report",
+      "cancel": "Cancel",
+      "validation_no_category": "Please select a category",
+      "toast_success": "Report submitted successfully",
+      "toast_error": "Failed to submit report",
+      "char_count": "{{count}}/{{max}}",
+      "download_button": "Download Reports",
+      "toast_file_warning": "Report saved locally but file logging failed",
+      "download_empty_tooltip": "No reports available to download"
+    }
   }
 }

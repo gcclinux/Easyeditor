@@ -8,7 +8,7 @@ export default {
     '**/*.(test|spec).+(ts|tsx|js)'
   ],
   transform: {
-    '^.+\\.(ts|tsx)$': 'ts-jest',
+    '^.+\\.(ts|tsx)$': ['ts-jest', { tsconfig: 'tsconfig.app.json' }],
   },
   collectCoverageFrom: [
     'src/**/*.{ts,tsx}',

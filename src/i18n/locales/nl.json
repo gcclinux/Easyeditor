@@ -641,6 +641,28 @@
     "rewrite": "Herschrijven",
     "prompt_placeholder": "Stel hier uw vereisten aan EasyAI...\nVoor Code Repareren gebruik: /fix plantuml, /fix mermaid, /fix table, /fix markdown, /fix language (spelling), /fix code, of /fix all",
     "toast_empty_prompt": "Voer eerst een vereiste in voor EasyAI.",
-    "toast_action_not_bound": "Geselecteerde actie: {{action}}. Logica nog niet gekoppeld aan de editor."
+    "toast_action_not_bound": "Geselecteerde actie: {{action}}. Logica nog niet gekoppeld aan de editor.",
+    "report": {
+      "button": "Inhoud melden",
+      "title": "AI-inhoud melden",
+      "category_label": "Selecteer een categorie",
+      "category_offensive": "Beledigend of haatdragend",
+      "category_inaccurate": "Onnauwkeurig of misleidend",
+      "category_harmful": "Schadelijk of gevaarlijk",
+      "category_explicit": "Seksueel expliciet",
+      "category_spam": "Spam of irrelevant",
+      "category_other": "Overig",
+      "description_placeholder": "Beschrijf het probleem (optioneel)...",
+      "description_label": "Beschrijving (optioneel)",
+      "submit": "Melding verzenden",
+      "cancel": "Annuleren",
+      "validation_no_category": "Selecteer een categorie",
+      "toast_success": "Melding succesvol verzonden",
+      "toast_error": "Melding verzenden mislukt",
+      "char_count": "{{count}}/{{max}}",
+      "download_button": "Meldingen downloaden",
+      "toast_file_warning": "Melding lokaal opgeslagen maar bestandsregistratie mislukt",
+      "download_empty_tooltip": "Geen meldingen beschikbaar om te downloaden"
+    }
   }
 }

@@ -641,6 +641,28 @@
     "rewrite": "Przepisz",
     "prompt_placeholder": "Zadaj tutaj swoje wymagania dla EasyAI...\nDla Napraw Kod użyj: /fix plantuml, /fix mermaid, /fix table, /fix markdown, /fix language (pisownia), /fix code, lub /fix all",
     "toast_empty_prompt": "Najpierw wprowadź wymaganie dla EasyAI.",
-    "toast_action_not_bound": "Wybrana akcja: {{action}}. Logika nie jest jeszcze powiązana z edytorem."
+    "toast_action_not_bound": "Wybrana akcja: {{action}}. Logika nie jest jeszcze powiązana z edytorem.",
+    "report": {
+      "button": "Zgłoś treść",
+      "title": "Zgłoś treść AI",
+      "category_label": "Wybierz kategorię",
+      "category_offensive": "Obraźliwe lub nienawistne",
+      "category_inaccurate": "Niedokładne lub wprowadzające w błąd",
+      "category_harmful": "Szkodliwe lub niebezpieczne",
+      "category_explicit": "Treści seksualne",
+      "category_spam": "Spam lub nieistotne",
+      "category_other": "Inne",
+      "description_placeholder": "Opisz problem (opcjonalnie)...",
+      "description_label": "Opis (opcjonalnie)",
+      "submit": "Wyślij zgłoszenie",
+      "cancel": "Anuluj",
+      "validation_no_category": "Proszę wybrać kategorię",
+      "toast_success": "Zgłoszenie wysłane pomyślnie",
+      "toast_error": "Nie udało się wysłać zgłoszenia",
+      "char_count": "{{count}}/{{max}}",
+      "download_button": "Pobierz zgłoszenia",
+      "toast_file_warning": "Zgłoszenie zapisane lokalnie, ale zapis do pliku nie powiódł się",
+      "download_empty_tooltip": "Brak zgłoszeń do pobrania"
+    }
   }
 }

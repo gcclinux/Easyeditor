@@ -1,25 +1,30 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { FaRobot, FaTimes } from 'react-icons/fa';
+import { FaRobot, FaTimes, FaFlag, FaDownload } from 'react-icons/fa';
 import { useLanguage } from '../i18n/LanguageContext';
 import { getPersonaDescription } from './easyai/aiPersonas';
 import { loadEasyAIConfig, EasyAIConfig } from './easyai/aiService';
+import ReportContentModal from './ReportContentModal';
+import { downloadReportsAsFile, getReports, isTauriEnv } from './easyai/reportService';
 
 interface EasyAIPanelProps {
   showEasyAIPanel: boolean;
   setShowEasyAIPanel: (show: boolean) => void;
   showToast: (message: string, type?: 'success' | 'error' | 'info' | 'warning') => void;
   onActionSelect?: (action: string, prompt: string) => void;
+  lastAIAction?: string | null;
 }
 
 const EasyAIPanel: React.FC<EasyAIPanelProps> = ({
   showEasyAIPanel,
   setShowEasyAIPanel,
   showToast,
-  onActionSelect
+  onActionSelect,
+  lastAIAction
 }) => {
   const { t } = useLanguage();
   const [prompt, setPrompt] = useState('');
   const [aiConfig, setAiConfig] = useState<EasyAIConfig | null>(null);
+  const [showReportModal, setShowReportModal] = useState<boolean>(false);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const panelRef = useRef<HTMLDivElement>(null);
 
@@ -124,20 +129,40 @@ const EasyAIPanel: React.FC<EasyAIPanelProps> = ({
               </p>
             )}
           </div>
-          <button
-            onClick={() => setShowEasyAIPanel(false)}
-            style={{
-              background: 'none',
-              border: 'none',
-              color: 'var(--color-text-dropdown)',
-              fontSize: '1.5rem',
-              cursor: 'pointer',
-              padding: '5px'
-            }}
-            title="Close EasyAI"
-          >
-            <FaTimes />
-          </button>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+            <button
+              onClick={() => setShowReportModal(true)}
+              aria-label={t('easyai.report.button')}
+              style={{
+                background: 'none',
+                border: 'none',
+                color: 'var(--color-text-dropdown)',
+                fontSize: '1.1rem',
+                cursor: 'pointer',
+                padding: '5px',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '4px'
+              }}
+              title={t('easyai.report.button')}
+            >
+              <FaFlag />
+            </button>
+            <button
+              onClick={() => setShowEasyAIPanel(false)}
+              style={{
+                background: 'none',
+                border: 'none',
+                color: 'var(--color-text-dropdown)',
+                fontSize: '1.5rem',
+                cursor: 'pointer',
+                padding: '5px'
+              }}
+              title="Close EasyAI"
+            >
+              <FaTimes />
+            </button>
+          </div>
         </div>
 
         {/* AI Input Area */}
@@ -204,7 +229,46 @@ const EasyAIPanel: React.FC<EasyAIPanelProps> = ({
             </button>
           ))}
         </div>
+
+        {/* Download Reports button (web only) */}
+        {!isTauriEnv() && (
+          <div style={{ marginTop: '16px' }}>
+            <button
+              onClick={() => downloadReportsAsFile()}
+              disabled={getReports().length === 0}
+              aria-label={t('easyai.report.download_button')}
+              title={getReports().length === 0 ? t('easyai.report.download_empty_tooltip') : t('easyai.report.download_button')}
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                gap: '6px',
+                width: '100%',
+                padding: '10px',
+                backgroundColor: 'var(--bg-dropdown-hover)',
+                color: '#ffffff',
+                border: '1px solid var(--border-secondary)',
+                borderRadius: '6px',
+                cursor: getReports().length === 0 ? 'not-allowed' : 'pointer',
+                fontSize: '14px',
+                fontWeight: '500',
+                opacity: getReports().length === 0 ? 0.5 : 1,
+              }}
+            >
+              <FaDownload />
+              {t('easyai.report.download_button')}
+            </button>
+          </div>
+        )}
       </div>
+
+      {/* Report Content Modal */}
+      <ReportContentModal
+        open={showReportModal}
+        onClose={() => setShowReportModal(false)}
+        showToast={showToast}
+        lastAIAction={lastAIAction ?? null}
+      />
     </div>
   );
 };
