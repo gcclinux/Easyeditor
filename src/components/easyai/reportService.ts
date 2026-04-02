@@ -11,6 +11,10 @@ export interface ReportEntry {
   description: string;
   timestamp: string;       // ISO 8601 UTC
   aiAction: string | null;
+  aiAgent: string | null;  // e.g. "Ollama", "Gemini", "Claude", "Bedrock"
+  aiModel: string | null;  // e.g. "ministral-3:3b", "gemini-2.0-flash"
+  userPrompt: string | null;   // the prompt the user sent
+  aiResponse: string | null;   // the content the AI generated
 }
 
 export const REPORT_CATEGORIES = [
@@ -27,6 +31,7 @@ export type ReportCategory = typeof REPORT_CATEGORIES[number];
 const STORAGE_KEY = 'easyeditor-ai-reports';
 const MAX_ENTRIES = 100;
 const MAX_DESCRIPTION_LENGTH = 500;
+const MAX_RESPONSE_LENGTH = 5000;
 const REPORT_FILENAME = 'ai-content-reports.json';
 
 /**
@@ -68,10 +73,11 @@ export function submitReport(entry: ReportEntry): boolean {
       return false;
     }
 
-    // Truncate description to 500 chars
+    // Truncate description to 500 chars, aiResponse to 5000 chars
     const sanitizedEntry: ReportEntry = {
       ...entry,
       description: entry.description.slice(0, MAX_DESCRIPTION_LENGTH),
+      aiResponse: entry.aiResponse ? entry.aiResponse.slice(0, MAX_RESPONSE_LENGTH) : null,
     };
 
     const reports = getReports();

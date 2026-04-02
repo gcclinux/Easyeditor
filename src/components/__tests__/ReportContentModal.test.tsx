@@ -60,6 +60,10 @@ describe('ReportContentModal', () => {
     onClose: jest.fn(),
     showToast: jest.fn(),
     lastAIAction: 'markdown' as string | null,
+    aiAgent: 'Ollama' as string | null,
+    aiModel: 'ministral-3:3b' as string | null,
+    lastUserPrompt: 'Write a getting started guide' as string | null,
+    lastAIResponse: '# Getting Started\n\nWelcome...' as string | null,
   };
 
   beforeEach(() => {

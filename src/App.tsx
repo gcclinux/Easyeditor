@@ -217,6 +217,8 @@ const App = () => {
   const [showEasyNotesSidebar, setShowEasyNotesSidebar] = useState(false);
   const [showEasyAIPanel, setShowEasyAIPanel] = useState(false);
   const [lastAIAction, setLastAIAction] = useState<string | null>(null);
+  const [lastUserPrompt, setLastUserPrompt] = useState<string | null>(null);
+  const [lastAIResponse, setLastAIResponse] = useState<string | null>(null);
   const easyNotesButtonRef = useRef<HTMLButtonElement | null>(null);
   const [isEditFull, setIsEditFull] = useState<boolean>(false);
   const [isPreviewFull, setIsPreviewFull] = useState<boolean>(false);
@@ -3307,8 +3309,12 @@ const App = () => {
           setShowEasyAIPanel={setShowEasyAIPanel}
           showToast={showToast}
           lastAIAction={lastAIAction}
+          lastUserPrompt={lastUserPrompt}
+          lastAIResponse={lastAIResponse}
           onActionSelect={async (actionId, promptText) => {
             setLastAIAction(actionId);
+            setLastUserPrompt(promptText);
+            setLastAIResponse(null);
             // ── Documentation persona with repo scanning ──
             if (actionId === 'documentation') {
               const isTauri = !!(window as any).__TAURI_INTERNALS__;
@@ -3384,6 +3390,7 @@ const App = () => {
 
                 if (doc) {
                   setEditorContent(doc + '\n');
+                  setLastAIResponse(doc);
                   showToast('EasyAI (documentation) — documentation generated.', 'success');
                 } else {
                   showToast('EasyAI (documentation) — empty response.', 'warning');
@@ -3418,6 +3425,7 @@ const App = () => {
 
             try {
               const aiResponse = await queryEasyAI(systemPrompt, promptText);
+              setLastAIResponse(aiResponse);
               if (aiResponse.trim()) {
                 if (actionId === 'rewrite') {
                   // Rewrite replaces the entire editor content

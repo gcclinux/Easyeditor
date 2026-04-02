@@ -200,6 +200,34 @@ EasyAI is your AI-powered writing assistant built directly into EasyEditor. Open
 
 ---
 
+## Report Inappropriate AI Content
+
+EasyAI includes a built-in reporting feature that lets you flag problematic AI-generated content. Click the 🚩 flag icon in the EasyAI panel header to open the report dialog, select a category, add an optional description, and submit.
+
+### Where Reports Are Stored
+
+Reports are saved locally on your device — nothing is sent to a server.
+
+**Windows (Tauri desktop app):**
+
+| Storage | Location |
+|:---|:---|
+| localStorage (WebView) | `C:\Users\<username>\AppData\Local\com.easyeditor.editor\EBWebView\Default\Local Storage\` |
+| JSON file | `C:\Users\<username>\AppData\Roaming\<username>.Easyeditor\ai-content-reports.json` |
+
+**Linux (Tauri desktop app):**
+
+| Storage | Location |
+|:---|:---|
+| localStorage (WebView) | `~/.local/share/com.easyeditor.editor/` |
+| JSON file | `~/.local/share/com.easyeditor.editor/ai-content-reports.json` |
+
+**Web browser:** Reports are stored in the browser's localStorage only. Use the "Download Reports" button in the EasyAI panel to export them as a JSON file.
+
+> Both stores keep a maximum of 100 reports. When the limit is reached, the oldest report is removed automatically.
+
+---
+
 ## Tips for Better Results
 
 - **Be specific** — *"Create a sequence diagram for the checkout payment flow"* works better than *"Make a diagram"*

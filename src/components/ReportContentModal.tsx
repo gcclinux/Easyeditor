@@ -14,6 +14,10 @@ interface ReportContentModalProps {
   onClose: () => void;
   showToast: (message: string, type?: 'success' | 'error' | 'info' | 'warning') => void;
   lastAIAction: string | null;
+  aiAgent: string | null;
+  aiModel: string | null;
+  lastUserPrompt: string | null;
+  lastAIResponse: string | null;
 }
 
 const ReportContentModal: React.FC<ReportContentModalProps> = ({
@@ -21,6 +25,10 @@ const ReportContentModal: React.FC<ReportContentModalProps> = ({
   onClose,
   showToast,
   lastAIAction,
+  aiAgent,
+  aiModel,
+  lastUserPrompt,
+  lastAIResponse,
 }) => {
   const { t } = useLanguage();
   const [selectedCategory, setSelectedCategory] = useState<string>('');
@@ -64,6 +72,10 @@ const ReportContentModal: React.FC<ReportContentModalProps> = ({
       description,
       timestamp: new Date().toISOString(),
       aiAction: lastAIAction,
+      aiAgent,
+      aiModel,
+      userPrompt: lastUserPrompt,
+      aiResponse: lastAIResponse,
     };
 
     const success = submitReport(entry);

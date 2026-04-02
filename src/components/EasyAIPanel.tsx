@@ -12,6 +12,8 @@ interface EasyAIPanelProps {
   showToast: (message: string, type?: 'success' | 'error' | 'info' | 'warning') => void;
   onActionSelect?: (action: string, prompt: string) => void;
   lastAIAction?: string | null;
+  lastUserPrompt?: string | null;
+  lastAIResponse?: string | null;
 }
 
 const EasyAIPanel: React.FC<EasyAIPanelProps> = ({
@@ -19,7 +21,9 @@ const EasyAIPanel: React.FC<EasyAIPanelProps> = ({
   setShowEasyAIPanel,
   showToast,
   onActionSelect,
-  lastAIAction
+  lastAIAction,
+  lastUserPrompt,
+  lastAIResponse
 }) => {
   const { t } = useLanguage();
   const [prompt, setPrompt] = useState('');
@@ -268,6 +272,10 @@ const EasyAIPanel: React.FC<EasyAIPanelProps> = ({
         onClose={() => setShowReportModal(false)}
         showToast={showToast}
         lastAIAction={lastAIAction ?? null}
+        aiAgent={aiConfig?.agent ?? null}
+        aiModel={aiConfig?.model ?? null}
+        lastUserPrompt={lastUserPrompt ?? null}
+        lastAIResponse={lastAIResponse ?? null}
       />
     </div>
   );

@@ -29,6 +29,30 @@ const aiActionArb = fc.oneof(
   fc.constant(null),
 );
 
+/** Generate a random AI agent or null. */
+const aiAgentArb = fc.oneof(
+  fc.constantFrom('Ollama', 'Gemini', 'Claude', 'Bedrock'),
+  fc.constant(null),
+);
+
+/** Generate a random AI model or null. */
+const aiModelArb = fc.oneof(
+  fc.constantFrom('ministral-3:3b', 'gemini-2.0-flash', 'claude-sonnet-4-20250514'),
+  fc.constant(null),
+);
+
+/** Generate a random user prompt or null. */
+const userPromptArb = fc.oneof(
+  fc.string({ minLength: 0, maxLength: 200 }),
+  fc.constant(null),
+);
+
+/** Generate a random AI response or null. */
+const aiResponseArb = fc.oneof(
+  fc.string({ minLength: 0, maxLength: 6000 }),
+  fc.constant(null),
+);
+
 // Feature: ai-content-report, Property 2: Description field character limit
 describe('Property 2: Description field character limit', () => {
   beforeEach(() => {
@@ -57,6 +81,10 @@ describe('Property 2: Description field character limit', () => {
             description,
             timestamp,
             aiAction,
+            aiAgent: null,
+            aiModel: null,
+            userPrompt: null,
+            aiResponse: null,
           };
 
           const result = submitReport(entry);
@@ -114,6 +142,10 @@ describe('Property 3: Report submission round-trip', () => {
             description,
             timestamp,
             aiAction,
+            aiAgent: null,
+            aiModel: null,
+            userPrompt: null,
+            aiResponse: null,
           };
 
           const result = submitReport(entry);
@@ -158,6 +190,10 @@ describe('Property 4: Report log max size invariant', () => {
     description: fc.string({ minLength: 0, maxLength: 500 }),
     timestamp: timestampArb,
     aiAction: aiActionArb,
+    aiAgent: aiAgentArb,
+    aiModel: aiModelArb,
+    userPrompt: userPromptArb,
+    aiResponse: aiResponseArb,
   });
 
   beforeEach(() => {
@@ -256,6 +292,10 @@ describe('Property 5: File persistence round-trip', () => {
     description: fc.string({ minLength: 0, maxLength: 500 }),
     timestamp: timestampArb,
     aiAction: aiActionArb,
+    aiAgent: aiAgentArb,
+    aiModel: aiModelArb,
+    userPrompt: userPromptArb,
+    aiResponse: aiResponseArb,
   });
 
   /** Captured data written by the mocked writeTextFile. */
@@ -359,6 +399,7 @@ describe('Property 5: File persistence round-trip', () => {
           const expectedEntries = entries.slice(-100).map((e) => ({
             ...e,
             description: e.description.slice(0, 500),
+            aiResponse: e.aiResponse ? e.aiResponse.slice(0, 5000) : null,
           }));
           expect(fileReports).toEqual(expectedEntries);
         },
@@ -387,6 +428,10 @@ describe('Property 6: Graceful fallback on file write failure', () => {
     description: fc.string({ minLength: 0, maxLength: 500 }),
     timestamp: timestampArb,
     aiAction: aiActionArb,
+    aiAgent: aiAgentArb,
+    aiModel: aiModelArb,
+    userPrompt: userPromptArb,
+    aiResponse: aiResponseArb,
   });
 
   beforeEach(() => {
@@ -504,6 +549,10 @@ describe('Property 7: Download export content equivalence', () => {
     description: fc.string({ minLength: 0, maxLength: 500 }),
     timestamp: timestampArb,
     aiAction: aiActionArb,
+    aiAgent: aiAgentArb,
+    aiModel: aiModelArb,
+    userPrompt: userPromptArb,
+    aiResponse: aiResponseArb,
   });
 
   let capturedBlobContent: string;
