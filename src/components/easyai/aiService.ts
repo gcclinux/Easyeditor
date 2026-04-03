@@ -70,12 +70,29 @@ export async function loadEasyAIConfig(): Promise<EasyAIConfig> {
  * Send a prompt to the Ollama /api/chat endpoint.
  * Returns the assistant's message content.
  */
+/**
+ * Determine the effective Ollama URL.
+ * When running in the browser (non-Tauri) against any remote Ollama host,
+ * route through the Vite dev proxy to avoid CORS issues.
+ * Local hosts (localhost / 127.0.0.1) are called directly.
+ */
+function getOllamaUrl(host: string): { url: string; proxyTarget?: string } {
+  const cleanHost = host.replace(/\/+$/, '');
+  const isTauri = !!(window as any).__TAURI__;
+  const isLocal = cleanHost.includes('localhost') || cleanHost.includes('127.0.0.1');
+
+  if (!isTauri && !isLocal) {
+    return { url: '/api/ollama-proxy/api/chat', proxyTarget: cleanHost };
+  }
+  return { url: `${cleanHost}/api/chat` };
+}
+
 async function callOllama(
   config: EasyAIConfig,
   systemPrompt: string,
   userPrompt: string,
 ): Promise<string> {
-  const url = `${config.host.replace(/\/+$/, '')}/api/chat`;
+  const { url, proxyTarget } = getOllamaUrl(config.host);
 
   const body = {
     model: config.model,
@@ -86,9 +103,23 @@ async function callOllama(
     stream: false,
   };
 
+  const headers: Record<string, string> = {
+    'Content-Type': 'application/json',
+  };
+
+  // Ollama cloud requires an API key via Authorization header
+  if (config.apiKey) {
+    headers['Authorization'] = `Bearer ${config.apiKey}`;
+  }
+
+  // Tell the proxy middleware where to forward the request
+  if (proxyTarget) {
+    headers['X-Proxy-Target'] = proxyTarget;
+  }
+
   const res = await fetch(url, {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
+    headers,
     body: JSON.stringify(body),
   });
 

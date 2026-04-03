@@ -122,7 +122,8 @@ export function LicenseModal({ open, onClose, showToast }: LicenseModalProps) {
               }
             });
           } else {
-            res = await fetch(`${gateway}/api/credits/${licenseKey}`, {
+            // Use local proxy in web mode to avoid CORS issues
+            res = await fetch(`/api/gateway-proxy/api/credits/${licenseKey}`, {
               method: 'GET',
               headers: {
                 'X-API-Key': primeKey

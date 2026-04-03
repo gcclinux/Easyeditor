@@ -3,6 +3,8 @@ import react from '@vitejs/plugin-react';
 import { Buffer } from 'buffer';
 import fs from 'fs';
 import path from 'path';
+import http from 'http';
+import https from 'https';
 
 // Read package.json to get version
 const pkg = JSON.parse(fs.readFileSync(path.resolve(__dirname, 'package.json'), 'utf-8'));
@@ -42,6 +44,50 @@ export default defineConfig({
             return next();
           }
           next();
+        });
+      },
+    },
+    // CORS proxy for Ollama — forwards /api/ollama-proxy/* to the target
+    // specified in the X-Proxy-Target header
+    {
+      name: 'ollama-cors-proxy',
+      configureServer(server) {
+        server.middlewares.use('/api/ollama-proxy', (req, res) => {
+          const target = req.headers['x-proxy-target'] as string | undefined;
+          if (!target) {
+            res.writeHead(400, { 'Content-Type': 'text/plain' });
+            res.end('Missing X-Proxy-Target header');
+            return;
+          }
+
+          // Build the final URL: target host + the path after /api/ollama-proxy
+          const stripped = (req.url || '').replace(/^\/api\/ollama-proxy/, '') || '/';
+          const dest = new URL(stripped, target);
+
+          const mod = dest.protocol === 'https:' ? https : http;
+          const fwdHeaders: Record<string, string> = {};
+          for (const [k, v] of Object.entries(req.headers)) {
+            if (k === 'host' || k === 'x-proxy-target') continue;
+            if (v) fwdHeaders[k] = Array.isArray(v) ? v.join(', ') : v;
+          }
+          fwdHeaders['host'] = dest.host;
+
+          const proxyReq = mod.request(
+            dest.href,
+            { method: req.method, headers: fwdHeaders },
+            (proxyRes) => {
+              res.writeHead(proxyRes.statusCode || 502, proxyRes.headers);
+              proxyRes.pipe(res, { end: true });
+            },
+          );
+          proxyReq.on('error', (err) => {
+            console.error('[ollama-proxy] error:', err.message);
+            if (!res.headersSent) {
+              res.writeHead(502, { 'Content-Type': 'text/plain' });
+            }
+            res.end(`Proxy error: ${err.message}`);
+          });
+          req.pipe(proxyReq, { end: true });
         });
       },
     },
@@ -97,6 +143,13 @@ export default defineConfig({
       'Cross-Origin-Embedder-Policy': 'unsafe-none',
       // Remove restrictive CSP in development
       'Content-Security-Policy': ''
+    },
+    proxy: {
+      '/api/gateway-proxy': {
+        target: 'https://easyai-gateway-846627640525.us-central1.run.app',
+        changeOrigin: true,
+        rewrite: (path: string) => path.replace(/^\/api\/gateway-proxy/, ''),
+      },
     },
     watch: {
       ignored: [
