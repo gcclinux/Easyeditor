@@ -25,7 +25,7 @@ From simple notes to complex technical documentation, Easyeditor has you covered
 
 ---
 
-![Easyeditor](screenshots/banner-tauri.png)
+![Easyeditor](https://easyeditor.uk/img/Easyeditor-banner.webp)
 
 ***Easyeditor is free, open-source, and yours to modify!***
 
