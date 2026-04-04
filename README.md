@@ -44,7 +44,10 @@ Prefer a containerized environment? getting up and running is as simple as one c
 ```bash
 # Pull and run the latest version
 docker pull ghcr.io/gcclinux/easyeditor:latest
-docker run -d --name EASYEDITOR -p 3024:3024 ghcr.io/gcclinux/easyeditor:latest
+docker run -d --name EASYEDITOR -p 3024:3024 --env-file .env.local ghcr.io/gcclinux/easyeditor:latest
+
+docker pull gcclinux/easyeditor:1.7.2-aarch64
+docker run -d --name EASYEDITOR -p 3024:3024 --env-file .env.local gcclinux/easyeditor:1.7.2-aarch64
 ```
 *Access it at: `http://localhost:3024`*
 
