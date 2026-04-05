@@ -22,7 +22,7 @@
     "tauri:build": "WEBKIT_DISABLE_DMABUF_RENDERER=1 WEBKIT_DISABLE_COMPOSITING_MODE=1 tauri build"
   },
   "author": "Ricardo Wagemaker <wagemra@gmail.com>",
-  "license": "MIT",
+  "license": "SEE LICENSE IN LICENSE",
   "dependencies": {
     "@isomorphic-git/lightning-fs": "^4.6.2",
     "@tauri-apps/api": "^2.9.1",

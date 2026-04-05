@@ -313,4 +313,4 @@ When contributing to the Tauri OAuth integration:
 
 ## License
 
-This OAuth integration is part of EasyEditor and follows the same MIT license.
+This OAuth integration is part of EasyEditor and follows the same GNU AGPLv3 with Commons Clause license.

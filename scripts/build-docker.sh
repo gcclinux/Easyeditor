@@ -15,4 +15,4 @@ echo "Pushing Docker image to Docker Hub"
 docker push gcclinux/easyeditor:${VERSION}-$(arch)
 echo ""
 echo "To run with your secrets, use:"
-echo "  docker run -d --name EASYEDITOR -p 3024:3024 --env-file .env.local gcclinux/easyeditor:${VERSION}-$(arch)"
+echo "docker run -d --name EASYEDITOR -p 3024:3024 --env-file .env.local gcclinux/easyeditor:${VERSION}-$(arch)"

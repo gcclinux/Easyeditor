@@ -82,7 +82,7 @@ export function AboutModal({ open, onClose }: AboutModalProps) {
                   <h3>{t('about.credits')}</h3>
                   <p>
                     {t('about.built_by')}<br />
-                    {t('about.license')} <a href="https://easyeditor.co.uk/license" target="_blank" rel="noopener noreferrer">Core - Open Source (MIT)</a><br />{t('about.running_version')} <strong>{version || '...'}</strong><br />{t('about.available_version')} <strong>{availableVersion || '...'}</strong>
+                    {t('about.license')} <a href="https://easyeditor.co.uk/license" target="_blank" rel="noopener noreferrer">GNU AGPLv3 with Commons Clause</a><br />{t('about.running_version')} <strong>{version || '...'}</strong><br />{t('about.available_version')} <strong>{availableVersion || '...'}</strong>
                     {version && availableVersion && compareVersions(version, availableVersion) < 0 && (
                       <>
                         <br />

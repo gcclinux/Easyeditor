@@ -43,7 +43,7 @@
       }
     },
     "category": "DeveloperTool",
-    "copyright": "",
+    "copyright": "Copyright (C) 2026 EasyEditor, EasyAI, EasyGit, EasyNotes Contributors",
     "shortDescription": "Easy Markdown Editor",
     "longDescription": "EasyEditor is an easy markdown editor that allows you to write Markdown (MD) and preview it in real-time.",
     "icon": [

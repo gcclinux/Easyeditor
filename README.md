@@ -154,7 +154,7 @@ Clean and responsive table rendering.
 
 
 ## *License*
-This project is licensed under the Open Source (MIT) license with Commons Clause and Trademark Protection.
+This project is licensed under the GNU Affero General Public License (AGPLv3) with Commons Clause and Trademark Protection.
 
 ### *What this means:*
 
