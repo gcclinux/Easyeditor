@@ -71,7 +71,7 @@
     "images": "Afbeeldingen",
     "tables": "Tabellen",
     "footnotes": "Voetnoten",
-    "auto": "Auto"
+    "auto": "Extra"
   },
   "headers": {
     "h1": "Kop 1",
@@ -214,7 +214,7 @@
     "badge_import_docx": "Docx importeren (Gratis)",
     "badge_easygit": "EasyGit (Gratis)",
     "badge_easynotes": "EasyNotes (Premium)",
-    "badge_easyai": "EasyAI (Gratis / Premium / PremiumPlus)",
+    "badge_easyai": "API Config Console",
     "free_features": "Gratis Functies",
     "free_li1": "Toegang tot Web App (gratis)",
     "free_li2": "EasyGit workflow (gratis)",

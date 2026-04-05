@@ -203,31 +203,10 @@ export function APIModal({ open, onClose, showToast }: APIModalProps) {
             </div>
           </div>
         </div>
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '16px' }}>
-          {/* Column 1: EasyAI Credits */}
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gridTemplateRows: '1fr 1fr', gap: '16px' }}>
+          {/* Block 1: EasyAI API Hosting Config */}
           <div className="about-card">
-            <h3>{t('about.easyai_credits')}</h3>
-            <div style={{ marginTop: '10px' }}>
-              <p style={{ fontSize: '0.9em', margin: '4px 0' }}><strong>{t('about.credits_agent')}</strong> {t('about.query_built')}</p>
-              <p style={{ fontSize: '0.9em', margin: '4px 0' }}><strong>{t('about.credits_model')}</strong> {t('about.query_built')}</p>
-              <p style={{ fontSize: '0.9em', margin: '4px 0' }}><strong>{t('about.credits_monthly')}</strong> {monthlyCredits !== null ? monthlyCredits : t('about.query_built')}</p>
-              <p style={{ fontSize: '0.9em', margin: '4px 0' }}><strong>{t('about.credits_topup')}</strong> {topUpCredits !== null ? topUpCredits : t('about.query_built')}</p>
-              <p style={{ fontSize: '0.9em', margin: '4px 0' }}><strong>{t('about.credits_used')}</strong> {usedCredits !== null ? usedCredits : t('about.query_built')}</p>
-              <p style={{ fontSize: '0.9em', margin: '4px 0' }}><strong>{t('about.credits_balance')}</strong> {balanceCredits !== null ? balanceCredits : t('about.query_built')}</p>
-              <a
-                target="_blank"
-                rel="noopener noreferrer"
-                className="btn secondary"
-                style={{ marginTop: '10px', display: 'inline-block', textDecoration: 'none', padding: '6px 12px' }}
-              >
-                {t('about.go_premiumplus')}
-              </a>
-            </div>
-          </div>
-
-          {/* Column 2: API Hosting Config */}
-          <div className="about-card" style={{ flex: 1 }}>
-            <h3>{t('about.api_hosting')} ({licenseTier === 'PremiumPlus' ? 'PremiumPlus' : licenseTier === 'Premium' ? 'Premium' : 'Free'})</h3>
+            <h3>{t('about.api_hosting')}</h3>
             <div style={{ display: 'flex', flexDirection: 'column', gap: '3px', marginTop: '10px' }}>
               <div>
                 <label style={{ display: 'block', fontSize: '0.9em', marginBottom: '4px' }}>{t('about.api_agent')}</label>
@@ -322,6 +301,18 @@ export function APIModal({ open, onClose, showToast }: APIModalProps) {
                 {t('about.save_config')}
               </button>
             </div>
+          </div>
+
+          {/* Block 2: Empty */}
+          <div className="about-card">
+          </div>
+
+          {/* Block 3: Empty */}
+          <div className="about-card">
+          </div>
+
+          {/* Block 4: Empty */}
+          <div className="about-card">
           </div>
         </div>
         <div className="modal-actions">

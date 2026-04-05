@@ -71,7 +71,7 @@
     "images": "Images",
     "tables": "Tables",
     "footnotes": "Footnotes",
-    "auto": "Auto"
+    "auto": "Extra"
   },
   "headers": {
     "h1": "Header 1",
@@ -214,7 +214,7 @@
     "badge_import_docx": "Import Docx (Free)",
     "badge_easygit": "EasyGit (Free)",
     "badge_easynotes": "EasyNotes (Premium)",
-    "badge_easyai": "EasyAI (Free / Premium / PremiumPlus)",
+    "badge_easyai": "API Config Console",
     "free_features": "Free Features",
     "free_li1": "Access to Web App (free)",
     "free_li2": "EasyGit workflow (free)",
