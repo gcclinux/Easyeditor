@@ -1,5 +1,5 @@
 import React from 'react';
-import { FaFileImport, FaSave, FaStar, FaGithub, FaHeart, FaPalette, FaGlobe, FaInfoCircle, FaTimes, FaFileAlt, FaLeaf, FaIdCard } from 'react-icons/fa';
+import { FaFileImport, FaSave, FaStar, FaGithub, FaHeart, FaPalette, FaGlobe, FaInfoCircle, FaTimes, FaFileAlt, FaLeaf, FaIdCard, FaCog } from 'react-icons/fa';
 import { BsFileEarmarkLockFill } from "react-icons/bs";
 import { useLanguage } from '../i18n/LanguageContext';
 import './fileModal.css';
@@ -16,6 +16,7 @@ type Props = {
     onSelectTheme: () => void;
     onSelectLanguage: () => void;
     onLicense: () => void;
+    onAPI: () => void;
     onAbout: () => void;
     onClose: () => void;
 };
@@ -32,6 +33,7 @@ export default function FileModal({
     onSelectTheme,
     onSelectLanguage,
     onLicense,
+    onAPI,
     onAbout,
     onClose
 }: Props) {
@@ -88,7 +90,7 @@ export default function FileModal({
                         {renderTile(<FaGlobe />, 'menu.select_language', 'menu.choose_language', onSelectLanguage)}
                         {renderTile(<FaStar />, 'menu.features', 'menu.features_desc', onFeatures)}
                         {renderTile(<FaIdCard />, 'License', 'about.check_license', onLicense)}
-                        {renderTile(<FaInfoCircle />, 'menu.about', 'menu.version_info', onAbout)}
+                        {renderTile(<FaCog />, 'APIConfig', 'about.api_hosting', onAPI)}
                     </div>
                 </div>
 
@@ -96,6 +98,7 @@ export default function FileModal({
                 <div className="file-tiles-section">
                     <div className="file-tiles-section-title">{t('menu.community_support')}</div>
                     <div className="file-tiles-grid">
+                        {renderTile(<FaInfoCircle />, 'menu.about', 'menu.version_info', onAbout)}
                         {renderTile(<FaGithub />, 'menu.support', 'menu.support_desc', onSupport)}
                         {renderTile(<FaHeart />, 'menu.buy_coffee', 'menu.sponsor', onBuyCoffee)}
                         {renderTile(<FaGlobe />, 'menu.website', 'menu.website_desc', async () => {
