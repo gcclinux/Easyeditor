@@ -43,6 +43,10 @@ const filesToCheck = [
         extract: (content) => JSON.parse(content).version
     },
     {
+        path: 'release/beta.json',
+        extract: (content) => JSON.parse(content).version
+    },
+    {
         path: 'CHANGELOG.md',
         extract: (content) => {
             const match = content.match(/-\s*(\d+\.\d+\.\d+)\s*-/);
