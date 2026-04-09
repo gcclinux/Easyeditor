@@ -11,7 +11,11 @@ import {
     BsDiagram3,
     BsCodeSquare,
     BsCloud,
-    BsTools
+    BsTools,
+    BsCalculator,
+    BsPen,
+    BsStars,
+    BsFileText
 } from "react-icons/bs";
 import { useLanguage } from '../i18n/LanguageContext';
 import { buildDailyJournalTemplate } from '../templates/dailyJournal';
@@ -26,6 +30,10 @@ import { buildDiagramASCIITemplate } from '../templates/diagramASCII';
 import { buildKanbanDiagramTemplate } from '../templates/kanbanDiagram';
 import { buildAppDevAwsPostgresTemplate } from '../templates/appDevAwsPostgres';
 import { buildDevOpsPatchingTemplate } from '../templates/devOpsPatching';
+import { buildKatexExampleTemplate } from '../templates/katexExample';
+import { buildJiraDesignStoryTemplate } from '../templates/jiraDesignStory';
+import { buildJiraFeatureStoryTemplate } from '../templates/jiraFeatureStory';
+import { buildGenericUserStoryTemplate } from '../templates/genericUserStory';
 import './templatesModal.css';
 
 type Props = {
@@ -140,6 +148,30 @@ export default function TemplatesModal({ onInsertTemplate, onClose }: Props) {
                             'templates.devops_patching',
                             'templates.devops_patching_desc',
                             () => buildDevOpsPatchingTemplate()
+                        )}
+                        {renderTile(
+                            <BsCalculator />,
+                            'templates.katex_example',
+                            'templates.katex_example_desc',
+                            () => buildKatexExampleTemplate()
+                        )}
+                        {renderTile(
+                            <BsPen />,
+                            'templates.jira_design_story',
+                            'templates.jira_design_story_desc',
+                            () => buildJiraDesignStoryTemplate(new Date())
+                        )}
+                        {renderTile(
+                            <BsStars />,
+                            'templates.jira_feature_story',
+                            'templates.jira_feature_story_desc',
+                            () => buildJiraFeatureStoryTemplate(new Date())
+                        )}
+                        {renderTile(
+                            <BsFileText />,
+                            'templates.generic_user_story',
+                            'templates.generic_user_story_desc',
+                            () => buildGenericUserStoryTemplate()
                         )}
                     </div>
                 </div>
