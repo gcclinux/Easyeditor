@@ -3511,6 +3511,8 @@ const App = () => {
               isHorizontal={isHorizontal}
               initializeMermaid={initializeMermaid}
               plainTextPreview={plainTextPreview}
+              currentFilePath={currentFilePath}
+              currentDirHandle={currentDirHandle}
             />
           )}
         </div>

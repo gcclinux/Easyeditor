@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import ReactMarkdown, { defaultUrlTransform } from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import remarkEmoji from 'remark-emoji';
@@ -17,6 +17,8 @@ interface PreviewComponentProps {
   isHorizontal: boolean;
   initializeMermaid: () => void;
   plainTextPreview?: boolean;
+  currentFilePath?: string | null;
+  currentDirHandle?: any;
 }
 
 const PreviewComponent: React.FC<PreviewComponentProps> = React.memo(({
@@ -25,7 +27,9 @@ const PreviewComponent: React.FC<PreviewComponentProps> = React.memo(({
   isPreviewFull,
   isHorizontal,
   initializeMermaid,
-  plainTextPreview
+  plainTextPreview,
+  currentFilePath,
+  currentDirHandle
 }) => {
   // Custom remark plugin to preserve blank lines between list items
   const preserveListBreaks = () => {
@@ -153,7 +157,105 @@ const PreviewComponent: React.FC<PreviewComponentProps> = React.memo(({
         }}
         components={{
           img(props) {
-            return <img {...props} style={{ maxWidth: '100%', ...(props.style as React.CSSProperties) }} />;
+            const AsyncImage = ({ src, alt, style, ...rest }: any) => {
+              const [resolvedSrc, setResolvedSrc] = useState(src);
+            
+              useEffect(() => {
+                let objectUrl = '';
+            
+                const resolveImg = async () => {
+                  if (!src || src.startsWith('http') || src.startsWith('data:') || src.startsWith('blob:') || src.startsWith('tauri://') || src.startsWith('asset://')) {
+                    return;
+                  }
+            
+                  // Check if running in Tauri
+                  const isTauri = typeof window !== 'undefined' && ((window as any).__TAURI_INTERNALS__ || (window as any).__TAURI__);
+            
+                  if (isTauri && currentFilePath) {
+                    try {
+                      // Use plugin-fs to read file and create object URL, bypassing assetScopes
+                      const { readFile } = await import('@tauri-apps/plugin-fs');
+                      // currentFilePath is usually absolute. e.g. /home/user/repo/docs/README.md
+                      const dirPath = currentFilePath.replace(/\\/g, '/').split('/').slice(0, -1).join('/');
+                      
+                      let cleanSrc = src;
+                      let absolutePath = '';
+                      
+                      if (cleanSrc.startsWith('./')) {
+                        absolutePath = `${dirPath}/${cleanSrc.substring(2)}`;
+                      } else if (cleanSrc.startsWith('../')) {
+                        const parts = dirPath.split('/');
+                        const srcParts = cleanSrc.split('/');
+                        for(let p of srcParts) {
+                            if (p === '..') parts.pop();
+                            else if (p !== '.') parts.push(p);
+                        }
+                        absolutePath = parts.join('/');
+                      } else {
+                        absolutePath = `${dirPath}/${cleanSrc}`;
+                      }
+                      
+                      const fileData = await readFile(absolutePath);
+                      const blob = new Blob([fileData]);
+                      objectUrl = URL.createObjectURL(blob);
+                      setResolvedSrc(objectUrl);
+                    } catch (e) {
+                      console.error('Failed to load Tauri fs core for image resolution:', e);
+                    }
+                    return;
+                  }
+            
+                  // Check Web with File System Access API
+                  if (!isTauri && currentDirHandle && currentFilePath) {
+                    try {
+                      // Attempt to traverse from currentDirHandle directly, assuming src is relative to current file
+                      const getFileHandleFromPath = async (dirHandle: any, path: string) => {
+                         const parts = path.split('/').filter(p => p && p !== '.');
+                         let currentHandle = dirHandle;
+                         for (let i = 0; i < parts.length - 1; i++) {
+                            if (parts[i] === '..') throw new Error("Parent traversal not fully supported without root handle.");
+                            currentHandle = await currentHandle.getDirectoryHandle(parts[i]);
+                         }
+                         const fileName = parts[parts.length - 1];
+                         return await currentHandle.getFileHandle(fileName);
+                      };
+            
+                      // We need the relative path from the dirHandle
+                      // If currentFilePath is a relative path starting from dirHandle's root
+                      const dirPath = currentFilePath.split(/[/\\]/).slice(0, -1).join('/');
+                      let fetchPath = dirPath ? `${dirPath}/${src}` : src;
+                      
+                      // Normalize fetchPath relative to dirHandle
+                      const fetchParts = fetchPath.split('/');
+                      const normalizedParts = [];
+                      for (const p of fetchParts) {
+                         if (p === '..') normalizedParts.pop();
+                         else if (p !== '.' && p) normalizedParts.push(p);
+                      }
+                      fetchPath = normalizedParts.join('/');
+            
+                      const fileHandle = await getFileHandleFromPath(currentDirHandle, fetchPath);
+                      const file = await fileHandle.getFile();
+                      objectUrl = URL.createObjectURL(file);
+                      setResolvedSrc(objectUrl);
+            
+                    } catch(e) {
+                      console.warn('Failed to resolve web local image:', e);
+                    }
+                  }
+                };
+            
+                resolveImg();
+            
+                return () => {
+                  if (objectUrl) URL.revokeObjectURL(objectUrl);
+                };
+              }, [src]);
+            
+              return <img src={resolvedSrc} alt={alt} style={{ maxWidth: '100%', ...(style as React.CSSProperties) }} {...rest} />;
+            };
+            
+            return <AsyncImage {...props} />;
           },
           li({ children, className }) {
             return <li className={className}>{children}</li>;
