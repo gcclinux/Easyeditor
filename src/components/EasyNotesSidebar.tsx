@@ -202,7 +202,8 @@ const EasyNotesSidebar: React.FC<EasyNotesSidebarProps> = ({
         console.log(`[EasyNotesSidebar] Provider ${provider.name} metadata:`, metadata);
 
         if (metadata) {
-          providerMetadata[provider.name] = metadata;
+          // Always use the live provider icon to reflect any updates
+          providerMetadata[provider.name] = { ...metadata, icon: provider.icon };
         } else {
           // Default metadata for unconnected providers
           providerMetadata[provider.name] = {

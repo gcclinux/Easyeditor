@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Box Authentication</title>
+  <style>
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      height: 100vh;
+      margin: 0;
+      background: linear-gradient(135deg, #0061d5 0%, #003c8f 100%);
+      color: white;
+    }
+    .container {
+      text-align: center;
+      padding: 2rem;
+      background: rgba(255, 255, 255, 0.1);
+      border-radius: 12px;
+      backdrop-filter: blur(10px);
+    }
+    .spinner {
+      border: 4px solid rgba(255, 255, 255, 0.3);
+      border-top: 4px solid white;
+      border-radius: 50%;
+      width: 40px;
+      height: 40px;
+      animation: spin 1s linear infinite;
+      margin: 0 auto 1rem;
+    }
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+    .error {
+      color: #ff6b6b;
+      background: rgba(255, 255, 255, 0.9);
+      padding: 1rem;
+      border-radius: 8px;
+      margin-top: 1rem;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="spinner"></div>
+    <h2>Connecting to Box...</h2>
+    <p>Please wait while we complete the authentication.</p>
+    <div id="error" class="error" style="display: none;"></div>
+  </div>
+
+  <script>
+    (function() {
+      console.log('[Box Callback] Starting OAuth callback processing');
+      console.log('[Box Callback] window.opener exists:', !!window.opener);
+      console.log('[Box Callback] window.location.origin:', window.location.origin);
+
+      try {
+        var urlParams = new URLSearchParams(window.location.search);
+        var code = urlParams.get('code');
+        var error = urlParams.get('error');
+        var errorDescription = urlParams.get('error_description');
+
+        console.log('[Box Callback] Parsed params:', { hasCode: !!code, hasError: !!error });
+
+        if (error) {
+          var errorDiv = document.getElementById('error');
+          errorDiv.textContent = 'Authentication failed: ' + (errorDescription || error);
+          errorDiv.style.display = 'block';
+
+          if (window.opener && !window.opener.closed) {
+            window.opener.postMessage({
+              type: 'box_oauth_callback',
+              error: errorDescription || error
+            }, window.location.origin);
+          }
+
+          setTimeout(function() { window.close(); }, 3000);
+          return;
+        }
+
+        if (code) {
+          console.log('[Box Callback] Authorization code received');
+
+          document.querySelector('h2').textContent = 'Authentication Successful!';
+          document.querySelector('p').textContent = 'Completing authentication...';
+          document.querySelector('.spinner').style.display = 'none';
+
+          sessionStorage.setItem('box_oauth_code', code);
+          sessionStorage.setItem('box_oauth_timestamp', Date.now().toString());
+
+          if (window.opener && !window.opener.closed) {
+            try {
+              window.opener.postMessage({
+                type: 'box_oauth_callback',
+                code: code
+              }, window.location.origin);
+            } catch (err) {
+              console.error('[Box Callback] Failed to send message:', err);
+            }
+          }
+
+          setTimeout(function() { window.close(); }, 1000);
+        } else {
+          throw new Error('No authorization code received from Box.');
+        }
+      } catch (err) {
+        console.error('OAuth callback error:', err);
+        var errorDiv = document.getElementById('error');
+        errorDiv.textContent = 'Error: ' + err.message;
+        errorDiv.style.display = 'block';
+
+        if (window.opener && !window.opener.closed) {
+          window.opener.postMessage({
+            type: 'box_oauth_callback',
+            error: err.message
+          }, window.location.origin);
+        }
+
+        setTimeout(function() { window.close(); }, 5000);
+      }
+    })();
+  </script>
+</body>
+</html>

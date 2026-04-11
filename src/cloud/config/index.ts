@@ -23,6 +23,15 @@ export {
   getDebugConfiguration as getDropboxDebugConfiguration
 } from './dropbox-credentials';
 
+export {
+  BOX_CONFIG,
+  isBoxConfigured,
+  getConfigurationStatus as getBoxConfigurationStatus,
+  getConfigurationErrorMessage as getBoxConfigurationErrorMessage,
+  validateConfiguration as validateBoxConfiguration,
+  getDebugConfiguration as getBoxDebugConfiguration
+} from './box-credentials';
+
 // Configuration validation
 export {
   validateGoogleDriveConfiguration,
@@ -42,6 +51,7 @@ export type { ValidationResult, SetupInstructions } from './config-validator';
 export function initializeCloudConfiguration(): void {
   validateConfiguration();
   validateDropboxConfiguration();
+  validateBoxConfiguration();
   
   // Log configuration status in development
   if (!import.meta.env.PROD) {
@@ -65,6 +75,15 @@ export function initializeCloudConfiguration(): void {
     } else {
       console.info('✅ Dropbox configuration is valid');
     }
+
+    const boxStatus = getBoxConfigurationStatus();
+    if (!boxStatus.configured) {
+      console.group('🔧 Box Configuration');
+      console.warn('Configuration issues detected:', boxStatus.issues);
+      console.groupEnd();
+    } else {
+      console.info('✅ Box configuration is valid');
+    }
   }
 }
 
@@ -72,7 +91,7 @@ export function initializeCloudConfiguration(): void {
  * Check if any cloud provider is configured and ready
  */
 export function isAnyCloudProviderReady(): boolean {
-  return isGoogleDriveConfigured() || isDropboxConfigured();
+  return isGoogleDriveConfigured() || isDropboxConfigured() || isBoxConfigured();
 }
 
 /**
@@ -87,6 +106,7 @@ export function getAvailableProviders(): Array<{
 }> {
   const googleStatus = getQuickStatus();
   const dropboxStatus = getDropboxConfigurationStatus();
+  const boxStatus = getBoxConfigurationStatus();
   
   return [
     {
@@ -104,6 +124,15 @@ export function getAvailableProviders(): Array<{
       message: dropboxStatus.configured 
         ? `Configured for ${dropboxStatus.environment}` 
         : dropboxStatus.issues.join(', ')
+    },
+    {
+      name: 'box',
+      displayName: 'Box',
+      configured: isBoxConfigured(),
+      status: boxStatus.configured ? 'ready' : 'needs-setup',
+      message: boxStatus.configured 
+        ? `Configured for ${boxStatus.environment}` 
+        : boxStatus.issues.join(', ')
     }
   ];
 }

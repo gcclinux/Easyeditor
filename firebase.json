@@ -1,13 +1,24 @@
 {
   "hosting": {
-    "source": ".",
+    "public": "dist",
     "ignore": [
       "firebase.json",
       "**/.*",
       "**/node_modules/**"
     ],
-    "frameworksBackend": {
-      "region": "europe-west1"
-    }
+    "rewrites": [
+      {
+        "source": "/api/box-oauth/oauth2/token",
+        "function": "boxOAuthProxy"
+      },
+      {
+        "source": "/api/box-oauth/oauth2/revoke",
+        "function": "boxRevokeProxy"
+      }
+    ]
+  },
+  "functions": {
+    "source": "functions",
+    "codebase": "easyeditor"
   }
 }

@@ -39,7 +39,8 @@ export default defineConfig({
         server.middlewares.use((req, res, next) => {
           // Prevent URL rewriting for OAuth callback
           if (req.url?.includes('dropbox-oauth-callback.html') ||
-            req.url?.includes('google-oauth-callback.html')) {
+            req.url?.includes('google-oauth-callback.html') ||
+            req.url?.includes('box-oauth-callback.html')) {
             // Don't let Vite rewrite these URLs
             return next();
           }
@@ -149,6 +150,11 @@ export default defineConfig({
         target: 'https://easyai-gateway-846627640525.us-central1.run.app',
         changeOrigin: true,
         rewrite: (path: string) => path.replace(/^\/api\/gateway-proxy/, ''),
+      },
+      '/api/box-oauth': {
+        target: 'https://api.box.com',
+        changeOrigin: true,
+        rewrite: (path: string) => path.replace(/^\/api\/box-oauth/, ''),
       },
     },
     watch: {

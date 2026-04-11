@@ -4,4 +4,5 @@
  */
 
 export { GoogleOAuthProvider } from './GoogleOAuthProvider';
+export { BoxOAuthProvider } from './BoxOAuthProvider';
 export { ProviderFactory } from './ProviderFactory';
