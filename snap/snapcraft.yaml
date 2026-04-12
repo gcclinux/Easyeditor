@@ -1,5 +1,5 @@
 name: easyeditor
-version: '1.7.2'
+version: '1.7.3'
 summary: Easy Markdown Editor
 description: |
   Easyeditor is a robust Markdown editor designed for developers and writers.
@@ -8,12 +8,13 @@ description: |
   deep integration with version control systems.
   
   Key features include:
-  - Real-time Markdown preview
-  - Integration with Cloud Storage Services
-  - Opening and editing files from arbitrary system locations
-  - Export functionality to HTML, PDF, and TXT
-  - SSTP Encryption support
-  - Save and load .md files
+  - Real-time Markdown preview (EasyEditor)
+  - Integration with Cloud Storage Services (EasyNotes)
+  - Git Integration and seamless workflow management (EasyGit)
+  - Export functionality to HTML, PDF, and TXT (EasyEditor)
+  - AI Assistant with 8 distinct personas (EasyAI)
+  - SSTP Encryption support (EasyEditor)
+  - Save and load .md files (EasyEditor)
   - Load Git repo and stage, commit, push and export to HTML, TXT, PDF & SSTP Encryption
   
   This application uses classic confinement because it's a Tauri-based application 
