@@ -40,7 +40,7 @@ const APPLICATION_FOLDER_NAME = 'Easyeditor';
 export class OAuthDropboxProvider implements CloudProvider {
   readonly name = 'dropbox';
   readonly displayName = 'Dropbox';
-  readonly icon = '📦';
+  readonly icon = '📂';
 
   private oauthManager: OAuthManager;
   private dropboxProvider: DropboxOAuthProvider;

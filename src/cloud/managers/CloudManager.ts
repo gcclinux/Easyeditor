@@ -50,8 +50,10 @@ export class CloudManager {
         try {
           const { OAuthGoogleDriveProvider } = await import('../providers/OAuthGoogleDriveProvider');
           const { OAuthDropboxProvider } = await import('../providers/OAuthDropboxProvider');
+          const { OAuthBoxProvider } = await import('../providers/OAuthBoxProvider');
           this.registerProvider(new OAuthGoogleDriveProvider());
           this.registerProvider(new OAuthDropboxProvider());
+          this.registerProvider(new OAuthBoxProvider());
           console.log('[CloudManager] OAuth providers registered successfully');
         } catch (error) {
           console.error('[CloudManager] Failed to load OAuth provider, falling back to Tauri provider:', error);
@@ -63,8 +65,10 @@ export class CloudManager {
         console.log('[CloudManager] Detected web environment, using web providers');
         const { GISGoogleDriveProvider } = await import('../providers/GISGoogleDriveProvider');
         const { DropboxProvider } = await import('../providers/DropboxProvider');
+        const { BoxProvider } = await import('../providers/BoxProvider');
         this.registerProvider(new GISGoogleDriveProvider());
         this.registerProvider(new DropboxProvider());
+        this.registerProvider(new BoxProvider());
         console.log('[CloudManager] Web providers registered successfully');
       }
     } catch (error) {
