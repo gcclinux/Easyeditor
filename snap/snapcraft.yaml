@@ -26,7 +26,7 @@ icon: snap/gui/easyeditor.png
 base: core24
 
 title: Easyedit
-license: SEE LICENSE IN LICENSE
+license: AGPL-3.0
 contact: https://github.com/gcclinux/easyeditor/discussions
 website: https://easyeditor.co.uk
 source-code: https://github.com/gcclinux/easyeditor

@@ -24,9 +24,10 @@ echo "Detected arch: $ARCH"
 # Tauri binary path
 TAURI_BIN="$ROOT_DIR/src-tauri/target/release/easyeditor"
 if [ ! -f "$TAURI_BIN" ]; then
-    echo "Tauri binary not found at $TAURI_BIN"
-    echo "Run 'npm run tauri:build' first to produce the release binary."
-    exit 1
+    echo "=========================================="
+    echo "Tauri binary not found. Building now..."
+    npm run tauri:build -- --bundles deb
+    echo "=========================================="
 fi
 
 # Output and build directories
