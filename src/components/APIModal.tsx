@@ -24,11 +24,6 @@ export function APIModal({ open, onClose, showToast }: APIModalProps) {
   const [model, setModel] = React.useState('ministral-3:3b');
   const [apiKey, setApiKey] = React.useState('');
 
-  const [monthlyCredits, setMonthlyCredits] = React.useState<number | null>(null);
-  const [topUpCredits, setTopUpCredits] = React.useState<number | null>(null);
-  const [usedCredits, setUsedCredits] = React.useState<number | null>(null);
-  const [balanceCredits, setBalanceCredits] = React.useState<number | null>(null);
-
   React.useEffect(() => {
     const storedEmail = LicenseManager.getStoredEmail();
     if (storedEmail) setEmail(storedEmail);
