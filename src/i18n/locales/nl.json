@@ -280,7 +280,7 @@
     "invalid_license": "Ongeldige licentie of e-mail",
     "save_config": "Configuratie opslaan",
     "premium_not_implemented": "De agenten \"Premium\" en \"PremiumPlus\" zijn nog niet beschikbaar. Binnenkort beschikbaar!",
-    "agpl_title": "GNU AFFERO GENERAL PUBLIC LICENSE (AGPL)",
+    "agpl_title": "GNU AFFERO GENERAL PUBLIC LICENSE (AGPL-3.0)",
     "agpl_allowed": "~ TOEGESTAAN ~",
     "agpl_li1": "De broncode wijzigen voor intern gebruik",
     "agpl_li2": "Gewijzigde versies verspreiden voor niet-commerciële doeleinden met bronvermelding",

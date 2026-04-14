@@ -280,7 +280,7 @@
     "invalid_license": "Nieprawidłowa licencja lub e-mail",
     "save_config": "Zapisz konfigurację",
     "premium_not_implemented": "Agenci \"Premium\" i \"PremiumPlus\" nie są jeszcze dostępni. Wkrótce!",
-    "agpl_title": "GNU AFFERO GENERAL PUBLIC LICENSE (AGPL)",
+    "agpl_title": "GNU AFFERO GENERAL PUBLIC LICENSE (AGPL-3.0)",
     "agpl_allowed": "~ DOZWOLONE ~",
     "agpl_li1": "Modyfikować kod źródłowy do użytku wewnętrznego",
     "agpl_li2": "Rozpowszechniać zmodyfikowane wersje w celach niekomercyjnych z podaniem źródła",

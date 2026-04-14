@@ -190,7 +190,7 @@ export function LicenseModal({ open, onClose, showToast }: LicenseModalProps) {
                 <div>
                   <label style={{ display: 'block', fontSize: '0.9em', marginBottom: '4px' }}>{t('about.license_key')}</label>
                   <input
-                    type="text"
+                    type="password"
                     value={licenseKey}
                     onChange={(e) => setLicenseKey(e.target.value)}
                     className="license-key-input"
