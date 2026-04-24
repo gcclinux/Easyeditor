@@ -48,6 +48,24 @@ export function LicenseModal({ open, onClose, showToast }: LicenseModalProps) {
     return () => unsubscribe();
   }, []);
 
+  const handleGetLicense = async () => {
+    const newLicenseId = crypto.randomUUID();
+    setLicenseKey(newLicenseId);
+    const url = `https://buy.stripe.com/14AbJ105agut7IiakXdZ600?client_reference_id=${newLicenseId}`;
+    
+    try {
+      if ((window as any).__TAURI_INTERNALS__) {
+        const { open } = await import('@tauri-apps/plugin-shell');
+        await open(url);
+        return;
+      }
+    } catch (e) {
+      console.error('Failed to use Tauri open, falling back to window.open', e);
+    }
+    
+    window.open(url, '_blank', 'noopener,noreferrer');
+  };
+
   const handleSaveLicense = async () => {
     localStorage.setItem('easyeditor-user-name', name);
     console.log('[LicenseModal] Checking license for email:', email);
@@ -147,9 +165,10 @@ export function LicenseModal({ open, onClose, showToast }: LicenseModalProps) {
             </div>
 
             <div className="about-card" style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '6px' }}>
-              <h3>{t('about.agpl_title')}</h3>
+              <h3>{t('about.trademark_title')}</h3>
+              <p style={{ fontSize: '0.8em', margin: 0, opacity: 0.7 }}>{t('about.trademark_copyright')}</p>
               <hr style={{ border: 'none', borderTop: '1px solid var(--border-color, #eee)', margin: '2px 0' }} />
-              <p style={{ fontSize: '0.9em', fontWeight: 600, margin: 0 }}>{t('about.agpl_allowed')}</p>
+              <p style={{ fontSize: '0.9em', fontWeight: 900, margin: 0 }}>{t('about.agpl_allowed')}</p>
               <ul style={{ paddingLeft: '18px', lineHeight: '1.6', fontSize: '0.9em', margin: 0 }}>
                 <li>{t('about.agpl_li1')}</li>
                 <li>{t('about.agpl_li2')}</li>
@@ -198,20 +217,29 @@ export function LicenseModal({ open, onClose, showToast }: LicenseModalProps) {
                     placeholder={t('about.license_key_placeholder')}
                   />
                 </div>
-                <button
-                  onClick={handleSaveLicense}
-                  className="btn secondary"
-                  style={{ marginTop: '5px', alignSelf: 'flex-start', padding: '6px 12px' }}
-                >
-                  {t('about.check_license')}
-                </button>
+                <div style={{ display: 'flex', gap: '8px', marginTop: '5px' }}>
+                  <button
+                    onClick={handleGetLicense}
+                    className="btn primary"
+                    style={{ padding: '6px 12px' }}
+                  >
+                    {t('about.get_license') || 'Get License'}
+                  </button>
+                  <button
+                    onClick={handleSaveLicense}
+                    className="btn secondary"
+                    style={{ padding: '6px 12px' }}
+                  >
+                    {t('about.check_license')}
+                  </button>
+                </div>
               </div>
             </div>
             <div className="about-card" style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '6px' }}>
               <h3>{t('about.trademark_title')}</h3>
               <p style={{ fontSize: '0.8em', margin: 0, opacity: 0.7 }}>{t('about.trademark_copyright')}</p>
               <hr style={{ border: 'none', borderTop: '1px solid var(--border-color, #eee)', margin: '2px 0' }} />
-              <p style={{ fontSize: '0.9em', fontWeight: 600, margin: 0 }}>{t('about.trademark_you_may_not')}</p>
+              <p style={{ fontSize: '0.9em', fontWeight: 900, margin: 0 }}>{t('about.trademark_you_may_not')}</p>
               <ul style={{ paddingLeft: '18px', lineHeight: '1.6', fontSize: '0.9em', margin: 0 }}>
                 <li>{t('about.trademark_li1')}
                   <ul style={{ paddingLeft: '16px', marginTop: '2px', listStyleType: 'circle', fontSize: '0.95em' }}>
