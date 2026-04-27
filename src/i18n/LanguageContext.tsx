@@ -7,6 +7,7 @@ export const LANGUAGES = [
     { code: 'de', name: 'German', label: 'German (DE)' },
     { code: 'nl', name: 'Dutch', label: 'Dutch (NL)' },
     { code: 'pl', name: 'Polish', label: 'Polish (PL)' },
+    { code: 'es', name: 'Spanish', label: 'Spanish (ES)' },
 ];
 
 interface Language {

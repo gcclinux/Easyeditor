@@ -8,7 +8,7 @@ const __dirname = path.dirname(__filename);
 
 const localesDir = path.resolve(__dirname, '../src/i18n/locales');
 const baseFile = 'en.json';
-const targetFiles = ['de.json', 'nl.json', 'pl.json', 'pt-br.json'];
+const targetFiles = ['de.json', 'nl.json', 'pl.json', 'pt-br.json', 'es.json'];
 
 console.log(`Checking locales in ${localesDir}...`);
 

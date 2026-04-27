@@ -131,6 +131,7 @@ export function LicenseModal({ open, onClose, showToast }: LicenseModalProps) {
               <li>{t('about.free_li14')}</li>
               <li>{t('about.free_li15')}</li>
               <li>{t('about.free_li16')}</li>
+              <li>{t('about.free_li17')}</li>
             </ul>
           </div>
 
