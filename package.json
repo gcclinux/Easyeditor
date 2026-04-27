@@ -25,9 +25,9 @@
   "license": "SEE LICENSE IN LICENSE",
   "dependencies": {
     "@isomorphic-git/lightning-fs": "^4.6.2",
-    "@tauri-apps/api": "^2.9.1",
-    "@tauri-apps/plugin-dialog": "^2.6.0",
-    "@tauri-apps/plugin-fs": "^2.4.4",
+    "@tauri-apps/api": "2.10",
+    "@tauri-apps/plugin-dialog": "^2.7.0",
+    "@tauri-apps/plugin-fs": "^2.5.0",
     "@tauri-apps/plugin-http": "^2.5.5",
     "@tauri-apps/plugin-shell": "^2.3.3",
     "@twemoji/api": "^16.0.1",
@@ -68,7 +68,7 @@
   "devDependencies": {
     "@eslint/js": "^9.36.0",
     "@playwright/test": "^1.55.1",
-    "@tauri-apps/cli": "^2.9.6",
+    "@tauri-apps/cli": "2.10",
     "@testing-library/jest-dom": "^6.9.1",
     "@testing-library/react": "^16.3.2",
     "@testing-library/user-event": "^14.6.1",

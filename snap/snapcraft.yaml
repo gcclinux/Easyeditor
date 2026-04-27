@@ -35,6 +35,8 @@ donation: https://github.com/sponsors/gcclinux
 
 platforms:
   amd64:
+  arm64:
+  armhf:
 
 apps:
   easyeditor:
