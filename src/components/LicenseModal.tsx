@@ -132,55 +132,53 @@ export function LicenseModal({ open, onClose, showToast }: LicenseModalProps) {
               <li>{t('about.free_li15')}</li>
               <li>{t('about.free_li16')}</li>
             </ul>
-            <hr style={{ border: 'none', borderTop: '1px solid var(--border-color, #eee)', margin: '10px 0' }} />
+          </div>
+
+          {/* Column 2: Premium Features */}
+          <div className="about-card" style={{ display: 'flex', flexDirection: 'column' }}>
             <h3>{t('about.premium_features')}</h3>
-            <ul style={{ paddingLeft: '20px', lineHeight: '1.6', fontSize: '0.9em', marginTop: '10px', marginBottom: '10px' }}>
+            <ul style={{ paddingLeft: '20px', lineHeight: '1.6', fontSize: '0.9em', marginTop: '10px' }}>
               <li>{t('about.premium_li1')}</li>
               <li>{t('about.premium_li2')}</li>
               <li>{t('about.premium_li3')}</li>
+              <li>{t('about.premium_li5')}</li>
               <li>{t('about.premium_li4')}</li>
+
+              <li>{t('about.premiumplus_li1')}</li>
+              <li>{t('about.premiumplus_li2')}
+                <ul style={{ paddingLeft: '20px', marginTop: '4px', listStyleType: 'circle' }}>
+                  <li>{t('about.persona_li1')}</li>
+                  <li>{t('about.persona_li2')}</li>
+                  <li>{t('about.persona_li3')}</li>
+                  <li>{t('about.persona_li4')}</li>
+                  <li>{t('about.persona_li5')}</li>
+                  <li>{t('about.persona_li6')}</li>
+                  <li>{t('about.persona_li7')}</li>
+                  <li>{t('about.persona_li8')}</li>
+                </ul>
+              </li>
             </ul>
           </div>
 
-          {/* Column 2: PremiumPlus Features */}
+          {/* Column 3: Trademark & License */}
           <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-            <div className="about-card" style={{ display: 'flex', flexDirection: 'column' }}>
-              <h3>{t('about.premiumplus_features')}</h3>
-              <ul style={{ paddingLeft: '20px', lineHeight: '1.6', fontSize: '0.9em', marginTop: '10px' }}>
-                <li>{t('about.premiumplus_li1')}</li>
-                <li>{t('about.premiumplus_li2')}
-                  <ul style={{ paddingLeft: '20px', marginTop: '4px', listStyleType: 'circle' }}>
-                    <li>{t('about.persona_li1')}</li>
-                    <li>{t('about.persona_li2')}</li>
-                    <li>{t('about.persona_li3')}</li>
-                    <li>{t('about.persona_li4')}</li>
-                    <li>{t('about.persona_li5')}</li>
-                    <li>{t('about.persona_li6')}</li>
-                    <li>{t('about.persona_li7')}</li>
-                    <li>{t('about.persona_li8')}</li>
-                  </ul>
-                </li>
-                <br></br>
-              </ul>
-            </div>
-
             <div className="about-card" style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '6px' }}>
               <h3>{t('about.trademark_title')}</h3>
               <p style={{ fontSize: '0.8em', margin: 0, opacity: 0.7 }}>{t('about.trademark_copyright')}</p>
               <hr style={{ border: 'none', borderTop: '1px solid var(--border-color, #eee)', margin: '2px 0' }} />
-              <p style={{ fontSize: '0.9em', fontWeight: 900, margin: 0 }}>{t('about.agpl_allowed')}</p>
+              <p style={{ fontSize: '0.9em', fontWeight: 900, margin: 0 }}>{t('about.trademark_you_may_not')}</p>
               <ul style={{ paddingLeft: '18px', lineHeight: '1.6', fontSize: '0.9em', margin: 0 }}>
-                <li>{t('about.agpl_li1')}</li>
-                <li>{t('about.agpl_li2')}</li>
-                <li>{t('about.agpl_li3')}</li>
-                <li>{t('about.agpl_li4')}</li>
-                <li>{t('about.agpl_li5')}</li>
+                <li>{t('about.trademark_li1')}
+                  <ul style={{ paddingLeft: '16px', marginTop: '2px', listStyleType: 'circle', fontSize: '0.95em' }}>
+                    <li>{t('about.trademark_li1_names')}</li>
+                  </ul>
+                </li>
+                <li>{t('about.trademark_li2')}</li>
+                <li>{t('about.trademark_li3')}</li>
+                <li>{t('about.trademark_li4')}</li>
+                <li>{t('about.trademark_li5')}</li>
               </ul>
             </div>
-          </div>
-
-          {/* Column 3: License & Trademark */}
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
             <div className="about-card" style={{ flex: 1 }}>
               <h3 style={{ whiteSpace: 'nowrap' }}>{t('about.license_info')} ({isLicenseValid && type ? type : isLicenseValid ? t('about.license_premium') : t('about.license_free')}) </h3>
               <div style={{ display: 'flex', flexDirection: 'column', gap: '3px', marginTop: '10px' }}>
@@ -234,23 +232,6 @@ export function LicenseModal({ open, onClose, showToast }: LicenseModalProps) {
                   </button>
                 </div>
               </div>
-            </div>
-            <div className="about-card" style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '6px' }}>
-              <h3>{t('about.trademark_title')}</h3>
-              <p style={{ fontSize: '0.8em', margin: 0, opacity: 0.7 }}>{t('about.trademark_copyright')}</p>
-              <hr style={{ border: 'none', borderTop: '1px solid var(--border-color, #eee)', margin: '2px 0' }} />
-              <p style={{ fontSize: '0.9em', fontWeight: 900, margin: 0 }}>{t('about.trademark_you_may_not')}</p>
-              <ul style={{ paddingLeft: '18px', lineHeight: '1.6', fontSize: '0.9em', margin: 0 }}>
-                <li>{t('about.trademark_li1')}
-                  <ul style={{ paddingLeft: '16px', marginTop: '2px', listStyleType: 'circle', fontSize: '0.95em' }}>
-                    <li>{t('about.trademark_li1_names')}</li>
-                  </ul>
-                </li>
-                <li>{t('about.trademark_li2')}</li>
-                <li>{t('about.trademark_li3')}</li>
-                <li>{t('about.trademark_li4')}</li>
-                <li>{t('about.trademark_li5')}</li>
-              </ul>
             </div>
           </div>
         </div>
