@@ -2,7 +2,12 @@
   "toasts": {
     "import_success": "Markdown importado correctamente",
     "import_error": "Error al importar",
-    "importing": "Importando Docx..."
+    "importing": "Importando Docx...",
+    "importing_pdf": "Importando PDF...",
+    "pdf_password_protected": "Este PDF está protegido con contraseña y no se puede importar.",
+    "pdf_large_file": "Este PDF tiene muchas páginas. La importación puede tardar un momento.",
+    "pdf_import_success": "¡PDF importado con éxito!",
+    "pdf_ocr_fallback": "Usando OCR para PDF escaneado..."
   },
   "menu": {
     "file": "Archivo",
@@ -526,6 +531,8 @@
     "import_md_desc": "Importar Markdown desde URL",
     "import_docx": "Importar Docx",
     "import_docx_desc": "Importar documento Word a Markdown",
+    "import_pdf": "Importar PDF",
+    "import_pdf_desc": "Importar documento PDF a Markdown",
     "imports_docs": "Importar Docx",
     "import_docs_desc": "Importar documento Word a Markdown",
     "app_dev_aws_postgres": "Desarrollo App (AWS + PG)",

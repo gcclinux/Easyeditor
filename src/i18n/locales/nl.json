@@ -2,7 +2,12 @@
   "toasts": {
     "import_success": "Markdown succesvol geïmporteerd",
     "import_error": "Importeren mislukt",
-    "importing": "Docx importeren..."
+    "importing": "Docx importeren...",
+    "importing_pdf": "PDF importeren...",
+    "pdf_password_protected": "Deze PDF is beveiligd met een wachtwoord en kan niet worden geïmporteerd.",
+    "pdf_large_file": "Deze PDF heeft veel pagina's. Het importeren kan even duren.",
+    "pdf_import_success": "PDF succesvol geïmporteerd!",
+    "pdf_ocr_fallback": "OCR wordt gebruikt voor gescande PDF..."
   },
   "menu": {
     "file": "Bestand",
@@ -521,6 +526,8 @@
     "import_md_desc": "Importeer Markdown van URL",
     "import_docx": "Importeer Docx",
     "import_docx_desc": "Importeer Word-document naar Markdown",
+    "import_pdf": "PDF importeren",
+    "import_pdf_desc": "PDF-document importeren naar Markdown",
     "imports_docs": "Importeer Docx",
     "import_docs_desc": "Importeer Word-document naar Markdown",
     "app_dev_aws_postgres": "App-ontwikkeling (AWS + PG)",

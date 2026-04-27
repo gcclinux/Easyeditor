@@ -1,5 +1,5 @@
 import React from 'react';
-import { FaBolt, FaTable, FaProjectDiagram, FaFileImport, FaTimes, FaStream, FaFileWord } from 'react-icons/fa';
+import { FaBolt, FaTable, FaProjectDiagram, FaFileImport, FaTimes, FaStream, FaFileWord, FaFilePdf } from 'react-icons/fa';
 import { useLanguage } from '../i18n/LanguageContext';
 import './autoModal.css';
 
@@ -9,6 +9,7 @@ type Props = {
     onAutoTimeline: () => void;
     onImportMD: () => void;
     onImportDocx: () => void;
+    onImportPdf?: () => void;
     onClose: () => void;
 };
 
@@ -18,6 +19,7 @@ export default function AutoModal({
     onAutoTimeline,
     onImportMD,
     onImportDocx,
+    onImportPdf,
     onClose
 }: Props) {
     const { t } = useLanguage();
@@ -83,6 +85,12 @@ export default function AutoModal({
                             t('templates.import_docx') || 'Import Docx',
                             t('templates.import_docx_desc') || 'Import Word Document to Markdown',
                             onImportDocx
+                        )}
+                        {onImportPdf && renderTile(
+                            <FaFilePdf />,
+                            t('templates.import_pdf') || 'Import PDF',
+                            t('templates.import_pdf_desc') || 'Import PDF Document to Markdown',
+                            onImportPdf
                         )}
                     </div>
                 </div>

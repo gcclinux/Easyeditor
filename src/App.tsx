@@ -136,6 +136,7 @@ import LanguageModal from './components/LanguageModal';
 import LicenseManager from './premium/LicenseManager';
 import UpdateModal from './components/UpdateModal';
 import { getRunningVersion, getAvailableVersion, compareVersions } from './utils/version';
+import { convertPdfToMarkdown, PdfImportError } from './pdfImporter';
 
 const App = () => {
   const { t, isLoading } = useLanguage();
@@ -1240,6 +1241,92 @@ const App = () => {
     } catch (error) {
       console.error('Docx import error:', error);
       showToast(`${t('toasts.import_error') || 'Failed to import Docx'}: ${(error as Error).message}`, 'error');
+    }
+  };
+
+  const handleImportPdf = async () => {
+    const isTauri = typeof window !== 'undefined' &&
+      ((window as any).__TAURI__ || (window as any).__TAURI_INTERNALS__ ||
+        typeof (window as any).__TAURI_INVOKE__ === 'function');
+
+    try {
+      let arrayBuffer: ArrayBuffer | null = null;
+
+      if (isTauri) {
+        const { open } = await import('@tauri-apps/plugin-dialog');
+        const { readFile } = await import('@tauri-apps/plugin-fs');
+
+        const selectedPath = await open({
+          multiple: false,
+          filters: [{ name: 'PDF Document', extensions: ['pdf'] }]
+        });
+
+        if (!selectedPath || typeof selectedPath !== 'string') return;
+
+        showToast(t('toasts.importing_pdf') || 'Importing PDF...', 'info');
+        const uint8Array = await readFile(selectedPath);
+        arrayBuffer = uint8Array.buffer.slice(
+          uint8Array.byteOffset,
+          uint8Array.byteOffset + uint8Array.byteLength
+        );
+      } else {
+        const input = document.createElement('input');
+        input.type = 'file';
+        input.accept = '.pdf';
+        input.style.display = 'none';
+        document.body.appendChild(input);
+
+        const file = await new Promise<File | null>((resolve) => {
+          let resolved = false;
+          input.onchange = (e) => {
+            resolved = true;
+            resolve((e.target as HTMLInputElement).files?.[0] || null);
+          };
+          window.addEventListener('focus', () => {
+            setTimeout(() => { if (!resolved) resolve(null); }, 500);
+          }, { once: true });
+
+          input.click();
+        });
+
+        document.body.removeChild(input);
+        if (!file) return;
+
+        showToast(t('toasts.importing_pdf') || 'Importing PDF...', 'info');
+        arrayBuffer = await file.arrayBuffer();
+      }
+
+      const markdown = await convertPdfToMarkdown(arrayBuffer, {
+        onPageProgress: (_current, total) => {
+          // Show large-file warning once when we discover the page count
+          if (total > 200) {
+            showToast(
+              (t('toasts.pdf_large_file') || 'This PDF has many pages. Import may take a moment.'),
+              'warning'
+            );
+          }
+        }
+      });
+
+      // Release memory early
+      arrayBuffer = null;
+
+      setEditorContent(markdown);
+      setCurrentFilePath(null);
+      setCurrentCloudNote(null);
+      setShowAutoModal(false);
+      showToast(t('toasts.pdf_import_success') || 'PDF imported successfully!', 'success');
+    } catch (error) {
+      if (error instanceof PdfImportError) {
+        if (error.code === 'PASSWORD_PROTECTED') {
+          showToast(t('toasts.pdf_password_protected') || 'This PDF is password-protected and cannot be imported.', 'error');
+        } else {
+          showToast(`${t('toasts.import_error') || 'Failed to import PDF'}: ${error.message}`, 'error');
+        }
+      } else {
+        console.error('PDF import error:', error);
+        showToast(`${t('toasts.import_error') || 'Failed to import PDF'}: ${(error as Error).message}`, 'error');
+      }
     }
   };
 
@@ -2764,6 +2851,7 @@ const App = () => {
               onAutoTimeline={() => setTimelineModalOpen(true)}
               onImportMD={() => setImportMDModalOpen(true)}
               onImportDocx={handleImportDocx}
+              onImportPdf={handleImportPdf}
               onClose={() => setShowAutoModal(false)}
             />
           )
