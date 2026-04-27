@@ -14,15 +14,34 @@ interface APIModalProps {
 export function APIModal({ open, onClose, showToast }: APIModalProps) {
   const { t } = useLanguage();
 
-  const [email, setEmail] = React.useState('');
+  const [, setEmail] = React.useState('');
   const [licenseKey, setLicenseKey] = React.useState('');
   const [type, setType] = React.useState('');
   const [isLicenseValid, setIsLicenseValid] = React.useState(false);
   const [licenseChecked, setLicenseChecked] = React.useState(false);
+  const [, setMonthlyCredits] = React.useState(0);
+  const [, setTopUpCredits] = React.useState(0);
+  const [, setUsedCredits] = React.useState(0);
+  const [, setBalanceCredits] = React.useState(0);
   const [agent, setAgent] = React.useState('Ollama');
   const [host, setHost] = React.useState('http://localhost:11434');
   const [model, setModel] = React.useState('ministral-3:3b');
   const [apiKey, setApiKey] = React.useState('');
+  const [configLoaded, setConfigLoaded] = React.useState(false);
+
+  const agentDefaults: Record<string, { model: string; host: string }> = {
+    Ollama: { model: 'ministral-3:3b', host: 'http://localhost:11434' },
+    Gemini: { model: 'gemini-3.1-pro-preview', host: '' },
+    Bedrock: { model: 'amazon.nova-pro-v1:0', host: '' },
+    Claude: { model: 'claude-sonnet-4-6', host: '' },
+  };
+
+  const agentApiKeyLinks: Record<string, string> = {
+    Ollama: 'https://ollama.com/download',
+    Gemini: 'https://aistudio.google.com/api-keys',
+    Bedrock: 'https://console.aws.amazon.com/bedrock/',
+    Claude: 'https://console.anthropic.com/settings/keys',
+  };
 
   React.useEffect(() => {
     const storedEmail = LicenseManager.getStoredEmail();
@@ -51,6 +70,7 @@ export function APIModal({ open, onClose, showToast }: APIModalProps) {
             setHost(getEnv('EASYAI_HOST', 'http://localhost:11434'));
             setModel(getEnv('EASYAI_MODEL', 'ministral-3:3b'));
             setApiKey(getEnv('EASYAI_API_KEY', ''));
+            setConfigLoaded(true);
           }
         } else {
           const webConfigStr = localStorage.getItem('easyai-config');
@@ -60,6 +80,7 @@ export function APIModal({ open, onClose, showToast }: APIModalProps) {
             if (webConfig.host) setHost(webConfig.host);
             if (webConfig.model) setModel(webConfig.model);
             if (webConfig.apiKey != null) setApiKey(webConfig.apiKey);
+            setConfigLoaded(true);
           }
         }
       } catch (err) {
@@ -138,6 +159,17 @@ export function APIModal({ open, onClose, showToast }: APIModalProps) {
     }
   }, [licenseChecked, licenseTier, agent]);
 
+  const handleAgentChange = (newAgent: string) => {
+    setAgent(newAgent);
+    if (!configLoaded || agent !== newAgent) {
+      const defaults = agentDefaults[newAgent];
+      if (defaults) {
+        setModel(defaults.model);
+        setHost(defaults.host || 'http://localhost:11434');
+      }
+    }
+  };
+
   const handleSaveApiConfig = async () => {
     try {
       const isTauri = !!(window as any).__TAURI__;
@@ -210,7 +242,7 @@ export function APIModal({ open, onClose, showToast }: APIModalProps) {
                   style={{ width: '95%', boxSizing: 'border-box', padding: '4px', borderRadius: '4px', border: '1px solid var(--border-color, #ccc)' }}
                   value={agent}
                   disabled={licenseTier === 'Free'}
-                  onChange={(e) => setAgent(e.target.value)}
+                  onChange={(e) => handleAgentChange(e.target.value)}
                 >
                   <option value="Ollama">Ollama</option>
                   {licenseTier !== 'Free' && (
@@ -288,13 +320,26 @@ export function APIModal({ open, onClose, showToast }: APIModalProps) {
                   />
                 )}
               </div>
-              <button
-                onClick={handleSaveApiConfig}
-                className="btn secondary"
-                style={{ marginTop: '10px', alignSelf: 'flex-start', padding: '6px 12px' }}
-              >
-                {t('about.save_config')}
-              </button>
+              <div style={{ display: 'flex', gap: '8px', marginTop: '10px', alignItems: 'center' }}>
+                <button
+                  onClick={handleSaveApiConfig}
+                  className="btn secondary"
+                  style={{ padding: '6px 12px' }}
+                >
+                  {t('about.save_config')}
+                </button>
+                {agentApiKeyLinks[agent] && (
+                  <a
+                    href={agentApiKeyLinks[agent]}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="btn secondary"
+                    style={{ padding: '6px 12px', textDecoration: 'none', textAlign: 'center' }}
+                  >
+                    {t('about.get_api_key')}
+                  </a>
+                )}
+              </div>
             </div>
           </div>
 

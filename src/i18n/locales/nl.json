@@ -281,6 +281,7 @@
     "close": "Sluiten",
     "invalid_license": "Ongeldige licentie of e-mail",
     "save_config": "Configuratie opslaan",
+    "get_api_key": "API-sleutel ophalen",
     "premium_not_implemented": "De agenten \"Premium\" en \"PremiumPlus\" zijn nog niet beschikbaar. Binnenkort beschikbaar!",
     "agpl_title": "GNU AFFERO GENERAL PUBLIC LICENSE (AGPL-3.0)",
     "agpl_allowed": "TOEGESTAAN",

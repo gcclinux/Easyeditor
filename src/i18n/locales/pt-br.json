@@ -281,6 +281,7 @@
     "close": "Fechar",
     "invalid_license": "Licença ou e-mail inválido",
     "save_config": "Salvar Configuração",
+    "get_api_key": "Obter Chave API",
     "premium_not_implemented": "Os agentes \"Premium\" e \"PremiumPlus\" ainda não estão disponíveis. Em breve!",
     "agpl_title": "GNU AFFERO GENERAL PUBLIC LICENSE (AGPL-3.0)",
     "agpl_allowed": "PERMITIDO",
