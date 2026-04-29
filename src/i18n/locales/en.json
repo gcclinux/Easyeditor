@@ -20,7 +20,7 @@
     "sponsor": "Sponsor the project",
     "version_info": "EasyEditor version and info",
     "mermaid": "Mermaid",
-    "uml": "UML",
+    "uml": "PlantUML",
     "symbols": "Symbols",
     "icons": "Icons",
     "headers": "Headers",
@@ -130,17 +130,17 @@
   },
   "uml": {
     "class": "Class Diagram",
-    "class_desc": "UML Class Diagram",
+    "class_desc": "PlantUML Class Diagram",
     "sequence": "Sequence Diagram",
-    "sequence_desc": "UML Sequence Diagram",
+    "sequence_desc": "PlantUML Sequence Diagram",
     "usecase": "Use Case Diagram",
-    "usecase_desc": "UML Use Case Diagram",
+    "usecase_desc": "PlantUML Use Case Diagram",
     "activity": "Activity Diagram",
-    "activity_desc": "UML Activity Diagram",
+    "activity_desc": "PlantUML Activity Diagram",
     "component": "Component Diagram",
-    "component_desc": "UML Component Diagram",
+    "component_desc": "PlantUML Component Diagram",
     "state": "State Diagram",
-    "state_desc": "UML State Diagram",
+    "state_desc": "PlantUML State Diagram",
     "process_elimination": "Process of Elimination",
     "process_elimination_desc": "Troubleshooting Flowchart",
     "db_replication": "DB Replication",
@@ -650,7 +650,7 @@
       },
       "diagrams": {
         "title": "Diagrams",
-        "desc": "Use Mermaid or UML or even both together to create flowcharts, sequence diagrams, ER diagrams, and more—right inside your notes."
+        "desc": "Use Mermaid or PlantUML or even both together to create flowcharts, sequence diagrams, ER diagrams, and more—right inside your notes."
       },
       "export_security": {
         "title": "Export & Security",

@@ -20,7 +20,7 @@
     "sponsor": "Wesprzyj projekt",
     "version_info": "Wersja i informacje o EasyEditor",
     "mermaid": "Mermaid",
-    "uml": "UML",
+    "uml": "PlantUML",
     "symbols": "Symbole",
     "icons": "Ikony",
     "headers": "Nagłówki",
@@ -130,17 +130,17 @@
   },
   "uml": {
     "class": "Diagram Klas",
-    "class_desc": "Diagram Klas UML",
+    "class_desc": "Diagram Klas PlantUML",
     "sequence": "Diagram Sekwencji",
-    "sequence_desc": "Diagram Sekwencji UML",
+    "sequence_desc": "Diagram Sekwencji PlantUML",
     "usecase": "Diagram Przypadków Użycia",
-    "usecase_desc": "Diagram Przypadków Użycia UML",
+    "usecase_desc": "Diagram Przypadków Użycia PlantUML",
     "activity": "Diagram Aktywności",
-    "activity_desc": "Diagram Aktywności UML",
+    "activity_desc": "Diagram Aktywności PlantUML",
     "component": "Diagram Komponentów",
-    "component_desc": "Diagram Komponentów UML",
+    "component_desc": "Diagram Komponentów PlantUML",
     "state": "Diagram Stanów",
-    "state_desc": "Diagram Stanów UML",
+    "state_desc": "Diagram Stanów PlantUML",
     "process_elimination": "Metoda Eliminacji",
     "process_elimination_desc": "Schemat blokowy rozwiązywania problemów",
     "db_replication": "Replikacja Bazy Danych",
@@ -650,7 +650,7 @@
       },
       "diagrams": {
         "title": "Diagramy",
-        "desc": "Używaj Mermaid lub UML, a nawet obu razem, aby tworzyć schematy blokowe, diagramy sekwencji, diagramy ER i inne – bezpośrednio w notatkach."
+        "desc": "Używaj Mermaid lub PlantUML, a nawet obu razem, aby tworzyć schematy blokowe, diagramy sekwencji, diagramy ER i inne – bezpośrednio w notatkach."
       },
       "export_security": {
         "title": "Eksport i Bezpieczeństwo",

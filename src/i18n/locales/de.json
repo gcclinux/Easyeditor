@@ -20,7 +20,7 @@
     "sponsor": "Projekt unterstützen",
     "version_info": "EasyEditor Version und Info",
     "mermaid": "Mermaid",
-    "uml": "UML",
+    "uml": "PlantUML",
     "symbols": "Symbole",
     "icons": "Symbole",
     "headers": "Überschriften",
@@ -130,17 +130,17 @@
   },
   "uml": {
     "class": "Klassendiagramm",
-    "class_desc": "UML Klassendiagramm",
+    "class_desc": "PlantUML Klassendiagramm",
     "sequence": "Sequenzdiagramm",
-    "sequence_desc": "UML Sequenzdiagramm",
+    "sequence_desc": "PlantUML Sequenzdiagramm",
     "usecase": "Anwendungsfalldiagramm",
-    "usecase_desc": "UML Anwendungsfalldiagramm",
+    "usecase_desc": "PlantUML Anwendungsfalldiagramm",
     "activity": "Aktivitätsdiagramm",
-    "activity_desc": "UML Aktivitätsdiagramm",
+    "activity_desc": "PlantUML Aktivitätsdiagramm",
     "component": "Komponentendiagramm",
-    "component_desc": "UML Komponentendiagramm",
+    "component_desc": "PlantUML Komponentendiagramm",
     "state": "Zustandsdiagramm",
-    "state_desc": "UML Zustandsdiagramm",
+    "state_desc": "PlantUML Zustandsdiagramm",
     "process_elimination": "Ausschlussverfahren",
     "process_elimination_desc": "Fehlersuch-Flussdiagramm",
     "db_replication": "DB Replikation",
@@ -650,7 +650,7 @@
       },
       "diagrams": {
         "title": "Diagramme",
-        "desc": "Verwenden Sie Mermaid oder UML oder beides zusammen, um Flussdiagramme, Sequenzdiagramme, ER-Diagramme und mehr zu erstellen – direkt in Ihren Notizen."
+        "desc": "Verwenden Sie Mermaid oder PlantUML oder beides zusammen, um Flussdiagramme, Sequenzdiagramme, ER-Diagramme und mehr zu erstellen – direkt in Ihren Notizen."
       },
       "export_security": {
         "title": "Export & Sicherheit",

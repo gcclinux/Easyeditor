@@ -20,7 +20,7 @@
     "sponsor": "Patrocinar el proyecto",
     "version_info": "Versión e información de EasyEditor",
     "mermaid": "Mermaid",
-    "uml": "UML",
+    "uml": "PlantUML",
     "symbols": "Símbolos",
     "icons": "Iconos",
     "headers": "Encabezados",
@@ -68,7 +68,6 @@
     "website_desc": "Visitar easyeditor.co.uk",
     "climate": "Clima"
   },
-
   "toolbar": {
     "headers": "Encabezados",
     "formatting": "Formato",
@@ -131,17 +130,17 @@
   },
   "uml": {
     "class": "Diagrama de clases",
-    "class_desc": "Diagrama de clases UML",
+    "class_desc": "Diagrama de clases PlantUML",
     "sequence": "Diagrama de secuencia",
-    "sequence_desc": "Diagrama de secuencia UML",
+    "sequence_desc": "Diagrama de secuencia PlantUML",
     "usecase": "Diagrama de casos de uso",
-    "usecase_desc": "Diagrama de casos de uso UML",
+    "usecase_desc": "Diagrama de casos de uso PlantUML",
     "activity": "Diagrama de actividad",
-    "activity_desc": "Diagrama de actividad UML",
+    "activity_desc": "Diagrama de actividad PlantUML",
     "component": "Diagrama de componentes",
-    "component_desc": "Diagrama de componentes UML",
+    "component_desc": "Diagrama de componentes UPlantUMLML",
     "state": "Diagrama de estados",
-    "state_desc": "Diagrama de estados UML",
+    "state_desc": "Diagrama de estados PlantUML",
     "process_elimination": "Proceso de eliminación",
     "process_elimination_desc": "Diagrama de resolución de problemas",
     "db_replication": "Replicación de BD",
@@ -167,7 +166,6 @@
     "list2": "Lista 2",
     "list2_desc": "Lista Markdown nivel 2"
   },
-
   "about": {
     "title": "EasyEditor",
     "subtitle": "Simple. Rápido. Notas Markdown con vista previa en vivo.",
@@ -308,7 +306,6 @@
     "trademark_li4": "Redistribuir bajo un nombre diferente",
     "trademark_li5": "Vender estos proyectos o derivados"
   },
-
   "images": {
     "image": "Imagen",
     "inline": "Imagen en línea",
@@ -395,7 +392,6 @@
     "auth_required": "Autenticación requerida - haz clic para configurar credenciales",
     "requires_auth": "Requiere autenticación - haz clic para configurar"
   },
-
   "language_modal": {
     "title": "Seleccionar idioma",
     "subtitle": "Elige tu idioma preferido",
@@ -505,7 +501,6 @@
       "section_title": "Opciones de exportación"
     }
   },
-
   "templates": {
     "daily_journal": "Diario personal",
     "daily_journal_desc": "Iniciar un diario personal",
@@ -613,7 +608,6 @@
       "clock": "Reloj"
     }
   },
-
   "exports": {
     "png": "Exportar a PNG",
     "png_desc": "Guardar como imagen",

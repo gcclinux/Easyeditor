@@ -20,7 +20,7 @@
     "sponsor": "Patrocine o projeto",
     "version_info": "Versão e informações do EasyEditor",
     "mermaid": "Mermaid",
-    "uml": "UML",
+    "uml": "PlantUML",
     "symbols": "Símbolos",
     "icons": "Ícones",
     "headers": "Cabeçalhos",
@@ -130,17 +130,17 @@
   },
   "uml": {
     "class": "Diagrama de Classes",
-    "class_desc": "Diagrama de Classes UML",
+    "class_desc": "Diagrama de Classes PlantUML",
     "sequence": "Diagrama de Sequência",
-    "sequence_desc": "Diagrama de Sequência UML",
+    "sequence_desc": "Diagrama de Sequência PlantUML",
     "usecase": "Diagrama de Caso de Uso",
-    "usecase_desc": "Diagrama de Caso de Uso UML",
+    "usecase_desc": "Diagrama de Caso de Uso PlantUML",
     "activity": "Diagrama de Atividade",
-    "activity_desc": "Diagrama de Atividade UML",
+    "activity_desc": "Diagrama de Atividade PlantUML",
     "component": "Diagrama de Componentes",
-    "component_desc": "Diagrama de Componentes UML",
+    "component_desc": "Diagrama de Componentes PlantUML",
     "state": "Diagrama de Estados",
-    "state_desc": "Diagrama de Estados UML",
+    "state_desc": "Diagrama de Estados PlantUML",
     "process_elimination": "Processo de Eliminação",
     "process_elimination_desc": "Fluxograma de Solução de Problemas",
     "db_replication": "Replicação de BD",
@@ -650,7 +650,7 @@
       },
       "diagrams": {
         "title": "Diagramas",
-        "desc": "Use Mermaid ou UML ou até ambos juntos para criar fluxogramas, diagramas de sequência, diagramas ER e mais — diretamente em suas notas."
+        "desc": "Use Mermaid ou PlantUML ou até ambos juntos para criar fluxogramas, diagramas de sequência, diagramas ER e mais — diretamente em suas notas."
       },
       "export_security": {
         "title": "Exportação & Segurança",

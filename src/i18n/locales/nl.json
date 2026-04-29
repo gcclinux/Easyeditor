@@ -20,7 +20,7 @@
     "sponsor": "Sponsor het project",
     "version_info": "EasyEditor versie en info",
     "mermaid": "Mermaid",
-    "uml": "UML",
+    "uml": "PlantUML",
     "symbols": "Symbolen",
     "icons": "Iconen",
     "headers": "Koppen",
@@ -130,17 +130,17 @@
   },
   "uml": {
     "class": "Klassendiagram",
-    "class_desc": "UML Klassendiagram",
+    "class_desc": "PlantUML Klassendiagram",
     "sequence": "Volgordediagram",
-    "sequence_desc": "UML Volgordediagram",
+    "sequence_desc": "PlantUML Volgordediagram",
     "usecase": "Gebruikerscasusdiagram",
-    "usecase_desc": "UML Gebruikerscasusdiagram",
+    "usecase_desc": "PlantUML Gebruikerscasusdiagram",
     "activity": "Activiteitendiagram",
-    "activity_desc": "UML Activiteitendiagram",
+    "activity_desc": "PlantUML Activiteitendiagram",
     "component": "Componentdiagram",
-    "component_desc": "UML Componentdiagram",
+    "component_desc": "PlantUML Componentdiagram",
     "state": "Toestandsdiagram",
-    "state_desc": "UML Toestandsdiagram",
+    "state_desc": "PlantUML Toestandsdiagram",
     "process_elimination": "Eliminatieproces",
     "process_elimination_desc": "Stroomdiagram voor probleemoplossing",
     "db_replication": "DB Replicatie",
@@ -650,7 +650,7 @@
       },
       "diagrams": {
         "title": "Diagrammen",
-        "desc": "Gebruik Mermaid of UML of zelfs beide samen om stroomschema's, volgordediagrammen, ER-diagrammen en meer te maken—rechtstreeks in je notities."
+        "desc": "Gebruik Mermaid of PlantUML of zelfs beide samen om stroomschema's, volgordediagrammen, ER-diagrammen en meer te maken—rechtstreeks in je notities."
       },
       "export_security": {
         "title": "Export & Beveiliging",
