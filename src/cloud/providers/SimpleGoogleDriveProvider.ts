@@ -36,7 +36,7 @@ export class SimpleGoogleDriveProvider implements CloudProvider {
   
   private clientId: string;
   private apiKey: string;
-  private scope: string = 'https://www.googleapis.com/auth/drive';
+  private scope: string = 'https://www.googleapis.com/auth/drive.file';
   
   constructor(clientId?: string, apiKey?: string) {
     this.clientId = clientId || GOOGLE_DRIVE_CONFIG.CLIENT_ID;

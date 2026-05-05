@@ -18,7 +18,7 @@ export const GOOGLE_DRIVE_CONFIG = {
     
   // OAuth scopes required by EasyEditor
   SCOPES: [
-    'https://www.googleapis.com/auth/drive',    // Full drive access for managing files across sessions
+    'https://www.googleapis.com/auth/drive.file',    // Full drive access for managing files across sessions
   ],
   
   // Discovery document for Google Drive API v3

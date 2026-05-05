@@ -36,7 +36,7 @@ export function createGoogleProviderConfig(clientId: string, clientSecret?: stri
   return {
     clientId,
     clientSecret,
-    scope: ['https://www.googleapis.com/auth/drive'],
+    scope: ['https://www.googleapis.com/auth/drive.file'],
     authorizationUrl: 'https://accounts.google.com/o/oauth2/v2/auth',
     tokenUrl: 'https://oauth2.googleapis.com/token',
     enabled: true,

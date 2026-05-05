@@ -47,3 +47,4 @@ parts
 prime
 stage
 .craft
+src/services/oauth/__tests__/

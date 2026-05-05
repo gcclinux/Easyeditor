@@ -330,7 +330,7 @@ describe('GoogleDriveProvider Property Tests', () => {
           provider: 'googledrive',
           accessToken: 'valid-token',
           expiresAt: new Date(Date.now() + 3600000), // 1 hour from now
-          scope: 'https://www.googleapis.com/auth/drive'
+          scope: 'https://www.googleapis.com/auth/drive.file'
         });
     });
 

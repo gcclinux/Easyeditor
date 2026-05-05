@@ -37,7 +37,7 @@ describe('GoogleOAuthProvider', () => {
           
           // Scope should be an array with Google Drive scope
           expect(Array.isArray(provider.scope)).toBe(true);
-          expect(provider.scope).toContain('https://www.googleapis.com/auth/drive');
+          expect(provider.scope).toContain('https://www.googleapis.com/auth/drive.file');
           
           // Properties should be defined and consistent
           expect(typeof provider.name).toBe('string');
@@ -83,7 +83,7 @@ describe('GoogleOAuthProvider', () => {
           
           // Scope should contain Google Drive scope
           const scope = params.get('scope');
-          expect(scope).toContain('https://www.googleapis.com/auth/drive');
+          expect(scope).toContain('https://www.googleapis.com/auth/drive.file');
         }
       ),
       { numRuns: 100 }

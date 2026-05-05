@@ -71,7 +71,7 @@ export const minimalOAuthConfig: Partial<OAuthConfig> = {
   providers: {
     google: {
       clientId: process.env.GOOGLE_OAUTH_CLIENT_ID || '',
-      scope: ['https://www.googleapis.com/auth/drive'],
+      scope: ['https://www.googleapis.com/auth/drive.file'],
       enabled: true
     }
   }

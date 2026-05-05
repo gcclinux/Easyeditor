@@ -39,7 +39,7 @@ export class GoogleDriveProvider implements CloudProvider {
 
   private clientId: string;
   private apiKey: string;
-  private scope: string = 'https://www.googleapis.com/auth/drive';
+  private scope: string = 'https://www.googleapis.com/auth/drive.file';
   private isGapiInitialized: boolean = false;
   private gapiInstance: any = null;
 
