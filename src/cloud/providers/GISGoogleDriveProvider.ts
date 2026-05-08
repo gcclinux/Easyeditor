@@ -15,6 +15,9 @@ import {
 import { validateGoogleDriveConfiguration } from '../config/config-validator';
 import { ErrorHandler } from '../utils/ErrorHandler';
 import { cloudToastService } from '../utils/CloudToastService';
+import { createLogger } from '../../utils/logger';
+
+const logger = createLogger('GISGoogleDriveProvider');
 
 interface GoogleDriveFile {
   id: string;
@@ -50,11 +53,11 @@ export class GISGoogleDriveProvider implements CloudProvider {
     validateConfiguration();
 
     if (!isGoogleDriveConfigured()) {
-      console.warn('Google Drive integration not configured. Users will see a helpful error message.');
+      logger.warn('Google Drive integration not configured. Users will see a helpful error message.');
 
       if (import.meta.env.MODE === 'development') {
         const validation = validateGoogleDriveConfiguration(true);
-        console.warn('Configuration validation:', validation);
+        logger.warn('Configuration validation:', validation);
       }
     }
   }
@@ -75,7 +78,7 @@ export class GISGoogleDriveProvider implements CloudProvider {
         return;
       }
 
-      console.log('[GISGoogleDriveProvider] Loading Google Identity Services...');
+      logger.log('Loading Google Identity Services...');
 
       // Create script element
       const script = document.createElement('script');
@@ -84,7 +87,7 @@ export class GISGoogleDriveProvider implements CloudProvider {
       script.defer = true;
 
       script.onload = () => {
-        console.log('[GISGoogleDriveProvider] Google Identity Services loaded');
+        logger.log('Google Identity Services loaded');
 
         // Wait a bit for the library to initialize
         const checkReady = () => {
@@ -99,7 +102,7 @@ export class GISGoogleDriveProvider implements CloudProvider {
       };
 
       script.onerror = (error) => {
-        console.error('[GISGoogleDriveProvider] Failed to load Google Identity Services:', error);
+        logger.error('Failed to load Google Identity Services:', error);
         reject(new Error('Failed to load Google Identity Services'));
       };
 
@@ -121,7 +124,7 @@ export class GISGoogleDriveProvider implements CloudProvider {
       throw new Error('Google Identity Services not available');
     }
 
-    console.log('[GISGoogleDriveProvider] Initializing token client...');
+    logger.log('Initializing token client...');
 
     this.tokenClient = window.google.accounts.oauth2.initTokenClient({
       client_id: this.clientId,
@@ -129,18 +132,18 @@ export class GISGoogleDriveProvider implements CloudProvider {
       callback: '', // Will be set dynamically
     });
 
-    console.log('[GISGoogleDriveProvider] Token client initialized');
+    logger.log('Token client initialized');
   }
 
   async authenticate(): Promise<AuthResult> {
     try {
-      console.log('[GISGoogleDriveProvider] Starting authentication...');
+      logger.log('Starting authentication...');
 
       // Validate configuration before attempting authentication
       const validation = validateGoogleDriveConfiguration();
       if (!validation.isValid) {
         const error = getConfigurationErrorMessage();
-        console.error('[GISGoogleDriveProvider] Configuration validation failed:', validation);
+        logger.error('Configuration validation failed:', validation);
         cloudToastService.showConfigurationMessage(this.displayName, false);
         return {
           success: false,
@@ -148,20 +151,20 @@ export class GISGoogleDriveProvider implements CloudProvider {
         };
       }
 
-      console.log('[GISGoogleDriveProvider] Configuration valid, initializing token client...');
+      logger.log('Configuration valid, initializing token client...');
 
       return await ErrorHandler.withRetry(async () => {
         await this.initializeTokenClient();
 
         return new Promise<AuthResult>((resolve) => {
-          console.log('[GISGoogleDriveProvider] Starting OAuth flow...');
+          logger.log('Starting OAuth flow...');
 
           // Set up the callback for this authentication attempt
           this.tokenClient.callback = async (response: any) => {
-            console.log('[GISGoogleDriveProvider] OAuth response received:', response);
+            logger.log('OAuth response received:', response);
 
             if (response.error) {
-              console.error('[GISGoogleDriveProvider] OAuth error:', response.error);
+              logger.error('OAuth error:', response.error);
 
               let errorMessage = 'Authentication failed';
               if (response.error === 'popup_blocked_by_browser') {
@@ -180,7 +183,7 @@ export class GISGoogleDriveProvider implements CloudProvider {
             }
 
             if (!response.access_token) {
-              console.error('[GISGoogleDriveProvider] No access token in response');
+              logger.error('No access token in response');
               resolve({
                 success: false,
                 error: 'No access token received'
@@ -190,7 +193,7 @@ export class GISGoogleDriveProvider implements CloudProvider {
 
             // Check if we have the required scopes
             if (!window.google?.accounts?.oauth2?.hasGrantedAllScopes(response, ...this.scope.split(' '))) {
-              console.error('[GISGoogleDriveProvider] Required scopes not granted');
+              logger.error('Required scopes not granted');
               resolve({
                 success: false,
                 error: 'Required permissions not granted'
@@ -198,8 +201,8 @@ export class GISGoogleDriveProvider implements CloudProvider {
               return;
             }
 
-            console.log('[GISGoogleDriveProvider] Authentication successful');
-            console.log('[GISGoogleDriveProvider] OAuth response details:', {
+            logger.log('Authentication successful');
+            logger.log('OAuth response details:', {
               hasAccessToken: !!response.access_token,
               expiresIn: response.expires_in,
               scope: response.scope,
@@ -217,12 +220,12 @@ export class GISGoogleDriveProvider implements CloudProvider {
 
             // Save credentials
             try {
-              console.log('[GISGoogleDriveProvider] About to save credentials...');
+              logger.log('About to save credentials...');
               await this.saveCredentials(result);
-              console.log('[GISGoogleDriveProvider] Credentials saved successfully');
+              logger.log('Credentials saved successfully');
               resolve(result);
             } catch (error) {
-              console.error('[GISGoogleDriveProvider] Failed to save credentials:', error);
+              logger.error('Failed to save credentials:', error);
               resolve({
                 success: false,
                 error: 'Failed to save authentication credentials'
@@ -231,7 +234,7 @@ export class GISGoogleDriveProvider implements CloudProvider {
           };
 
           // Request access token
-          console.log('[GISGoogleDriveProvider] Requesting access token...');
+          logger.log('Requesting access token...');
           this.tokenClient.requestAccessToken({ prompt: 'consent' });
         });
       },
@@ -240,7 +243,7 @@ export class GISGoogleDriveProvider implements CloudProvider {
       );
 
     } catch (error) {
-      console.error('[GISGoogleDriveProvider] Authentication failed:', error);
+      logger.error('Authentication failed:', error);
       const cloudError = ErrorHandler.enhanceError(error, {
         operation: 'authenticate',
         provider: this.name
@@ -255,37 +258,37 @@ export class GISGoogleDriveProvider implements CloudProvider {
 
   async isAuthenticated(): Promise<boolean> {
     try {
-      console.log('[GISGoogleDriveProvider] Checking authentication status...');
+      logger.log('Checking authentication status...');
 
       // Check if we have valid stored credentials
       const credentials = await cloudCredentialManager.getCredentials(this.name);
-      console.log('[GISGoogleDriveProvider] Credentials found:', !!credentials);
+      logger.log('Credentials found:', !!credentials);
 
       if (!credentials) {
-        console.log('[GISGoogleDriveProvider] No credentials found');
+        logger.log('No credentials found');
         return false;
       }
 
       // Check if credentials are expired
       if (credentials.expiresAt && credentials.expiresAt <= new Date()) {
-        console.log('[GISGoogleDriveProvider] Credentials expired at:', credentials.expiresAt);
+        logger.log('Credentials expired at:', credentials.expiresAt);
         return false;
       }
 
-      console.log('[GISGoogleDriveProvider] Credentials valid, checking expiry...');
+      logger.log('Credentials valid, checking expiry...');
 
       // For now, just check if we have a valid access token and it's not expired
       // The API test was causing issues, so we'll trust the stored credentials
       if (credentials.accessToken && credentials.accessToken.length > 0) {
-        console.log('[GISGoogleDriveProvider] Valid access token found, considering authenticated');
+        logger.log('Valid access token found, considering authenticated');
         return true;
       }
 
-      console.log('[GISGoogleDriveProvider] No valid access token found');
+      logger.log('No valid access token found');
       return false;
 
     } catch (error) {
-      console.error('Error checking authentication status:', error);
+      logger.error('Error checking authentication status:', error);
       return false;
     }
   }
@@ -304,7 +307,7 @@ export class GISGoogleDriveProvider implements CloudProvider {
             },
           });
         } catch (error) {
-          console.warn('Failed to revoke token:', error);
+          logger.warn('Failed to revoke token:', error);
           // Continue with cleanup even if revocation fails
         }
       }
@@ -313,7 +316,7 @@ export class GISGoogleDriveProvider implements CloudProvider {
       await cloudCredentialManager.removeCredentials(this.name);
 
     } catch (error) {
-      console.error('Error during disconnect:', error);
+      logger.error('Error during disconnect:', error);
       // Still remove credentials even if other operations fail
       await cloudCredentialManager.removeCredentials(this.name);
     }
@@ -321,18 +324,18 @@ export class GISGoogleDriveProvider implements CloudProvider {
 
   async createApplicationFolder(): Promise<string> {
     try {
-      console.log('[GISGoogleDriveProvider] Creating application folder...');
+      logger.log('Creating application folder...');
       const accessToken = await this.getValidAccessToken();
-      console.log('[GISGoogleDriveProvider] Got access token, checking for existing folder...');
+      logger.log('Got access token, checking for existing folder...');
 
       // Check if EasyEditor folder already exists
       const existingFolder = await this.findApplicationFolder();
       if (existingFolder) {
-        console.log('[GISGoogleDriveProvider] Found existing folder:', existingFolder);
+        logger.log('Found existing folder:', existingFolder);
         return existingFolder;
       }
 
-      console.log('[GISGoogleDriveProvider] No existing folder found, creating new one...');
+      logger.log('No existing folder found, creating new one...');
 
       // Create new Easyeditor folder
       const response = await this.makeApiCall('/drive/v3/files', {
@@ -348,17 +351,17 @@ export class GISGoogleDriveProvider implements CloudProvider {
         })
       });
 
-      console.log('[GISGoogleDriveProvider] Create folder response:', response);
+      logger.log('Create folder response:', response);
 
       if (!response.id) {
         throw new Error('Failed to create application folder - no ID returned');
       }
 
-      console.log('[GISGoogleDriveProvider] Successfully created folder with ID:', response.id);
+      logger.log('Successfully created folder with ID:', response.id);
       return response.id;
 
     } catch (error) {
-      console.error('[GISGoogleDriveProvider] Error creating application folder:', error);
+      logger.error('Error creating application folder:', error);
       throw new Error(`Failed to create application folder: ${(error as Error).message}`);
     }
   }
@@ -384,11 +387,11 @@ export class GISGoogleDriveProvider implements CloudProvider {
         pageToken = response.nextPageToken;
       } while (pageToken);
 
-      console.log(`[GISGoogleDriveProvider] Raw files from API: ${allFiles.length}`, allFiles.map(f => `${f.name} (${f.mimeType})`));
+      logger.log(`Raw files from API: ${allFiles.length}`, allFiles.map(f => `${f.name} (${f.mimeType})`));
 
       // Filter to only include .md and .sstp files by extension
       const filtered = allFiles.filter(file => /\.(md|sstp)$/i.test(file.name));
-      console.log(`[GISGoogleDriveProvider] After extension filter: ${filtered.length} files`);
+      logger.log(`After extension filter: ${filtered.length} files`);
 
       return filtered.map(file => ({
         id: file.id,
@@ -646,7 +649,7 @@ export class GISGoogleDriveProvider implements CloudProvider {
    */
   private async findApplicationFolder(): Promise<string | null> {
     try {
-      console.log('[GISGoogleDriveProvider] Searching for existing Easyeditor folder...');
+      logger.log('Searching for existing Easyeditor folder...');
       const accessToken = await this.getValidAccessToken();
 
       const response: GoogleDriveResponse = await this.makeApiCall(
@@ -658,18 +661,18 @@ export class GISGoogleDriveProvider implements CloudProvider {
         }
       );
 
-      console.log('[GISGoogleDriveProvider] Search response:', response);
+      logger.log('Search response:', response);
 
       if (response.files && response.files.length > 0) {
-        console.log('[GISGoogleDriveProvider] Found existing folder:', response.files[0]);
+        logger.log('Found existing folder:', response.files[0]);
         return response.files[0].id;
       }
 
-      console.log('[GISGoogleDriveProvider] No existing folder found');
+      logger.log('No existing folder found');
       return null;
 
     } catch (error) {
-      console.error('[GISGoogleDriveProvider] Error finding application folder:', error);
+      logger.error('Error finding application folder:', error);
       return null;
     }
   }

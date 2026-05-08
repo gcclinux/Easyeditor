@@ -13,6 +13,9 @@ import type {
 import { invoke } from '@tauri-apps/api/core';
 import { listen, type UnlistenFn } from '@tauri-apps/api/event';
 import { isTauriEnvironment } from '../../../utils/environment';
+import { createLogger } from '../../../utils/logger';
+
+const logger = createLogger('TauriOAuthBridge');
 
 /**
  * Tauri-specific OAuth token structure
@@ -121,7 +124,7 @@ export class TauriOAuthBridge {
 
     // Check mostly symbolic if static imports are used, but keeps bridge safe
     if (!invoke) {
-      console.error('Tauri APIs not available');
+      logger.error('Tauri APIs not available');
     }
   }
 
@@ -130,14 +133,14 @@ export class TauriOAuthBridge {
    */
   private async setupEventListeners(): Promise<void> {
     if (!isTauriEnvironment()) {
-      console.warn('Tauri event API not available');
+      logger.warn('Tauri event API not available');
       return;
     }
 
     try {
       // Listen for OAuth flow started events
       const flowStartedUnlisten = await listen('oauth-flow-started', (event: any) => {
-        console.log('OAuth flow started:', event.payload);
+        logger.log('OAuth flow started:', event.payload);
         // Flow started, frontend OAuth manager will handle the actual flow
       });
       this.eventListeners.push(flowStartedUnlisten);
@@ -179,12 +182,12 @@ export class TauriOAuthBridge {
           }
         }
 
-        console.error('OAuth error:', error, error_description);
+        logger.error('OAuth error:', error, error_description);
       });
       this.eventListeners.push(errorUnlisten);
 
     } catch (error) {
-      console.error('Failed to setup OAuth event listeners:', error);
+      logger.error('Failed to setup OAuth event listeners:', error);
     }
   }
 
@@ -258,7 +261,7 @@ export class TauriOAuthBridge {
       const status = await invoke('oauth_get_status', { provider }) as TauriOAuthStatus;
       return status.is_authenticated;
     } catch (error) {
-      console.error(`Failed to get OAuth status for ${provider}:`, error);
+      logger.error(`Failed to get OAuth status for ${provider}:`, error);
       return false;
     }
   }
@@ -280,7 +283,7 @@ export class TauriOAuthBridge {
 
       return statusMap;
     } catch (error) {
-      console.error('Failed to get OAuth status for all providers:', error);
+      logger.error('Failed to get OAuth status for all providers:', error);
       return {};
     }
   }
@@ -315,7 +318,7 @@ export class TauriOAuthBridge {
       const providers = await invoke('oauth_get_providers') as TauriOAuthProvider[];
       return providers.filter(p => p.enabled).map(p => p.name);
     } catch (error) {
-      console.error('Failed to get OAuth providers:', error);
+      logger.error('Failed to get OAuth providers:', error);
       return [];
     }
   }
@@ -330,7 +333,7 @@ export class TauriOAuthBridge {
     try {
       return await invoke('oauth_refresh_tokens', { provider }) as boolean;
     } catch (error) {
-      console.error(`Failed to refresh tokens for ${provider}:`, error);
+      logger.error(`Failed to refresh tokens for ${provider}:`, error);
       return false;
     }
   }
@@ -344,7 +347,7 @@ export class TauriOAuthBridge {
     try {
       return await invoke('oauth_get_flow_status', { flowId }) as string | null;
     } catch (error) {
-      console.error(`Failed to get flow status for ${flowId}:`, error);
+      logger.error(`Failed to get flow status for ${flowId}:`, error);
       return null;
     }
   }
@@ -358,7 +361,7 @@ export class TauriOAuthBridge {
     try {
       await invoke('oauth_update_flow_status', { flowId, status });
     } catch (error) {
-      console.error(`Failed to update flow status for ${flowId}:`, error);
+      logger.error(`Failed to update flow status for ${flowId}:`, error);
     }
   }
 
@@ -379,7 +382,7 @@ export class TauriOAuthBridge {
 
       await invoke('oauth_complete_flow', { flowId, result: tauriResult });
     } catch (error) {
-      console.error(`Failed to complete OAuth flow ${flowId}:`, error);
+      logger.error(`Failed to complete OAuth flow ${flowId}:`, error);
     }
   }
 
@@ -392,7 +395,7 @@ export class TauriOAuthBridge {
     try {
       await invoke('oauth_handle_error', { flowId, error, errorDescription });
     } catch (err) {
-      console.error('Failed to handle OAuth error:', err);
+      logger.error('Failed to handle OAuth error:', err);
     }
   }
 
@@ -405,7 +408,7 @@ export class TauriOAuthBridge {
     try {
       return await invoke('oauth_get_last_error') as string | null;
     } catch (error) {
-      console.error('Failed to get last OAuth error:', error);
+      logger.error('Failed to get last OAuth error:', error);
       return null;
     }
   }
@@ -419,7 +422,7 @@ export class TauriOAuthBridge {
     try {
       await invoke('oauth_clear_errors');
     } catch (error) {
-      console.error('Failed to clear OAuth errors:', error);
+      logger.error('Failed to clear OAuth errors:', error);
     }
   }
 
@@ -432,7 +435,7 @@ export class TauriOAuthBridge {
     try {
       return await invoke('oauth_validate_config') as boolean;
     } catch (error) {
-      console.error('Failed to validate OAuth configuration:', error);
+      logger.error('Failed to validate OAuth configuration:', error);
       return false;
     }
   }
@@ -446,7 +449,7 @@ export class TauriOAuthBridge {
     try {
       return await invoke('oauth_get_config_status') as Record<string, boolean>;
     } catch (error) {
-      console.error('Failed to get OAuth configuration status:', error);
+      logger.error('Failed to get OAuth configuration status:', error);
       return {};
     }
   }

@@ -377,7 +377,7 @@ export class OAuthManager {
           name,
           clientId: providerConfig.clientId,
           scopes: providerConfig.scopes || [],
-          redirectUri: providerConfig.redirectUri || `http://127.0.0.1:8080/callback`,
+          redirectUri: providerConfig.redirectUri || `http://localhost:8080/callback`,
           
           // These methods will delegate to Tauri backend
           buildAuthUrl: async () => '',

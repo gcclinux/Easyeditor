@@ -20,6 +20,7 @@ From simple notes to complex technical documentation, Easyeditor has you covered
 *   **Customizable**: Choose from beautiful themes or create your own!
 *   **SSTP Encryption**: SSTP (Simple Security Text Protocol) protection using modern AES-256-CBC encryption!
 *   **EasyAI Personas**: Built-in AI personas for documentation, diagrams, code fixes, and more — with full repo scanning that reads your project file-by-file to generate accurate, context-aware documentation.
+*   **Multi-cloud Storage**: Built-in Multi-cloud Storage to store your documents, GDrive, OneDrive,DropBox, Box.
 
 [![Infographic](https://img.shields.io/badge/📊_Infographic-View_PDF-orange?style=for-the-badge)](docs/Easyeditor-Infographic.pdf)
 

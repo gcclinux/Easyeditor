@@ -32,6 +32,15 @@ export {
   getDebugConfiguration as getBoxDebugConfiguration
 } from './box-credentials';
 
+export {
+  ONEDRIVE_CONFIG,
+  isOneDriveConfigured,
+  getConfigurationStatus as getOneDriveConfigurationStatus,
+  getConfigurationErrorMessage as getOneDriveConfigurationErrorMessage,
+  validateConfiguration as validateOneDriveConfiguration,
+  getDebugConfiguration as getOneDriveDebugConfiguration
+} from './onedrive-credentials';
+
 // Configuration validation
 export {
   validateGoogleDriveConfiguration,
@@ -52,6 +61,7 @@ export function initializeCloudConfiguration(): void {
   validateConfiguration();
   validateDropboxConfiguration();
   validateBoxConfiguration();
+  validateOneDriveConfiguration();
   
   // Log configuration status in development
   if (!import.meta.env.PROD) {
@@ -84,6 +94,15 @@ export function initializeCloudConfiguration(): void {
     } else {
       console.info('✅ Box configuration is valid');
     }
+
+    const onedriveStatus = getOneDriveConfigurationStatus();
+    if (!onedriveStatus.configured) {
+      console.group('🔧 OneDrive Configuration');
+      console.warn('Configuration issues detected:', onedriveStatus.issues);
+      console.groupEnd();
+    } else {
+      console.info('✅ OneDrive configuration is valid');
+    }
   }
 }
 
@@ -91,7 +110,7 @@ export function initializeCloudConfiguration(): void {
  * Check if any cloud provider is configured and ready
  */
 export function isAnyCloudProviderReady(): boolean {
-  return isGoogleDriveConfigured() || isDropboxConfigured() || isBoxConfigured();
+  return isGoogleDriveConfigured() || isDropboxConfigured() || isBoxConfigured() || isOneDriveConfigured();
 }
 
 /**
@@ -107,6 +126,7 @@ export function getAvailableProviders(): Array<{
   const googleStatus = getQuickStatus();
   const dropboxStatus = getDropboxConfigurationStatus();
   const boxStatus = getBoxConfigurationStatus();
+  const onedriveStatus = getOneDriveConfigurationStatus();
   
   return [
     {
@@ -133,6 +153,15 @@ export function getAvailableProviders(): Array<{
       message: boxStatus.configured 
         ? `Configured for ${boxStatus.environment}` 
         : boxStatus.issues.join(', ')
+    },
+    {
+      name: 'onedrive',
+      displayName: 'OneDrive',
+      configured: isOneDriveConfigured(),
+      status: onedriveStatus.configured ? 'ready' : 'needs-setup',
+      message: onedriveStatus.configured 
+        ? `Configured for ${onedriveStatus.environment}` 
+        : onedriveStatus.issues.join(', ')
     }
   ];
 }

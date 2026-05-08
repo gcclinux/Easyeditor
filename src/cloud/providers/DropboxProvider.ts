@@ -9,6 +9,9 @@ import { CloudProvider, CloudFile, AuthResult } from '../interfaces/CloudProvide
 import { DROPBOX_CONFIG, isDropboxConfigured, getConfigurationErrorMessage } from '../config/dropbox-credentials';
 import { cloudCredentialManager } from '../managers/CloudCredentialManager';
 import LicenseManager from '../../premium/LicenseManager';
+import { createLogger } from '../../utils/logger';
+
+const logger = createLogger('DropboxProvider');
 
 interface DropboxFileMetadata {
   '.tag': 'file' | 'folder';
@@ -51,7 +54,7 @@ export class DropboxProvider implements CloudProvider {
     // Validate configuration on initialization
     if (!isDropboxConfigured()) {
       const errorMessage = getConfigurationErrorMessage();
-      console.warn('[DropboxProvider] Configuration warning:', errorMessage);
+      logger.warn('Configuration warning:', errorMessage);
     }
 
     this.clientId = DROPBOX_CONFIG.CLIENT_ID;
@@ -59,7 +62,7 @@ export class DropboxProvider implements CloudProvider {
     this.redirectUri = DROPBOX_CONFIG.REDIRECT_URI;
     this.scopes = DROPBOX_CONFIG.SCOPES;
 
-    console.log('[DropboxProvider] Initialized with config:', {
+    logger.log('Initialized with config:', {
       clientIdConfigured: !!this.clientId && !this.clientId.includes('your-'),
       redirectUri: this.redirectUri,
       scopes: this.scopes
@@ -70,11 +73,11 @@ export class DropboxProvider implements CloudProvider {
    * Authenticate with Dropbox using OAuth 2.0 + PKCE
    */
   async authenticate(): Promise<AuthResult> {
-    console.log('[DropboxProvider] Starting authentication flow');
+    logger.log('Starting authentication flow');
 
     // Check for premium license first
     if (!LicenseManager.hasActiveLicense()) {
-      console.warn('[DropboxProvider] Premium license required for Dropbox integration');
+      logger.warn('Premium license required for Dropbox integration');
       return {
         success: false,
         error: 'Premium license required. Please upgrade to use Dropbox integration.'
@@ -83,7 +86,7 @@ export class DropboxProvider implements CloudProvider {
 
     if (!isDropboxConfigured()) {
       const errorMessage = getConfigurationErrorMessage();
-      console.error('[DropboxProvider] Cannot authenticate - not configured:', errorMessage);
+      logger.error('Cannot authenticate - not configured:', errorMessage);
       return {
         success: false,
         error: errorMessage
@@ -101,7 +104,7 @@ export class DropboxProvider implements CloudProvider {
       // Build authorization URL
       const authUrl = this.buildAuthorizationUrl(pkce.challenge);
 
-      console.log('[DropboxProvider] Opening authorization URL');
+      logger.log('Opening authorization URL');
 
       // Open authorization URL in new window
       // Note: Don't use 'noopener' to preserve window.opener relationship
@@ -116,7 +119,7 @@ export class DropboxProvider implements CloudProvider {
 
       return result;
     } catch (error) {
-      console.error('[DropboxProvider] Authentication error:', error);
+      logger.error('Authentication error:', error);
       return {
         success: false,
         error: error instanceof Error ? error.message : 'Authentication failed'
@@ -132,13 +135,13 @@ export class DropboxProvider implements CloudProvider {
       const credentials = await cloudCredentialManager.getCredentials(this.name);
 
       if (!credentials || !credentials.accessToken) {
-        console.log('[DropboxProvider] No credentials found');
+        logger.log('No credentials found');
         return false;
       }
 
       // Check if token is expired
       if (credentials.expiresAt && credentials.expiresAt <= new Date()) {
-        console.log('[DropboxProvider] Token expired, attempting refresh');
+        logger.log('Token expired, attempting refresh');
 
         // Try to refresh token
         if (credentials.refreshToken) {
@@ -146,7 +149,7 @@ export class DropboxProvider implements CloudProvider {
             await this.refreshAccessToken(credentials.refreshToken);
             return true;
           } catch (error) {
-            console.error('[DropboxProvider] Token refresh failed:', error);
+            logger.error('Token refresh failed:', error);
             return false;
           }
         }
@@ -154,10 +157,10 @@ export class DropboxProvider implements CloudProvider {
         return false;
       }
 
-      console.log('[DropboxProvider] User is authenticated');
+      logger.log('User is authenticated');
       return true;
     } catch (error) {
-      console.error('[DropboxProvider] Error checking authentication:', error);
+      logger.error('Error checking authentication:', error);
       return false;
     }
   }
@@ -166,7 +169,7 @@ export class DropboxProvider implements CloudProvider {
    * Disconnect from Dropbox and revoke tokens
    */
   async disconnect(): Promise<void> {
-    console.log('[DropboxProvider] Disconnecting from Dropbox');
+    logger.log('Disconnecting from Dropbox');
 
     try {
       const credentials = await cloudCredentialManager.getCredentials(this.name);
@@ -175,9 +178,9 @@ export class DropboxProvider implements CloudProvider {
         // Revoke the access token
         try {
           await this.revokeToken(credentials.accessToken);
-          console.log('[DropboxProvider] Token revoked successfully');
+          logger.log('Token revoked successfully');
         } catch (error) {
-          console.warn('[DropboxProvider] Token revocation failed:', error);
+          logger.warn('Token revocation failed:', error);
           // Continue with credential removal even if revocation fails
         }
       }
@@ -185,9 +188,9 @@ export class DropboxProvider implements CloudProvider {
       // Remove stored credentials
       await cloudCredentialManager.removeCredentials(this.name);
 
-      console.log('[DropboxProvider] Disconnected successfully');
+      logger.log('Disconnected successfully');
     } catch (error) {
-      console.error('[DropboxProvider] Error during disconnect:', error);
+      logger.error('Error during disconnect:', error);
       throw error;
     }
   }
@@ -196,14 +199,14 @@ export class DropboxProvider implements CloudProvider {
    * Create or find the application folder in Dropbox
    */
   async createApplicationFolder(): Promise<string> {
-    console.log('[DropboxProvider] Creating/finding application folder');
+    logger.log('Creating/finding application folder');
 
     try {
       // First, try to find existing folder
       const existingFolderId = await this.findApplicationFolder();
 
       if (existingFolderId) {
-        console.log('[DropboxProvider] Found existing application folder:', existingFolderId);
+        logger.log('Found existing application folder:', existingFolderId);
         return existingFolderId;
       }
 
@@ -217,17 +220,17 @@ export class DropboxProvider implements CloudProvider {
       });
 
       const folderId = response.metadata.path_display;
-      console.log('[DropboxProvider] Created application folder:', folderId);
+      logger.log('Created application folder:', folderId);
 
       return folderId;
     } catch (error: any) {
       // If folder already exists (409 conflict), that's okay
       if (error.status === 409) {
-        console.log('[DropboxProvider] Folder already exists, using existing folder');
+        logger.log('Folder already exists, using existing folder');
         return `/${APPLICATION_FOLDER_NAME}`;
       }
 
-      console.error('[DropboxProvider] Error creating application folder:', error);
+      logger.error('Error creating application folder:', error);
       throw error;
     }
   }
@@ -236,7 +239,7 @@ export class DropboxProvider implements CloudProvider {
    * List all markdown files in the application folder
    */
   async listFiles(folderId: string): Promise<CloudFile[]> {
-    console.log('[DropboxProvider] Listing files in folder:', folderId);
+    logger.log('Listing files in folder:', folderId);
 
     try {
       const response: DropboxListFolderResponse = await this.makeApiCall(
@@ -256,10 +259,10 @@ export class DropboxProvider implements CloudProvider {
         .filter(entry => entry['.tag'] === 'file' && (entry.name.endsWith('.md') || entry.name.endsWith('.sstp')))
         .map(entry => this.mapDropboxFileToCloudFile(entry));
 
-      console.log('[DropboxProvider] Found', files.length, 'markdown files');
+      logger.log('Found', files.length, 'markdown files');
       return files;
     } catch (error) {
-      console.error('[DropboxProvider] Error listing files:', error);
+      logger.error('Error listing files:', error);
       throw error;
     }
   }
@@ -268,7 +271,7 @@ export class DropboxProvider implements CloudProvider {
    * Download file content from Dropbox
    */
   async downloadFile(fileId: string): Promise<string | Uint8Array> {
-    console.log('[DropboxProvider] Downloading file:', fileId);
+    logger.log('Downloading file:', fileId);
 
     try {
       const accessToken = await this.getValidAccessToken();
@@ -295,22 +298,22 @@ export class DropboxProvider implements CloudProvider {
             isBinary = true;
           }
         } catch (e) {
-          console.warn('[DropboxProvider] Failed to parse Dropbox-API-Result header', e);
+          logger.warn('Failed to parse Dropbox-API-Result header', e);
         }
       }
 
       if (isBinary) {
         const buffer = await response.arrayBuffer();
         const content = new Uint8Array(buffer);
-        console.log('[DropboxProvider] Downloaded binary file successfully, size:', content.length);
+        logger.log('Downloaded binary file successfully, size:', content.length);
         return content;
       } else {
         const content = await response.text();
-        console.log('[DropboxProvider] Downloaded file successfully, size:', content.length);
+        logger.log('Downloaded file successfully, size:', content.length);
         return content;
       }
     } catch (error) {
-      console.error('[DropboxProvider] Error downloading file:', error);
+      logger.error('Error downloading file:', error);
       throw error;
     }
   }
@@ -319,7 +322,7 @@ export class DropboxProvider implements CloudProvider {
    * Upload a new file to Dropbox
    */
   async uploadFile(folderId: string, fileName: string, content: string | Uint8Array): Promise<CloudFile> {
-    console.log('[DropboxProvider] Uploading file:', fileName, 'to folder:', folderId);
+    logger.log('Uploading file:', fileName, 'to folder:', folderId);
 
     try {
       const accessToken = await this.getValidAccessToken();
@@ -348,10 +351,10 @@ export class DropboxProvider implements CloudProvider {
       const metadata: DropboxFileMetadata = await response.json();
       const cloudFile = this.mapDropboxFileToCloudFile(metadata);
 
-      console.log('[DropboxProvider] Uploaded file successfully:', cloudFile.id);
+      logger.log('Uploaded file successfully:', cloudFile.id);
       return cloudFile;
     } catch (error) {
-      console.error('[DropboxProvider] Error uploading file:', error);
+      logger.error('Error uploading file:', error);
       throw error;
     }
   }
@@ -360,7 +363,7 @@ export class DropboxProvider implements CloudProvider {
    * Update an existing file in Dropbox
    */
   async updateFile(fileId: string, content: string | Uint8Array): Promise<CloudFile> {
-    console.log('[DropboxProvider] Updating file:', fileId);
+    logger.log('Updating file:', fileId);
 
     try {
       const accessToken = await this.getValidAccessToken();
@@ -388,10 +391,10 @@ export class DropboxProvider implements CloudProvider {
       const metadata: DropboxFileMetadata = await response.json();
       const cloudFile = this.mapDropboxFileToCloudFile(metadata);
 
-      console.log('[DropboxProvider] Updated file successfully');
+      logger.log('Updated file successfully');
       return cloudFile;
     } catch (error) {
-      console.error('[DropboxProvider] Error updating file:', error);
+      logger.error('Error updating file:', error);
       throw error;
     }
   }
@@ -400,7 +403,7 @@ export class DropboxProvider implements CloudProvider {
    * Delete a file from Dropbox
    */
   async deleteFile(fileId: string): Promise<void> {
-    console.log('[DropboxProvider] Deleting file:', fileId);
+    logger.log('Deleting file:', fileId);
 
     try {
       await this.makeApiCall(`${DROPBOX_API_BASE}/files/delete_v2`, {
@@ -410,9 +413,9 @@ export class DropboxProvider implements CloudProvider {
         })
       });
 
-      console.log('[DropboxProvider] Deleted file successfully');
+      logger.log('Deleted file successfully');
     } catch (error) {
-      console.error('[DropboxProvider] Error deleting file:', error);
+      logger.error('Error deleting file:', error);
       throw error;
     }
   }
@@ -492,7 +495,7 @@ export class DropboxProvider implements CloudProvider {
 
       // Listen for OAuth callback message
       const messageHandler = async (event: MessageEvent) => {
-        console.log('[DropboxProvider] Received message:', {
+        logger.log('Received message:', {
           origin: event.origin,
           type: event.data?.type,
           hasCode: !!event.data?.code
@@ -504,13 +507,13 @@ export class DropboxProvider implements CloudProvider {
         );
 
         if (!isAuthorizedOrigin) {
-          console.warn('[DropboxProvider] Received message from unauthorized origin:', event.origin);
-          console.warn('[DropboxProvider] Authorized domains:', DROPBOX_CONFIG.AUTHORIZED_DOMAINS);
+          logger.warn('Received message from unauthorized origin:', event.origin);
+          logger.warn('Authorized domains:', DROPBOX_CONFIG.AUTHORIZED_DOMAINS);
           // Don't return immediately - check if it's a valid callback message
         }
 
         if (event.data.type === 'dropbox_oauth_callback') {
-          console.log('[DropboxProvider] Valid OAuth callback message received');
+          logger.log('Valid OAuth callback message received');
           messageReceived = true;
           window.removeEventListener('message', messageHandler);
           clearInterval(pollInterval);
@@ -555,12 +558,12 @@ export class DropboxProvider implements CloudProvider {
         }
       };
 
-      console.log('[DropboxProvider] Setting up message listener');
+      logger.log('Setting up message listener');
       window.addEventListener('message', messageHandler);
 
       // Poll the popup window to check if it has navigated to callback URL
       const pollInterval = setInterval(() => {
-        console.log('[DropboxProvider] Polling popup window...', {
+        logger.log('Polling popup window...', {
           windowExists: !!authWindow,
           windowClosed: authWindow?.closed
         });
@@ -575,7 +578,7 @@ export class DropboxProvider implements CloudProvider {
           const age = Date.now() - timestamp;
 
           if (age < 60000) { // 60 seconds
-            console.log('[DropboxProvider] Found OAuth code in sessionStorage');
+            logger.log('Found OAuth code in sessionStorage');
             clearInterval(pollInterval);
             window.removeEventListener('message', messageHandler);
 
@@ -615,14 +618,14 @@ export class DropboxProvider implements CloudProvider {
         }
 
         if (!authWindow || authWindow.closed) {
-          console.log('[DropboxProvider] Popup window was closed');
+          logger.log('Popup window was closed');
           clearInterval(pollInterval);
           window.removeEventListener('message', messageHandler);
 
           // Check one more time for stored code before giving up
           const finalCode = sessionStorage.getItem('dropbox_oauth_code');
           if (finalCode && !messageReceived) {
-            console.log('[DropboxProvider] Found code in sessionStorage after window closed');
+            logger.log('Found code in sessionStorage after window closed');
             sessionStorage.removeItem('dropbox_oauth_code');
             sessionStorage.removeItem('dropbox_oauth_timestamp');
 
@@ -657,8 +660,8 @@ export class DropboxProvider implements CloudProvider {
           // But will work when it redirects back to our callback URL
           const popupUrl = authWindow.location.href;
 
-          console.log('[DropboxProvider] Successfully read popup URL:', popupUrl);
-          console.log('[DropboxProvider] Popup location details:', {
+          logger.log('Successfully read popup URL:', popupUrl);
+          logger.log('Popup location details:', {
             href: authWindow.location.href,
             origin: authWindow.location.origin,
             pathname: authWindow.location.pathname,
@@ -666,7 +669,7 @@ export class DropboxProvider implements CloudProvider {
           });
 
           if (popupUrl.includes('/dropbox-oauth-callback.html')) {
-            console.log('[DropboxProvider] Detected callback URL in popup');
+            logger.log('Detected callback URL in popup');
 
             // Parse the URL to get the code
             const url = new URL(popupUrl);
@@ -686,7 +689,7 @@ export class DropboxProvider implements CloudProvider {
             }
 
             if (code) {
-              console.log('[DropboxProvider] Extracted code from URL, exchanging for token');
+              logger.log('Extracted code from URL, exchanging for token');
               // Exchange code for token
               const verifier = sessionStorage.getItem('dropbox_pkce_verifier');
 
@@ -715,7 +718,7 @@ export class DropboxProvider implements CloudProvider {
         } catch (e) {
           // Expected error when popup is on different origin (Dropbox domain)
           // Just continue polling
-          console.log('[DropboxProvider] Cannot access popup URL (cross-origin), continuing to poll...', {
+          logger.log('Cannot access popup URL (cross-origin), continuing to poll...', {
             errorType: e instanceof Error ? e.constructor.name : typeof e,
             errorMessage: e instanceof Error ? e.message : String(e)
           });
@@ -724,7 +727,7 @@ export class DropboxProvider implements CloudProvider {
 
       // Timeout after 5 minutes
       setTimeout(() => {
-        console.log('[DropboxProvider] OAuth timeout reached');
+        logger.log('OAuth timeout reached');
         clearInterval(pollInterval);
         window.removeEventListener('message', messageHandler);
 
@@ -744,7 +747,7 @@ export class DropboxProvider implements CloudProvider {
    * Exchange authorization code for access token
    */
   private async exchangeCodeForToken(code: string, verifier: string): Promise<AuthResult> {
-    console.log('[DropboxProvider] Exchanging code for token');
+    logger.log('Exchanging code for token');
 
     try {
       const params = new URLSearchParams({
@@ -784,7 +787,7 @@ export class DropboxProvider implements CloudProvider {
         userId: data.account_id
       });
 
-      console.log('[DropboxProvider] Token exchange successful');
+      logger.log('Token exchange successful');
 
       return {
         success: true,
@@ -793,7 +796,7 @@ export class DropboxProvider implements CloudProvider {
         expiresAt
       };
     } catch (error) {
-      console.error('[DropboxProvider] Token exchange error:', error);
+      logger.error('Token exchange error:', error);
       throw error;
     }
   }
@@ -811,7 +814,7 @@ export class DropboxProvider implements CloudProvider {
     // Check if token is expired or will expire soon (within 5 minutes)
     const expiryBuffer = 5 * 60 * 1000; // 5 minutes
     if (credentials.expiresAt && credentials.expiresAt.getTime() - Date.now() < expiryBuffer) {
-      console.log('[DropboxProvider] Token expired or expiring soon, refreshing');
+      logger.log('Token expired or expiring soon, refreshing');
 
       if (!credentials.refreshToken) {
         throw new Error('No refresh token available');
@@ -828,7 +831,7 @@ export class DropboxProvider implements CloudProvider {
    * Refresh access token using refresh token
    */
   private async refreshAccessToken(refreshToken: string): Promise<string> {
-    console.log('[DropboxProvider] Refreshing access token');
+    logger.log('Refreshing access token');
 
     try {
       const params = new URLSearchParams({
@@ -862,11 +865,11 @@ export class DropboxProvider implements CloudProvider {
         expiresAt
       });
 
-      console.log('[DropboxProvider] Token refreshed successfully');
+      logger.log('Token refreshed successfully');
 
       return data.access_token;
     } catch (error) {
-      console.error('[DropboxProvider] Token refresh error:', error);
+      logger.error('Token refresh error:', error);
       throw error;
     }
   }
@@ -875,7 +878,7 @@ export class DropboxProvider implements CloudProvider {
    * Revoke access token
    */
   private async revokeToken(accessToken: string): Promise<void> {
-    console.log('[DropboxProvider] Revoking token');
+    logger.log('Revoking token');
 
     try {
       const response = await fetch(`${DROPBOX_API_BASE}/auth/token/revoke`, {
@@ -889,9 +892,9 @@ export class DropboxProvider implements CloudProvider {
         throw new Error(`Token revocation failed: ${response.status}`);
       }
 
-      console.log('[DropboxProvider] Token revoked successfully');
+      logger.log('Token revoked successfully');
     } catch (error) {
-      console.error('[DropboxProvider] Token revocation error:', error);
+      logger.error('Token revocation error:', error);
       throw error;
     }
   }
@@ -947,7 +950,7 @@ export class DropboxProvider implements CloudProvider {
       error.response = errorText;
 
       // Log detailed error information for debugging
-      console.error('[DropboxProvider] API error:', {
+      logger.error('API error:', {
         url,
         status: response.status,
         statusText: response.statusText,

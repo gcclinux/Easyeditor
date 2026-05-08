@@ -68,7 +68,8 @@ pub fn run() {
             oauth_clear_errors,
             oauth_validate_config,
             oauth_get_config_status,
-            oauth_start_server
+            oauth_start_server,
+            oauth_exchange_code
         ])
         .on_window_event(|window, event| {
             // Properly handle window close to ensure WebView2 and its

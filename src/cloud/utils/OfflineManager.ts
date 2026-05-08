@@ -4,6 +4,9 @@
  */
 
 import { cloudToastService } from './CloudToastService';
+import { createLogger } from '../../utils/logger';
+
+const logger = createLogger('OfflineManager');
 
 export interface OfflineState {
   isOnline: boolean;
@@ -27,16 +30,16 @@ export class OfflineManager {
   }
 
   constructor() {
-    console.log('[OfflineManager] Initializing, navigator.onLine:', navigator.onLine);
+    logger.log('Initializing, navigator.onLine:', navigator.onLine);
     this.setupEventListeners();
     this.startPeriodicCheck();
     
     if (this.isOnline) {
       this.lastOnlineTime = new Date();
-      console.log('[OfflineManager] Starting in online mode');
+      logger.log('Starting in online mode');
     } else {
       this.offlineStartTime = new Date();
-      console.log('[OfflineManager] Starting in offline mode');
+      logger.log('Starting in offline mode');
     }
   }
 
@@ -80,7 +83,7 @@ export class OfflineManager {
    */
   async checkConnectivity(): Promise<boolean> {
     try {
-      console.log('[OfflineManager] Checking connectivity, navigator.onLine:', navigator.onLine);
+      logger.log('Checking connectivity, navigator.onLine:', navigator.onLine);
       
       // In Tauri environment, trust navigator.onLine more
       const isTauri = typeof window !== 'undefined' && 
@@ -91,13 +94,13 @@ export class OfflineManager {
         // For Tauri, primarily trust navigator.onLine
         // Only do network check if navigator says we're online
         if (!navigator.onLine) {
-          console.log('[OfflineManager] Tauri: navigator.onLine is false, setting offline');
+          logger.log('Tauri: navigator.onLine is false, setting offline');
           this.updateOnlineStatus(false);
           return false;
         }
         
         // Navigator says online, assume we are (Tauri's navigator.onLine is reliable)
-        console.log('[OfflineManager] Tauri: navigator.onLine is true, setting online');
+        logger.log('Tauri: navigator.onLine is true, setting online');
         this.updateOnlineStatus(true);
         return true;
       }
@@ -110,16 +113,16 @@ export class OfflineManager {
           cache: 'no-cache'
         });
         
-        console.log('[OfflineManager] Web: Connectivity check succeeded, setting online');
+        logger.log('Web: Connectivity check succeeded, setting online');
         this.updateOnlineStatus(true);
         return true;
       } catch (fetchError) {
-        console.warn('[OfflineManager] Web: Connectivity check failed:', fetchError);
+        logger.warn('Web: Connectivity check failed:', fetchError);
         this.updateOnlineStatus(false);
         return false;
       }
     } catch (error) {
-      console.warn('[OfflineManager] Connectivity check error:', error);
+      logger.warn('Connectivity check error:', error);
       // On error, trust navigator.onLine
       this.updateOnlineStatus(navigator.onLine);
       return navigator.onLine;
@@ -135,7 +138,7 @@ export class OfflineManager {
     operationName: string = 'operation'
   ): Promise<T> {
     if (!this.isOnline) {
-      console.warn(`[OfflineManager] ${operationName} attempted while offline (isOnline=${this.isOnline}, navigator.onLine=${navigator.onLine}), using fallback`);
+      logger.warn(`${operationName} attempted while offline (isOnline=${this.isOnline}, navigator.onLine=${navigator.onLine}), using fallback`);
       return Promise.resolve(offlineFallback());
     }
 
@@ -144,7 +147,7 @@ export class OfflineManager {
     } catch (error) {
       // Check if error is network-related
       if (this.isNetworkError(error)) {
-        console.warn(`[OfflineManager] ${operationName} failed due to network error, using fallback`);
+        logger.warn(`${operationName} failed due to network error, using fallback`);
         this.updateOnlineStatus(false);
         return Promise.resolve(offlineFallback());
       }
@@ -158,14 +161,14 @@ export class OfflineManager {
   queueForOnline(operation: () => Promise<void>, operationName: string): void {
     if (this.isOnline) {
       operation().catch(error => {
-        console.error(`Queued operation ${operationName} failed:`, error);
+        logger.error(`Queued operation ${operationName} failed:`, error);
       });
     } else {
       const executeWhenOnline = () => {
         if (this.isOnline) {
           this.removeListener(executeWhenOnline);
           operation().catch(error => {
-            console.error(`Queued operation ${operationName} failed:`, error);
+            logger.error(`Queued operation ${operationName} failed:`, error);
           });
         }
       };
@@ -253,7 +256,7 @@ export class OfflineManager {
       try {
         listener(state);
       } catch (error) {
-        console.error('Error in offline state listener:', error);
+        logger.error('Error in offline state listener:', error);
       }
     });
   }

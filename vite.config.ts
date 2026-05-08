@@ -40,7 +40,8 @@ export default defineConfig({
           // Prevent URL rewriting for OAuth callback
           if (req.url?.includes('dropbox-oauth-callback.html') ||
             req.url?.includes('google-oauth-callback.html') ||
-            req.url?.includes('box-oauth-callback.html')) {
+            req.url?.includes('box-oauth-callback.html') ||
+            req.url?.includes('onedrive-oauth-callback.html')) {
             // Don't let Vite rewrite these URLs
             return next();
           }
@@ -176,6 +177,10 @@ export default defineConfig({
     assetsDir: '.',
     emptyOutDir: true,
     rollupOptions: {
+      input: {
+        main: path.resolve(__dirname, 'index.html'),
+        'onedrive-oauth-callback': path.resolve(__dirname, 'onedrive-oauth-callback.html'),
+      },
       external: [
         'crypto',
         'http',

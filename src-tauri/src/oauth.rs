@@ -1,3 +1,4 @@
+use reqwest::Client;
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
 use std::sync::Mutex;
@@ -321,6 +322,94 @@ pub async fn oauth_get_config_status(
     Ok(HashMap::new())
 }
 
+/// Token exchange request from frontend
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct OAuthTokenExchangeRequest {
+    pub code: String,
+    pub redirect_uri: String,
+    pub code_verifier: String,
+    pub client_id: String,
+    pub token_url: String,
+    pub scope: Option<String>,
+    pub grant_type: Option<String>,
+    pub refresh_token: Option<String>,
+}
+
+/// Token exchange response sent back to frontend
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct OAuthTokenExchangeResponse {
+    pub access_token: Option<String>,
+    pub refresh_token: Option<String>,
+    pub expires_in: Option<u64>,
+    pub token_type: Option<String>,
+    pub scope: Option<String>,
+    pub error: Option<String>,
+    pub error_description: Option<String>,
+}
+
+/// Exchange an OAuth authorization code for tokens using a native HTTP request.
+/// This avoids the AADSTS90023 error that occurs when the token exchange is
+/// performed from a browser context (cross-origin fetch).
+#[tauri::command]
+pub async fn oauth_exchange_code(
+    request: OAuthTokenExchangeRequest,
+) -> Result<OAuthTokenExchangeResponse, String> {
+    let client = Client::new();
+
+    let grant_type = request.grant_type.as_deref().unwrap_or("authorization_code");
+
+    let mut params: Vec<(&str, String)> = vec![
+        ("grant_type", grant_type.to_string()),
+        ("client_id", request.client_id.clone()),
+    ];
+
+    if grant_type == "refresh_token" {
+        // Refresh token grant
+        if let Some(ref rt) = request.refresh_token {
+            if !rt.is_empty() {
+                params.push(("refresh_token", rt.clone()));
+            }
+        }
+    } else {
+        // Authorization code grant (default)
+        params.push(("code", request.code.clone()));
+        params.push(("redirect_uri", request.redirect_uri.clone()));
+        if !request.code_verifier.is_empty() {
+            params.push(("code_verifier", request.code_verifier.clone()));
+        }
+    }
+
+    if let Some(scope) = &request.scope {
+        if !scope.is_empty() {
+            params.push(("scope", scope.clone()));
+        }
+    }
+
+    let response = client
+        .post(&request.token_url)
+        .header("Content-Type", "application/x-www-form-urlencoded")
+        .header("Accept", "application/json")
+        .form(&params)
+        .send()
+        .await
+        .map_err(|e| format!("HTTP request failed: {}", e))?;
+
+    let body: serde_json::Value = response
+        .json()
+        .await
+        .map_err(|e| format!("Failed to parse token response: {}", e))?;
+
+    Ok(OAuthTokenExchangeResponse {
+        access_token: body["access_token"].as_str().map(String::from),
+        refresh_token: body["refresh_token"].as_str().map(String::from),
+        expires_in: body["expires_in"].as_u64(),
+        token_type: body["token_type"].as_str().map(String::from),
+        scope: body["scope"].as_str().map(String::from),
+        error: body["error"].as_str().map(String::from),
+        error_description: body["error_description"].as_str().map(String::from),
+    })
+}
+
 /// Start a local HTTP server for OAuth callback
 #[tauri::command]
 pub async fn oauth_start_server(
@@ -352,7 +441,11 @@ pub async fn oauth_start_server(
                         let query_str = &query[..end_idx];
                         for pair in query_str.split('&') {
                             if let Some((key, value)) = pair.split_once('=') {
-                                callback_params.insert(key.to_string(), value.to_string());
+                                // URL-decode the value (replace %XX sequences)
+                                let decoded_value = urlencoding::decode(value)
+                                    .unwrap_or_else(|_| std::borrow::Cow::Borrowed(value))
+                                    .into_owned();
+                                callback_params.insert(key.to_string(), decoded_value);
                             }
                         }
                     }
@@ -374,6 +467,6 @@ pub async fn oauth_start_server(
         }
     });
 
-    // Use 127.0.0.1 to match bind address and avoid ambiguity
-    Ok(format!("http://127.0.0.1:{}/callback", port))
+    // Use localhost for Microsoft OAuth compatibility (they reject 127.0.0.1)
+    Ok(format!("http://localhost:{}/callback", port))
 }

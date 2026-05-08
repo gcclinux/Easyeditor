@@ -15,6 +15,9 @@ import { getSharedOAuthManager } from '../../services/oauth/tauri/SharedOAuthMan
 import { DropboxOAuthProvider } from '../../services/oauth/providers/DropboxOAuthProvider';
 import { DROPBOX_CONFIG, isDropboxConfigured, getConfigurationErrorMessage } from '../config/dropbox-credentials';
 import LicenseManager from '../../premium/LicenseManager';
+import { createLogger } from '../../utils/logger';
+
+const logger = createLogger('OAuthDropboxProvider');
 
 interface DropboxFileMetadata {
   '.tag': 'file' | 'folder';
@@ -49,7 +52,7 @@ export class OAuthDropboxProvider implements CloudProvider {
     // Validate configuration on initialization
     if (!isDropboxConfigured()) {
       const errorMessage = getConfigurationErrorMessage();
-      console.warn('[OAuthDropboxProvider] Configuration warning:', errorMessage);
+      logger.warn('Configuration warning:', errorMessage);
     }
 
     // Get shared OAuth manager (reuses existing instance)
@@ -66,7 +69,7 @@ export class OAuthDropboxProvider implements CloudProvider {
     });
     this.oauthManager.registerProvider(this.dropboxProvider);
 
-    console.log('[OAuthDropboxProvider] Initialized with shared OAuth manager');
+    logger.log('Initialized with shared OAuth manager');
   }
 
   /**
@@ -74,11 +77,11 @@ export class OAuthDropboxProvider implements CloudProvider {
    * Requirements: 2.1, 3.1, 3.3
    */
   async authenticate(): Promise<AuthResult> {
-    console.log('[OAuthDropboxProvider] Starting OAuth authentication');
+    logger.log('Starting OAuth authentication');
 
     // Check for premium license first
     if (!LicenseManager.hasActiveLicense()) {
-      console.warn('[OAuthDropboxProvider] Premium license required for Dropbox integration');
+      logger.warn('Premium license required for Dropbox integration');
       return {
         success: false,
         error: 'Premium license required. Please upgrade to use Dropbox integration.'
@@ -87,7 +90,7 @@ export class OAuthDropboxProvider implements CloudProvider {
 
     if (!isDropboxConfigured()) {
       const errorMessage = getConfigurationErrorMessage();
-      console.error('[OAuthDropboxProvider] Cannot authenticate - not configured:', errorMessage);
+      logger.error('Cannot authenticate - not configured:', errorMessage);
       return {
         success: false,
         error: errorMessage
@@ -99,7 +102,7 @@ export class OAuthDropboxProvider implements CloudProvider {
       const oauthResult = await this.oauthManager.authenticate('dropbox');
 
       if (!oauthResult.success) {
-        console.error('[OAuthDropboxProvider] OAuth authentication failed:', oauthResult.errorDescription);
+        logger.error('OAuth authentication failed:', oauthResult.errorDescription);
         return {
           success: false,
           error: oauthResult.errorDescription || 'OAuth authentication failed'
@@ -107,14 +110,14 @@ export class OAuthDropboxProvider implements CloudProvider {
       }
 
       if (!oauthResult.tokens) {
-        console.error('[OAuthDropboxProvider] OAuth authentication succeeded but no tokens received');
+        logger.error('OAuth authentication succeeded but no tokens received');
         return {
           success: false,
           error: 'OAuth authentication succeeded but no tokens received'
         };
       }
 
-      console.log('[OAuthDropboxProvider] OAuth authentication completed successfully');
+      logger.log('OAuth authentication completed successfully');
 
       return {
         success: true,
@@ -123,7 +126,7 @@ export class OAuthDropboxProvider implements CloudProvider {
         expiresAt: oauthResult.tokens.expiresAt
       };
     } catch (error) {
-      console.error('[OAuthDropboxProvider] Authentication error:', error);
+      logger.error('Authentication error:', error);
       return {
         success: false,
         error: error instanceof Error ? error.message : 'Authentication failed'
@@ -137,15 +140,15 @@ export class OAuthDropboxProvider implements CloudProvider {
    */
   async isAuthenticated(): Promise<boolean> {
     try {
-      console.log('[OAuthDropboxProvider] Checking authentication status');
+      logger.log('Checking authentication status');
 
       // Use OAuth manager to check authentication
       const isAuth = await this.oauthManager.isAuthenticated('dropbox');
-      console.log('[OAuthDropboxProvider] Authentication status:', isAuth);
+      logger.log('Authentication status:', isAuth);
 
       return isAuth || false;
     } catch (error) {
-      console.error('[OAuthDropboxProvider] Error checking authentication:', error);
+      logger.error('Error checking authentication:', error);
       return false;
     }
   }
@@ -155,15 +158,15 @@ export class OAuthDropboxProvider implements CloudProvider {
    * Requirements: 2.1
    */
   async disconnect(): Promise<void> {
-    console.log('[OAuthDropboxProvider] Disconnecting from Dropbox');
+    logger.log('Disconnecting from Dropbox');
 
     try {
       // Use OAuth manager to logout
       await this.oauthManager.logout('dropbox');
 
-      console.log('[OAuthDropboxProvider] Successfully disconnected');
+      logger.log('Successfully disconnected');
     } catch (error) {
-      console.error('[OAuthDropboxProvider] Error during disconnect:', error);
+      logger.error('Error during disconnect:', error);
       throw error;
     }
   }
@@ -173,14 +176,14 @@ export class OAuthDropboxProvider implements CloudProvider {
    * Requirements: 4.1, 4.2, 4.3
    */
   async createApplicationFolder(): Promise<string> {
-    console.log('[OAuthDropboxProvider] Creating/finding application folder');
+    logger.log('Creating/finding application folder');
 
     try {
       // First, try to find existing folder
       const existingFolderId = await this.findApplicationFolder();
 
       if (existingFolderId) {
-        console.log('[OAuthDropboxProvider] Found existing application folder:', existingFolderId);
+        logger.log('Found existing application folder:', existingFolderId);
         return existingFolderId;
       }
 
@@ -194,17 +197,17 @@ export class OAuthDropboxProvider implements CloudProvider {
       });
 
       const folderId = response.metadata.path_display;
-      console.log('[OAuthDropboxProvider] Created application folder:', folderId);
+      logger.log('Created application folder:', folderId);
 
       return folderId;
     } catch (error: any) {
       // If folder already exists (409 conflict), that's okay
       if (error.status === 409 || error.statusCode === 409) {
-        console.log('[OAuthDropboxProvider] Folder already exists, using existing folder');
+        logger.log('Folder already exists, using existing folder');
         return `/${APPLICATION_FOLDER_NAME}`;
       }
 
-      console.error('[OAuthDropboxProvider] Error creating application folder:', error);
+      logger.error('Error creating application folder:', error);
       throw error;
     }
   }
@@ -214,7 +217,7 @@ export class OAuthDropboxProvider implements CloudProvider {
    * Requirements: 5.5
    */
   async listFiles(folderId: string): Promise<CloudFile[]> {
-    console.log('[OAuthDropboxProvider] Listing files in folder:', folderId);
+    logger.log('Listing files in folder:', folderId);
 
     try {
       const response: DropboxListFolderResponse = await this.makeApiCall(
@@ -234,10 +237,10 @@ export class OAuthDropboxProvider implements CloudProvider {
         .filter(entry => entry['.tag'] === 'file' && (entry.name.endsWith('.md') || entry.name.endsWith('.sstp')))
         .map(entry => this.mapDropboxFileToCloudFile(entry));
 
-      console.log('[OAuthDropboxProvider] Found', files.length, 'markdown files');
+      logger.log('Found', files.length, 'markdown files');
       return files;
     } catch (error) {
-      console.error('[OAuthDropboxProvider] Error listing files:', error);
+      logger.error('Error listing files:', error);
       throw error;
     }
   }
@@ -247,7 +250,7 @@ export class OAuthDropboxProvider implements CloudProvider {
    * Requirements: 5.2
    */
   async downloadFile(fileId: string): Promise<string | Uint8Array> {
-    console.log('[OAuthDropboxProvider] Downloading file:', fileId);
+    logger.log('Downloading file:', fileId);
 
     try {
       const accessToken = await this.getValidAccessToken();
@@ -273,22 +276,22 @@ export class OAuthDropboxProvider implements CloudProvider {
             isBinary = true;
           }
         } catch (e) {
-          console.warn('[OAuthDropboxProvider] Failed to parse Dropbox-API-Result header', e);
+          logger.warn('Failed to parse Dropbox-API-Result header', e);
         }
       }
 
       if (isBinary) {
         const buffer = await response.arrayBuffer();
         const content = new Uint8Array(buffer);
-        console.log('[OAuthDropboxProvider] Downloaded binary file successfully, size:', content.length);
+        logger.log('Downloaded binary file successfully, size:', content.length);
         return content;
       } else {
         const content = await response.text();
-        console.log('[OAuthDropboxProvider] Downloaded file successfully, size:', content.length);
+        logger.log('Downloaded file successfully, size:', content.length);
         return content;
       }
     } catch (error) {
-      console.error('[OAuthDropboxProvider] Error downloading file:', error);
+      logger.error('Error downloading file:', error);
       throw error;
     }
   }
@@ -298,7 +301,7 @@ export class OAuthDropboxProvider implements CloudProvider {
    * Requirements: 5.1
    */
   async uploadFile(folderId: string, fileName: string, content: string | Uint8Array): Promise<CloudFile> {
-    console.log('[OAuthDropboxProvider] Uploading file:', fileName, 'to folder:', folderId);
+    logger.log('Uploading file:', fileName, 'to folder:', folderId);
 
     try {
       const accessToken = await this.getValidAccessToken();
@@ -327,10 +330,10 @@ export class OAuthDropboxProvider implements CloudProvider {
       const metadata: DropboxFileMetadata = await response.json();
       const cloudFile = this.mapDropboxFileToCloudFile(metadata);
 
-      console.log('[OAuthDropboxProvider] Uploaded file successfully:', cloudFile.id);
+      logger.log('Uploaded file successfully:', cloudFile.id);
       return cloudFile;
     } catch (error) {
-      console.error('[OAuthDropboxProvider] Error uploading file:', error);
+      logger.error('Error uploading file:', error);
       throw error;
     }
   }
@@ -340,7 +343,7 @@ export class OAuthDropboxProvider implements CloudProvider {
    * Requirements: 5.3
    */
   async updateFile(fileId: string, content: string | Uint8Array): Promise<CloudFile> {
-    console.log('[OAuthDropboxProvider] Updating file:', fileId);
+    logger.log('Updating file:', fileId);
 
     try {
       const accessToken = await this.getValidAccessToken();
@@ -368,10 +371,10 @@ export class OAuthDropboxProvider implements CloudProvider {
       const metadata: DropboxFileMetadata = await response.json();
       const cloudFile = this.mapDropboxFileToCloudFile(metadata);
 
-      console.log('[OAuthDropboxProvider] Updated file successfully');
+      logger.log('Updated file successfully');
       return cloudFile;
     } catch (error) {
-      console.error('[OAuthDropboxProvider] Error updating file:', error);
+      logger.error('Error updating file:', error);
       throw error;
     }
   }
@@ -381,7 +384,7 @@ export class OAuthDropboxProvider implements CloudProvider {
    * Requirements: 5.4
    */
   async deleteFile(fileId: string): Promise<void> {
-    console.log('[OAuthDropboxProvider] Deleting file:', fileId);
+    logger.log('Deleting file:', fileId);
 
     try {
       await this.makeApiCall(`${DROPBOX_API_BASE}/files/delete_v2`, {
@@ -391,9 +394,9 @@ export class OAuthDropboxProvider implements CloudProvider {
         })
       });
 
-      console.log('[OAuthDropboxProvider] Deleted file successfully');
+      logger.log('Deleted file successfully');
     } catch (error) {
-      console.error('[OAuthDropboxProvider] Error deleting file:', error);
+      logger.error('Error deleting file:', error);
       throw error;
     }
   }
@@ -466,7 +469,7 @@ export class OAuthDropboxProvider implements CloudProvider {
       error.response = errorText;
 
       // Log detailed error information for debugging
-      console.error('[OAuthDropboxProvider] API error:', {
+      logger.error('API error:', {
         url,
         status: response.status,
         statusText: response.statusText,

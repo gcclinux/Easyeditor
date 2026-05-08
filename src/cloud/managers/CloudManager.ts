@@ -14,6 +14,9 @@ import { cloudToastService } from '../utils/CloudToastService';
 import { offlineManager } from '../utils/OfflineManager';
 import * as CryptoJS from 'crypto-js';
 import { FEATURES } from '../../config/features';
+import { createLogger } from '../../utils/logger';
+
+const logger = createLogger('CloudManager');
 
 export class CloudManager {
   private providers: Map<string, CloudProvider> = new Map();
@@ -29,7 +32,7 @@ export class CloudManager {
 
     // Only register providers if the feature is enabled
     if (!FEATURES.EASY_NOTES) {
-      console.log('[CloudManager] EASY_NOTES feature disabled, skipping provider registration');
+      logger.log('EASY_NOTES feature disabled, skipping provider registration');
       this.providersReady = Promise.resolve();
       return;
     }
@@ -45,7 +48,7 @@ export class CloudManager {
     try {
       // Register providers based on environment
       if (isTauriEnvironment()) {
-        console.log('[CloudManager] Detected Tauri environment, using OAuth providers');
+        logger.log('Detected Tauri environment, using OAuth providers');
         // Dynamically import OAuth providers to avoid loading OAuth system in web environment
         try {
           const { OAuthGoogleDriveProvider } = await import('../providers/OAuthGoogleDriveProvider');
@@ -54,25 +57,41 @@ export class CloudManager {
           this.registerProvider(new OAuthGoogleDriveProvider());
           this.registerProvider(new OAuthDropboxProvider());
           this.registerProvider(new OAuthBoxProvider());
-          console.log('[CloudManager] OAuth providers registered successfully');
+          logger.log('OAuth providers registered successfully');
         } catch (error) {
-          console.error('[CloudManager] Failed to load OAuth provider, falling back to Tauri provider:', error);
+          logger.error('Failed to load OAuth provider, falling back to Tauri provider:', error);
           const { TauriGoogleDriveProvider } = await import('../providers/TauriGoogleDriveProvider');
           this.registerProvider(new TauriGoogleDriveProvider());
-          console.log('[CloudManager] Tauri provider registered as fallback');
+          logger.log('Tauri provider registered as fallback');
+        }
+
+        try {
+          const { OAuthOneDriveProvider } = await import('../providers/OAuthOneDriveProvider');
+          this.registerProvider(new OAuthOneDriveProvider());
+          logger.log('OneDrive OAuth provider registered successfully');
+        } catch (error) {
+          logger.error('Failed to load OneDrive OAuth provider:', error);
         }
       } else {
-        console.log('[CloudManager] Detected web environment, using web providers');
+        logger.log('Detected web environment, using web providers');
         const { GISGoogleDriveProvider } = await import('../providers/GISGoogleDriveProvider');
         const { DropboxProvider } = await import('../providers/DropboxProvider');
         const { BoxProvider } = await import('../providers/BoxProvider');
         this.registerProvider(new GISGoogleDriveProvider());
         this.registerProvider(new DropboxProvider());
         this.registerProvider(new BoxProvider());
-        console.log('[CloudManager] Web providers registered successfully');
+        logger.log('Web providers registered successfully');
+
+        try {
+          const { MSALOneDriveProvider } = await import('../providers/MSALOneDriveProvider');
+          this.registerProvider(new MSALOneDriveProvider());
+          logger.log('OneDrive MSAL provider registered successfully');
+        } catch (error) {
+          logger.error('Failed to load OneDrive MSAL provider:', error);
+        }
       }
     } catch (error) {
-      console.error('[CloudManager] Failed to initialize providers:', error);
+      logger.error('Failed to initialize providers:', error);
       // Don't throw - allow the manager to work without providers
     }
   }
@@ -142,9 +161,9 @@ export class CloudManager {
         cloudToastService.updateProgress(operationId, 75, `Setting up application folder...`);
 
         // Create or find application folder
-        console.log('[CloudManager] Creating application folder...');
+        logger.log('Creating application folder...');
         const applicationFolderId = await provider.createApplicationFolder();
-        console.log('[CloudManager] Application folder ID:', applicationFolderId);
+        logger.log('Application folder ID:', applicationFolderId);
 
         // Update provider metadata
         const providerMetadata: ProviderMetadata = {
@@ -155,9 +174,9 @@ export class CloudManager {
           icon: provider.icon
         };
 
-        console.log('[CloudManager] Updating provider metadata:', providerMetadata);
+        logger.log('Updating provider metadata:', providerMetadata);
         await this.metadataManager.updateProviderMetadata(providerName, providerMetadata);
-        console.log('[CloudManager] Provider metadata updated successfully');
+        logger.log('Provider metadata updated successfully');
 
         cloudToastService.completeOperation(operationId, `Connected to ${provider.displayName}`, 'success');
         return true;
@@ -172,7 +191,7 @@ export class CloudManager {
       });
 
       cloudToastService.completeOperation(operationId, ErrorHandler.getUserFriendlyMessage(cloudError), 'error');
-      console.error(`Failed to connect to ${providerName}:`, cloudError);
+      logger.error(`Failed to connect to ${providerName}:`, cloudError);
       return false;
     }
   }
@@ -224,7 +243,7 @@ export class CloudManager {
       });
 
       cloudToastService.showError(cloudError);
-      console.error(`Failed to disconnect from ${providerName}:`, cloudError);
+      logger.error(`Failed to disconnect from ${providerName}:`, cloudError);
       throw cloudError;
     }
   }
@@ -324,7 +343,7 @@ export class CloudManager {
       });
 
       cloudToastService.completeOperation(operationId, ErrorHandler.getUserFriendlyMessage(cloudError), 'error');
-      console.error(`Failed to create note in ${providerName}:`, cloudError);
+      logger.error(`Failed to create note in ${providerName}:`, cloudError);
       throw cloudError;
     }
   }
@@ -384,7 +403,7 @@ export class CloudManager {
       cloudToastService.completeOperation(operationId, `Uploaded "${fileName}" successfully`, 'success');
       return noteMetadata;
     } catch (error) {
-      console.error('Upload failed:', error);
+      logger.error('Upload failed:', error);
       cloudToastService.completeOperation(operationId, `Upload failed: ${(error as Error).message}`, 'error');
       throw error;
     }
@@ -421,7 +440,7 @@ export class CloudManager {
         provider: providerName
       });
 
-      console.error('Failed to list notes:', cloudError);
+      logger.error('Failed to list notes:', cloudError);
       // Don't show toast for list failures as they're often called frequently
       throw cloudError;
     }
@@ -501,7 +520,7 @@ export class CloudManager {
       });
 
       cloudToastService.completeOperation(operationId, ErrorHandler.getUserFriendlyMessage(cloudError), 'error');
-      console.error(`Failed to open note ${noteId}:`, cloudError);
+      logger.error(`Failed to open note ${noteId}:`, cloudError);
       throw cloudError;
     }
   }
@@ -569,7 +588,7 @@ export class CloudManager {
         );
 
         // Update metadata with new information
-        console.log('[CloudManager] Updating metadata with new modifiedTime:', updatedCloudFile.modifiedTime);
+        logger.log('Updating metadata with new modifiedTime:', updatedCloudFile.modifiedTime);
         await this.metadataManager.updateNote(noteId, {
           lastModified: updatedCloudFile.modifiedTime,
           lastSynced: new Date(),
@@ -589,7 +608,7 @@ export class CloudManager {
       });
 
       cloudToastService.completeOperation(operationId, ErrorHandler.getUserFriendlyMessage(cloudError), 'error');
-      console.error(`Failed to save note ${noteId}:`, cloudError);
+      logger.error(`Failed to save note ${noteId}:`, cloudError);
       throw cloudError;
     }
   }
@@ -626,7 +645,7 @@ export class CloudManager {
       await this.metadataManager.removeNote(noteId);
 
     } catch (error) {
-      console.error(`Failed to delete note ${noteId}:`, error);
+      logger.error(`Failed to delete note ${noteId}:`, error);
       throw error;
     }
   }
@@ -682,7 +701,7 @@ export class CloudManager {
             }
 
             // PHASE 1: Discover new files from cloud storage
-            console.log(`[CloudManager] Discovering files from ${pName}...`);
+            logger.log(`Discovering files from ${pName}...`);
 
             let foundCloudFileIds: Set<string> | null = null;
 
@@ -690,7 +709,7 @@ export class CloudManager {
               try {
                 const cloudFiles = await provider.listFiles(providerMetadata.applicationFolderId);
                 foundCloudFileIds = new Set(cloudFiles.map(f => f.id));
-                console.log(`[CloudManager] Found ${cloudFiles.length} files in cloud storage`);
+                logger.log(`Found ${cloudFiles.length} files in cloud storage`);
 
                 // Get existing local notes for comparison
                 const existingNotes = await this.metadataManager.findNotesByProvider(pName);
@@ -698,7 +717,7 @@ export class CloudManager {
 
                 // Find new files that aren't in local metadata
                 const newFiles = cloudFiles.filter(file => !existingFileIds.has(file.id));
-                console.log(`[CloudManager] Found ${newFiles.length} new files to add to local metadata`);
+                logger.log(`Found ${newFiles.length} new files to add to local metadata`);
 
                 // Add new files to local metadata
                 for (const cloudFile of newFiles) {
@@ -719,35 +738,35 @@ export class CloudManager {
                     };
 
                     await this.metadataManager.addNote(noteMetadata);
-                    console.log(`[CloudManager] Added new note to metadata: ${title}`);
+                    logger.log(`Added new note to metadata: ${title}`);
                   } catch (error) {
-                    console.error(`[CloudManager] Failed to add new file ${cloudFile.name} to metadata:`, error);
+                    logger.error(`Failed to add new file ${cloudFile.name} to metadata:`, error);
                     errors.push(`Failed to add new file ${cloudFile.name}: ${(error as Error).message}`);
                   }
                 }
               } catch (error) {
-                console.error(`[CloudManager] Failed to discover files from ${pName}:`, error);
+                logger.error(`Failed to discover files from ${pName}:`, error);
                 errors.push(`Failed to discover files: ${(error as Error).message}`);
               }
             }
 
             // PHASE 2: Sync existing notes
             const notes = await this.metadataManager.findNotesByProvider(pName);
-            console.log(`[CloudManager] Syncing ${notes.length} notes for provider ${pName}`);
+            logger.log(`Syncing ${notes.length} notes for provider ${pName}`);
 
             for (const note of notes) {
               try {
                 // Check if file exists in cloud (if discovery was successful)
                 // This handles cases where files were deleted directly in Google Drive
                 if (foundCloudFileIds && !foundCloudFileIds.has(note.cloudFileId)) {
-                  console.log(`[CloudManager] Note ${note.title} (${note.cloudFileId}) no longer exists in cloud. Removing local metadata.`);
+                  logger.log(`Note ${note.title} (${note.cloudFileId}) no longer exists in cloud. Removing local metadata.`);
                   await this.metadataManager.removeNote(note.id);
                   // Consider this a processed file since we reconciled the state
                   filesProcessed++;
                   continue;
                 }
 
-                console.log(`[CloudManager] Syncing note: ${note.title} (${note.id})`);
+                logger.log(`Syncing note: ${note.title} (${note.id})`);
                 // Sync each note with individual error handling
                 const syncResult = await ErrorHandler.withRetry(
                   () => this.fileSynchronizer.syncNote(provider, note),
@@ -755,7 +774,7 @@ export class CloudManager {
                   { maxRetries: 2 }
                 );
 
-                console.log(`[CloudManager] Sync result for ${note.title}:`, syncResult);
+                logger.log(`Sync result for ${note.title}:`, syncResult);
 
                 if (syncResult.success) {
                   filesProcessed += syncResult.filesProcessed;
@@ -763,7 +782,7 @@ export class CloudManager {
                   errors.push(...syncResult.errors);
                 }
               } catch (error) {
-                console.error(`[CloudManager] Failed to sync note ${note.title}:`, error);
+                logger.error(`Failed to sync note ${note.title}:`, error);
                 const cloudError = ErrorHandler.enhanceError(error, {
                   operation: 'syncNote',
                   provider: pName,
@@ -844,7 +863,7 @@ export class CloudManager {
 
       return await provider.isAuthenticated();
     } catch (error) {
-      console.error(`Error checking provider connection for ${providerName}:`, error);
+      logger.error(`Error checking provider connection for ${providerName}:`, error);
       return false;
     }
   }

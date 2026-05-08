@@ -28,7 +28,7 @@ export class TauriCallbackServer {
      */
     async start(config?: Partial<CallbackServerConfig>): Promise<string> {
         if (this.isRunning) {
-            return `http://127.0.0.1:${this.config.port}/callback`;
+            return `http://localhost:${this.config.port}/callback`;
         }
 
         const startConfig = { ...this.config, ...config };

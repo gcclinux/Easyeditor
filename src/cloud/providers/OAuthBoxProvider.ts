@@ -15,6 +15,9 @@ import { getSharedOAuthManager } from '../../services/oauth/tauri/SharedOAuthMan
 import { BoxOAuthProvider } from '../../services/oauth/providers/BoxOAuthProvider';
 import { BOX_CONFIG, isBoxConfigured, getConfigurationErrorMessage } from '../config/box-credentials';
 import LicenseManager from '../../premium/LicenseManager';
+import { createLogger } from '../../utils/logger';
+
+const logger = createLogger('OAuthBoxProvider');
 
 interface BoxItemMetadata {
   type: 'file' | 'folder';
@@ -50,7 +53,7 @@ export class OAuthBoxProvider implements CloudProvider {
   constructor() {
     if (!isBoxConfigured()) {
       const errorMessage = getConfigurationErrorMessage();
-      console.warn('[OAuthBoxProvider] Configuration warning:', errorMessage);
+      logger.warn('Configuration warning:', errorMessage);
     }
 
     // Get shared OAuth manager (reuses existing instance)
@@ -67,18 +70,18 @@ export class OAuthBoxProvider implements CloudProvider {
     });
     this.oauthManager.registerProvider(this.boxProvider);
 
-    console.log('[OAuthBoxProvider] Initialized with shared OAuth manager');
+    logger.log('Initialized with shared OAuth manager');
   }
 
   /**
    * Authenticate with Box using OAuth manager
    */
   async authenticate(): Promise<AuthResult> {
-    console.log('[OAuthBoxProvider] Starting OAuth authentication');
+    logger.log('Starting OAuth authentication');
 
     // Check for premium license first
     if (!LicenseManager.hasActiveLicense()) {
-      console.warn('[OAuthBoxProvider] Premium license required for Box integration');
+      logger.warn('Premium license required for Box integration');
       return {
         success: false,
         error: 'Premium license required. Please upgrade to use Box integration.'
@@ -87,7 +90,7 @@ export class OAuthBoxProvider implements CloudProvider {
 
     if (!isBoxConfigured()) {
       const errorMessage = getConfigurationErrorMessage();
-      console.error('[OAuthBoxProvider] Cannot authenticate - not configured:', errorMessage);
+      logger.error('Cannot authenticate - not configured:', errorMessage);
       return {
         success: false,
         error: errorMessage
@@ -99,7 +102,7 @@ export class OAuthBoxProvider implements CloudProvider {
       const oauthResult = await this.oauthManager.authenticate('box');
 
       if (!oauthResult.success) {
-        console.error('[OAuthBoxProvider] OAuth authentication failed:', oauthResult.errorDescription);
+        logger.error('OAuth authentication failed:', oauthResult.errorDescription);
         return {
           success: false,
           error: oauthResult.errorDescription || 'OAuth authentication failed'
@@ -107,14 +110,14 @@ export class OAuthBoxProvider implements CloudProvider {
       }
 
       if (!oauthResult.tokens) {
-        console.error('[OAuthBoxProvider] OAuth authentication succeeded but no tokens received');
+        logger.error('OAuth authentication succeeded but no tokens received');
         return {
           success: false,
           error: 'OAuth authentication succeeded but no tokens received'
         };
       }
 
-      console.log('[OAuthBoxProvider] OAuth authentication completed successfully');
+      logger.log('OAuth authentication completed successfully');
 
       return {
         success: true,
@@ -123,7 +126,7 @@ export class OAuthBoxProvider implements CloudProvider {
         expiresAt: oauthResult.tokens.expiresAt
       };
     } catch (error) {
-      console.error('[OAuthBoxProvider] Authentication error:', error);
+      logger.error('Authentication error:', error);
       return {
         success: false,
         error: error instanceof Error ? error.message : 'Authentication failed'
@@ -136,14 +139,14 @@ export class OAuthBoxProvider implements CloudProvider {
    */
   async isAuthenticated(): Promise<boolean> {
     try {
-      console.log('[OAuthBoxProvider] Checking authentication status');
+      logger.log('Checking authentication status');
 
       const isAuth = await this.oauthManager.isAuthenticated('box');
-      console.log('[OAuthBoxProvider] Authentication status:', isAuth);
+      logger.log('Authentication status:', isAuth);
 
       return isAuth || false;
     } catch (error) {
-      console.error('[OAuthBoxProvider] Error checking authentication:', error);
+      logger.error('Error checking authentication:', error);
       return false;
     }
   }
@@ -152,7 +155,7 @@ export class OAuthBoxProvider implements CloudProvider {
    * Disconnect from Box using OAuth manager
    */
   async disconnect(): Promise<void> {
-    console.log('[OAuthBoxProvider] Disconnecting from Box');
+    logger.log('Disconnecting from Box');
 
     try {
       // Use OAuth manager to logout
@@ -161,9 +164,9 @@ export class OAuthBoxProvider implements CloudProvider {
       // Reset internal state
       this.applicationFolderId = null;
 
-      console.log('[OAuthBoxProvider] Successfully disconnected');
+      logger.log('Successfully disconnected');
     } catch (error) {
-      console.error('[OAuthBoxProvider] Error during disconnect:', error);
+      logger.error('Error during disconnect:', error);
       // Always reset local state even if logout fails
       this.applicationFolderId = null;
       throw error;
@@ -174,7 +177,7 @@ export class OAuthBoxProvider implements CloudProvider {
    * Create or find the application folder in Box
    */
   async createApplicationFolder(): Promise<string> {
-    console.log('[OAuthBoxProvider] Creating/finding application folder');
+    logger.log('Creating/finding application folder');
 
     // Return cached folder ID if available
     if (this.applicationFolderId) {
@@ -186,7 +189,7 @@ export class OAuthBoxProvider implements CloudProvider {
       const existingFolderId = await this.findApplicationFolder();
 
       if (existingFolderId) {
-        console.log('[OAuthBoxProvider] Found existing application folder:', existingFolderId);
+        logger.log('Found existing application folder:', existingFolderId);
         this.applicationFolderId = existingFolderId;
         return existingFolderId;
       }
@@ -210,7 +213,7 @@ export class OAuthBoxProvider implements CloudProvider {
         const errorText = await response.text();
         if (response.status === 409) {
           // Folder already exists (conflict), try to find it again
-          console.log('[OAuthBoxProvider] Folder already exists, searching again');
+          logger.log('Folder already exists, searching again');
           const folderId = await this.findApplicationFolder();
           if (folderId) {
             this.applicationFolderId = folderId;
@@ -222,11 +225,11 @@ export class OAuthBoxProvider implements CloudProvider {
 
       const data = await response.json();
       this.applicationFolderId = data.id;
-      console.log('[OAuthBoxProvider] Created application folder:', this.applicationFolderId);
+      logger.log('Created application folder:', this.applicationFolderId);
 
       return this.applicationFolderId!;
     } catch (error) {
-      console.error('[OAuthBoxProvider] Error creating application folder:', error);
+      logger.error('Error creating application folder:', error);
       throw error;
     }
   }
@@ -235,7 +238,7 @@ export class OAuthBoxProvider implements CloudProvider {
    * List files in a Box folder
    */
   async listFiles(folderId: string): Promise<CloudFile[]> {
-    console.log('[OAuthBoxProvider] Listing files in folder:', folderId);
+    logger.log('Listing files in folder:', folderId);
 
     try {
       const response = await this.makeApiCall(
@@ -249,10 +252,10 @@ export class OAuthBoxProvider implements CloudProvider {
         .filter(entry => entry.type === 'file')
         .map(entry => this.mapBoxFileToCloudFile(entry));
 
-      console.log('[OAuthBoxProvider] Found', files.length, 'files');
+      logger.log('Found', files.length, 'files');
       return files;
     } catch (error) {
-      console.error('[OAuthBoxProvider] Error listing files:', error);
+      logger.error('Error listing files:', error);
       throw error;
     }
   }
@@ -261,7 +264,7 @@ export class OAuthBoxProvider implements CloudProvider {
    * Download file content from Box
    */
   async downloadFile(fileId: string): Promise<string | Uint8Array> {
-    console.log('[OAuthBoxProvider] Downloading file:', fileId);
+    logger.log('Downloading file:', fileId);
 
     try {
       const accessToken = await this.getValidAccessToken();
@@ -299,15 +302,15 @@ export class OAuthBoxProvider implements CloudProvider {
       if (isBinary) {
         const buffer = await response.arrayBuffer();
         const content = new Uint8Array(buffer);
-        console.log('[OAuthBoxProvider] Downloaded binary file successfully, size:', content.length);
+        logger.log('Downloaded binary file successfully, size:', content.length);
         return content;
       }
 
       const content = await response.text();
-      console.log('[OAuthBoxProvider] Downloaded file successfully, size:', content.length);
+      logger.log('Downloaded file successfully, size:', content.length);
       return content;
     } catch (error) {
-      console.error('[OAuthBoxProvider] Error downloading file:', error);
+      logger.error('Error downloading file:', error);
       throw error;
     }
   }
@@ -316,7 +319,7 @@ export class OAuthBoxProvider implements CloudProvider {
    * Upload a new file to Box
    */
   async uploadFile(folderId: string, fileName: string, content: string | Uint8Array): Promise<CloudFile> {
-    console.log('[OAuthBoxProvider] Uploading file:', fileName, 'to folder:', folderId);
+    logger.log('Uploading file:', fileName, 'to folder:', folderId);
 
     try {
       const accessToken = await this.getValidAccessToken();
@@ -350,7 +353,7 @@ export class OAuthBoxProvider implements CloudProvider {
           const errorData = await response.json();
           const conflictFileId = errorData?.context_info?.conflicts?.id;
           if (conflictFileId) {
-            console.log('[OAuthBoxProvider] File already exists, updating existing file:', conflictFileId);
+            logger.log('File already exists, updating existing file:', conflictFileId);
             return await this.updateFile(conflictFileId, content);
           }
         }
@@ -362,10 +365,10 @@ export class OAuthBoxProvider implements CloudProvider {
       const uploadedFile = data.entries[0];
       const cloudFile = this.mapBoxFileToCloudFile(uploadedFile);
 
-      console.log('[OAuthBoxProvider] Uploaded file successfully:', cloudFile.id);
+      logger.log('Uploaded file successfully:', cloudFile.id);
       return cloudFile;
     } catch (error) {
-      console.error('[OAuthBoxProvider] Error uploading file:', error);
+      logger.error('Error uploading file:', error);
       throw error;
     }
   }
@@ -374,7 +377,7 @@ export class OAuthBoxProvider implements CloudProvider {
    * Update an existing file in Box (upload new version)
    */
   async updateFile(fileId: string, content: string | Uint8Array): Promise<CloudFile> {
-    console.log('[OAuthBoxProvider] Updating file:', fileId);
+    logger.log('Updating file:', fileId);
 
     try {
       const accessToken = await this.getValidAccessToken();
@@ -404,10 +407,10 @@ export class OAuthBoxProvider implements CloudProvider {
       const updatedFile = data.entries[0];
       const cloudFile = this.mapBoxFileToCloudFile(updatedFile);
 
-      console.log('[OAuthBoxProvider] Updated file successfully');
+      logger.log('Updated file successfully');
       return cloudFile;
     } catch (error) {
-      console.error('[OAuthBoxProvider] Error updating file:', error);
+      logger.error('Error updating file:', error);
       throw error;
     }
   }
@@ -416,7 +419,7 @@ export class OAuthBoxProvider implements CloudProvider {
    * Delete a file from Box
    */
   async deleteFile(fileId: string): Promise<void> {
-    console.log('[OAuthBoxProvider] Deleting file:', fileId);
+    logger.log('Deleting file:', fileId);
 
     try {
       const accessToken = await this.getValidAccessToken();
@@ -433,9 +436,9 @@ export class OAuthBoxProvider implements CloudProvider {
         throw new Error(`Delete failed: ${response.status} ${errorText}`);
       }
 
-      console.log('[OAuthBoxProvider] Deleted file successfully');
+      logger.log('Deleted file successfully');
     } catch (error) {
-      console.error('[OAuthBoxProvider] Error deleting file:', error);
+      logger.error('Error deleting file:', error);
       throw error;
     }
   }
@@ -475,7 +478,7 @@ export class OAuthBoxProvider implements CloudProvider {
 
       return folder ? folder.id : null;
     } catch (error) {
-      console.error('[OAuthBoxProvider] Error finding application folder:', error);
+      logger.error('Error finding application folder:', error);
       return null;
     }
   }
@@ -508,7 +511,7 @@ export class OAuthBoxProvider implements CloudProvider {
       error.statusCode = response.status;
       error.response = errorText;
 
-      console.error('[OAuthBoxProvider] API error:', {
+      logger.error('API error:', {
         url,
         status: response.status,
         statusText: response.statusText,

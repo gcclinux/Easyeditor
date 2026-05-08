@@ -10,6 +10,9 @@ import type { NoteMetadata, ProviderMetadata } from '../cloud/interfaces';
 import LicenseManager from '../premium/LicenseManager';
 import { isTauriEnvironment } from '../utils/environment';
 import { useLanguage } from '../i18n/LanguageContext';
+import { createLogger } from '../utils/logger';
+
+const logger = createLogger('EasyNotesSidebar');
 
 interface EasyNotesSidebarProps {
   showEasyNotesSidebar: boolean;
@@ -83,7 +86,7 @@ const EasyNotesSidebar: React.FC<EasyNotesSidebarProps> = ({
     // Listen for offline state changes (for future UI updates)
     const handleOfflineStateChange = (state: any) => {
       // Could be used to show offline indicator in UI
-      console.log('Offline state changed:', state.isOnline);
+      logger.log('Offline state changed:', state.isOnline);
     };
 
     offlineManager.addListener(handleOfflineStateChange);
@@ -105,7 +108,7 @@ const EasyNotesSidebar: React.FC<EasyNotesSidebarProps> = ({
       // Re-check license state when sidebar opens (in case it changed while
       // the sidebar was hidden, e.g. user activated license in LicenseModal)
       const currentLicenseState = LicenseManager.hasActiveLicense();
-      console.log('[EasyNotesSidebar] Sidebar opened, license active:', currentLicenseState);
+      logger.log('Sidebar opened, license active:', currentLicenseState);
       setHasLicense(currentLicenseState);
 
       checkPostRedirectAuth();
@@ -116,26 +119,26 @@ const EasyNotesSidebar: React.FC<EasyNotesSidebarProps> = ({
   // Refresh notes when refreshTrigger changes (e.g., after a note is saved)
   useEffect(() => {
     if (showEasyNotesSidebar && refreshTrigger && refreshTrigger > 0) {
-      console.log('[EasyNotesSidebar] Refreshing notes due to external change, trigger:', refreshTrigger);
+      logger.log('Refreshing notes due to external change, trigger:', refreshTrigger);
       loadNotesAndProviders();
     }
   }, [refreshTrigger, showEasyNotesSidebar]);
 
   const checkPostRedirectAuth = async () => {
     if (!cloudManager) {
-      console.warn('[EasyNotesSidebar] CloudManager not available - feature disabled');
+      logger.warn('CloudManager not available - feature disabled');
       return;
     }
 
     try {
-      console.log('[EasyNotesSidebar] Checking if user is authenticated after redirect...');
+      logger.log('Checking if user is authenticated after redirect...');
 
       // Check if we have OAuth tokens in the URL (from redirect)
       const urlHash = window.location.hash;
       const hasOAuthTokens = urlHash.includes('id_token=') || urlHash.includes('access_token=');
 
       if (hasOAuthTokens) {
-        console.log('[EasyNotesSidebar] OAuth tokens found in URL, processing redirect...');
+        logger.log('OAuth tokens found in URL, processing redirect...');
 
         // Clear the URL hash to clean up FIRST to prevent loops
         window.history.replaceState(null, '', window.location.pathname);
@@ -145,7 +148,7 @@ const EasyNotesSidebar: React.FC<EasyNotesSidebarProps> = ({
 
         // Don't try to connect again - the redirect flow should have handled the authentication
         // Just reload the provider metadata to check if we're now connected
-        console.log('[EasyNotesSidebar] Reloading provider metadata after OAuth redirect...');
+        logger.log('Reloading provider metadata after OAuth redirect...');
         await loadNotesAndProviders();
         return;
       }
@@ -155,34 +158,34 @@ const EasyNotesSidebar: React.FC<EasyNotesSidebarProps> = ({
       const googleProvider = availableProviders.find(p => p.name === 'googledrive');
       if (googleProvider) {
         const isAuth = await googleProvider.isAuthenticated();
-        console.log('[EasyNotesSidebar] Google Drive authenticated:', isAuth);
+        logger.log('Google Drive authenticated:', isAuth);
 
         if (isAuth) {
-          console.log('[EasyNotesSidebar] User is authenticated, checking connection status...');
+          logger.log('User is authenticated, checking connection status...');
           // If authenticated but not connected, complete the connection
           const isConnected = await cloudManager.isProviderConnected('googledrive');
-          console.log('[EasyNotesSidebar] Google Drive connected:', isConnected);
+          logger.log('Google Drive connected:', isConnected);
 
           if (!isConnected) {
-            console.log('[EasyNotesSidebar] Authenticated but not connected, completing setup...');
+            logger.log('Authenticated but not connected, completing setup...');
             try {
               await cloudManager.connectProvider('googledrive');
-              console.log('[EasyNotesSidebar] Connection completed successfully');
+              logger.log('Connection completed successfully');
               showToast('Connected to Google Drive', 'success');
             } catch (error) {
-              console.error('[EasyNotesSidebar] Failed to complete connection:', error);
+              logger.error('Failed to complete connection:', error);
             }
           }
         }
       }
     } catch (error) {
-      console.error('[EasyNotesSidebar] Error checking post-redirect auth:', error);
+      logger.error('Error checking post-redirect auth:', error);
     }
   };
 
   const loadNotesAndProviders = async () => {
     if (!cloudManager) {
-      console.warn('[EasyNotesSidebar] CloudManager not available - feature disabled');
+      logger.warn('CloudManager not available - feature disabled');
       return;
     }
 
@@ -190,7 +193,7 @@ const EasyNotesSidebar: React.FC<EasyNotesSidebarProps> = ({
     try {
       // Load notes
       const notesList = await cloudManager.listNotes();
-      console.log('[EasyNotesSidebar] Loaded notes with timestamps:', notesList.map(n => ({ id: n.id, title: n.title, lastModified: n.lastModified })));
+      logger.log('Loaded notes with timestamps:', notesList.map(n => ({ id: n.id, title: n.title, lastModified: n.lastModified })));
       setNotes(notesList);
 
       // Load provider metadata
@@ -199,7 +202,7 @@ const EasyNotesSidebar: React.FC<EasyNotesSidebarProps> = ({
 
       for (const provider of availableProviders) {
         const metadata = await cloudManager.getProviderMetadata(provider.name);
-        console.log(`[EasyNotesSidebar] Provider ${provider.name} metadata:`, metadata);
+        logger.log(`Provider ${provider.name} metadata:`, metadata);
 
         if (metadata) {
           // Always use the live provider icon to reflect any updates
@@ -214,10 +217,10 @@ const EasyNotesSidebar: React.FC<EasyNotesSidebarProps> = ({
         }
       }
 
-      console.log('[EasyNotesSidebar] Final provider metadata:', providerMetadata);
+      logger.log('Final provider metadata:', providerMetadata);
       setProviders(providerMetadata);
     } catch (error) {
-      console.error('Failed to load notes and providers:', error);
+      logger.error('Failed to load notes and providers:', error);
       showToast('Failed to load notes', 'error');
     } finally {
       setLoading(false);
@@ -226,12 +229,12 @@ const EasyNotesSidebar: React.FC<EasyNotesSidebarProps> = ({
 
   const handleConnectProvider = async (providerName: string) => {
     if (!cloudManager) {
-      console.warn('[EasyNotesSidebar] CloudManager not available - feature disabled');
+      logger.warn('CloudManager not available - feature disabled');
       showToast('Cloud features are disabled', 'error');
       return;
     }
 
-    console.log('[EasyNotesSidebar] Connect button clicked for provider:', providerName);
+    logger.log('Connect button clicked for provider:', providerName);
 
     // Set specific loading state for this provider
     setOperationStates(prev => ({
@@ -240,22 +243,22 @@ const EasyNotesSidebar: React.FC<EasyNotesSidebarProps> = ({
       authenticating: { ...prev.authenticating, [providerName]: true }
     }));
 
-    console.log('[EasyNotesSidebar] Starting connection process...');
+    logger.log('Starting connection process...');
 
     try {
       const success = await cloudManager.connectProvider(providerName);
-      console.log('[EasyNotesSidebar] Connect result:', success);
+      logger.log('Connect result:', success);
 
       if (success) {
         showToast(`Connected to ${providers[providerName]?.displayName || providerName}`, 'success');
-        console.log('[EasyNotesSidebar] Reloading notes and providers...');
+        logger.log('Reloading notes and providers...');
         await loadNotesAndProviders();
-        console.log('[EasyNotesSidebar] Reload complete, providers:', providers);
+        logger.log('Reload complete, providers:', providers);
       } else {
         showToast(`Failed to connect to ${providers[providerName]?.displayName || providerName}`, 'error');
       }
     } catch (error) {
-      console.error(`Failed to connect to ${providerName}:`, error);
+      logger.error(`Failed to connect to ${providerName}:`, error);
       const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred';
 
       // Show user-friendly error message
@@ -276,8 +279,15 @@ const EasyNotesSidebar: React.FC<EasyNotesSidebarProps> = ({
 
   const handleDisconnectProvider = async (providerName: string) => {
     if (!cloudManager) {
-      console.warn('[EasyNotesSidebar] CloudManager not available - feature disabled');
+      logger.warn('CloudManager not available - feature disabled');
       showToast('Cloud features are disabled', 'error');
+      return;
+    }
+
+    // Check if provider is actually connected before attempting disconnect (Requirement 11.5)
+    const providerMetadata = providers[providerName];
+    if (!providerMetadata || !providerMetadata.connected) {
+      showToast(`${providerMetadata?.displayName || providerName} is not connected`, 'error');
       return;
     }
 
@@ -292,7 +302,7 @@ const EasyNotesSidebar: React.FC<EasyNotesSidebarProps> = ({
       showToast(`Disconnected from ${providers[providerName]?.displayName || providerName}`, 'success');
       await loadNotesAndProviders();
     } catch (error) {
-      console.error(`Failed to disconnect from ${providerName}:`, error);
+      logger.error(`Failed to disconnect from ${providerName}:`, error);
       showToast(`Error disconnecting from ${providers[providerName]?.displayName || providerName}`, 'error');
     } finally {
       // Clear disconnection loading state
@@ -305,7 +315,7 @@ const EasyNotesSidebar: React.FC<EasyNotesSidebarProps> = ({
 
   const handleCreateNote = async () => {
     if (!cloudManager) {
-      console.warn('[EasyNotesSidebar] CloudManager not available - feature disabled');
+      logger.warn('CloudManager not available - feature disabled');
       showToast('Cloud features are disabled', 'error');
       return;
     }
@@ -333,7 +343,7 @@ const EasyNotesSidebar: React.FC<EasyNotesSidebarProps> = ({
       setShowNewNoteDialog(false);
       await loadNotesAndProviders();
     } catch (error) {
-      console.error('Failed to create note:', error);
+      logger.error('Failed to create note:', error);
       showToast('Failed to create note', 'error');
     } finally {
       // Clear note creation loading state
@@ -346,7 +356,7 @@ const EasyNotesSidebar: React.FC<EasyNotesSidebarProps> = ({
 
   const handleOpenNote = async (note: NoteMetadata) => {
     if (!cloudManager) {
-      console.warn('[EasyNotesSidebar] CloudManager not available - feature disabled');
+      logger.warn('CloudManager not available - feature disabled');
       showToast('Cloud features are disabled', 'error');
       return;
     }
@@ -366,7 +376,7 @@ const EasyNotesSidebar: React.FC<EasyNotesSidebarProps> = ({
       // Close sidebar after successful load
       setShowEasyNotesSidebar(false);
     } catch (error) {
-      console.error('Failed to open note:', error);
+      logger.error('Failed to open note:', error);
       showToast('Failed to open note', 'error');
     } finally {
       // Clear note opening loading state
@@ -379,7 +389,7 @@ const EasyNotesSidebar: React.FC<EasyNotesSidebarProps> = ({
 
   const handleSyncNotes = async () => {
     if (!cloudManager) {
-      console.warn('[EasyNotesSidebar] CloudManager not available - feature disabled');
+      logger.warn('CloudManager not available - feature disabled');
       showToast('Cloud features are disabled', 'error');
       return;
     }
@@ -394,7 +404,7 @@ const EasyNotesSidebar: React.FC<EasyNotesSidebarProps> = ({
       }
       await loadNotesAndProviders();
     } catch (error) {
-      console.error('Failed to sync notes:', error);
+      logger.error('Failed to sync notes:', error);
       showToast('Failed to sync notes', 'error');
     } finally {
       setSyncing(false);
@@ -414,7 +424,7 @@ const EasyNotesSidebar: React.FC<EasyNotesSidebarProps> = ({
 
   const confirmDeleteNote = async () => {
     if (!cloudManager) {
-      console.warn('[EasyNotesSidebar] CloudManager not available - feature disabled');
+      logger.warn('CloudManager not available - feature disabled');
       showToast('Cloud features are disabled', 'error');
       return;
     }
@@ -442,7 +452,7 @@ const EasyNotesSidebar: React.FC<EasyNotesSidebarProps> = ({
 
       await loadNotesAndProviders();
     } catch (error) {
-      console.error('Failed to delete note:', error);
+      logger.error('Failed to delete note:', error);
       showToast('Failed to delete note', 'error');
     } finally {
       // Clear note deletion loading state
@@ -487,7 +497,7 @@ const EasyNotesSidebar: React.FC<EasyNotesSidebarProps> = ({
         const { open } = await import('@tauri-apps/plugin-shell');
         await open(url);
       } catch (err) {
-        console.error('Failed to open URL', err);
+        logger.error('Failed to open URL', err);
         showToast('Failed to open browser', 'error');
       }
     } else {

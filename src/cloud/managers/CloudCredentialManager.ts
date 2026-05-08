@@ -4,6 +4,9 @@ import { GOOGLE_DRIVE_CONFIG } from '../config/google-credentials';
 
 // Check if we're in Tauri environment
 import { isTauriEnvironment } from '../../utils/environment';
+import { createLogger } from '../../utils/logger';
+
+const logger = createLogger('CloudCredentialManager');
 
 interface StoredCloudCredentials {
   encrypted: string; // Base64 encoded encrypted data
@@ -40,7 +43,7 @@ export class CloudCredentialManager {
         this.oauthManager.registerProvider(googleProvider);
       }
     } catch (error) {
-      console.warn('[CloudCredentialManager] OAuth initialization failed, OAuth features disabled:', error);
+      logger.warn('OAuth initialization failed, OAuth features disabled:', error);
     }
   }
 
@@ -95,7 +98,7 @@ export class CloudCredentialManager {
    * Now saves to OAuth system as primary with legacy fallback
    */
   async saveCredentials(credentials: CloudCredentials): Promise<void> {
-    console.log('[CloudCredentialManager] Saving credentials for provider:', credentials.provider, 'userId:', credentials.userId);
+    logger.log('Saving credentials for provider:', credentials.provider, 'userId:', credentials.userId);
 
     try {
       // Try to save to OAuth system first (only if available in Tauri environment)
@@ -115,21 +118,21 @@ export class CloudCredentialManager {
             const tokenStorage = (this.oauthManager as any).tokenStorage;
             if (tokenStorage) {
               await tokenStorage.storeTokens(oauthProvider, oauthTokens);
-              console.log('[CloudCredentialManager] Successfully saved credentials to OAuth system');
+              logger.log('Successfully saved credentials to OAuth system');
               return;
             }
           } catch (oauthError) {
-            console.warn('[CloudCredentialManager] Failed to save to OAuth system:', oauthError);
+            logger.warn('Failed to save to OAuth system:', oauthError);
           }
         }
       }
 
       // Fallback to legacy storage
-      console.log('[CloudCredentialManager] Using legacy credential storage');
+      logger.log('Using legacy credential storage');
       await this.saveLegacyCredentials(credentials);
 
     } catch (error) {
-      console.error('[CloudCredentialManager] Error saving to OAuth system, falling back to legacy:', error);
+      logger.error('Error saving to OAuth system, falling back to legacy:', error);
       // Fallback to legacy storage
       await this.saveLegacyCredentials(credentials);
     }
@@ -141,14 +144,14 @@ export class CloudCredentialManager {
   private async saveLegacyCredentials(credentials: CloudCredentials): Promise<void> {
     // Temporarily disable master password requirement for development
     if (!this.masterKey) {
-      console.warn('[CloudCredentialManager] Master password disabled for development - credentials stored in plain text');
+      logger.warn('Master password disabled for development - credentials stored in plain text');
       this.masterKey = 'temp-dev-key'; // Use a temporary key for encryption/decryption
     }
 
     try {
       // Get existing credentials
       const existingCredentials = await this.getAllStoredCredentials();
-      console.log('[CloudCredentialManager] Existing legacy credentials count:', existingCredentials.length);
+      logger.log('Existing legacy credentials count:', existingCredentials.length);
 
       // Serialize credentials to JSON
       const jsonString = JSON.stringify({
@@ -178,16 +181,16 @@ export class CloudCredentialManager {
       );
       updatedCredentials.push(stored);
 
-      console.log('[CloudCredentialManager] Saving to localStorage, total credentials:', updatedCredentials.length);
+      logger.log('Saving to localStorage, total credentials:', updatedCredentials.length);
       localStorage.setItem(CLOUD_STORAGE_KEY, JSON.stringify(updatedCredentials));
-      console.log('[CloudCredentialManager] Successfully saved legacy credentials to localStorage');
+      logger.log('Successfully saved legacy credentials to localStorage');
 
       // Verify the save worked
       const verification = localStorage.getItem(CLOUD_STORAGE_KEY);
-      console.log('[CloudCredentialManager] Verification - localStorage contains:', !!verification);
+      logger.log('Verification - localStorage contains:', !!verification);
 
     } catch (error) {
-      console.error('[CloudCredentialManager] Failed to save legacy credentials:', error);
+      logger.error('Failed to save legacy credentials:', error);
       throw new Error(`Failed to save credentials: ${(error as Error).message}`);
     }
   }
@@ -205,7 +208,7 @@ export class CloudCredentialManager {
           try {
             const authState = await this.oauthManager.getAuthenticationState(oauthProvider);
             if (authState?.isAuthenticated && authState.tokens) {
-              console.log('[CloudCredentialManager] Retrieved credentials from OAuth system for provider:', provider);
+              logger.log('Retrieved credentials from OAuth system for provider:', provider);
               return {
                 provider,
                 accessToken: authState.tokens.accessToken,
@@ -216,17 +219,17 @@ export class CloudCredentialManager {
               };
             }
           } catch (oauthError) {
-            console.warn('[CloudCredentialManager] OAuth credential retrieval failed:', oauthError);
+            logger.warn('OAuth credential retrieval failed:', oauthError);
           }
         }
       }
 
       // Fallback to legacy credential storage
-      console.log('[CloudCredentialManager] No OAuth credentials found, checking legacy storage for provider:', provider);
+      logger.log('No OAuth credentials found, checking legacy storage for provider:', provider);
       return await this.getLegacyCredentials(provider, userId);
 
     } catch (error) {
-      console.error('[CloudCredentialManager] Error retrieving credentials:', error);
+      logger.error('Error retrieving credentials:', error);
       // Fallback to legacy system on errors
       return await this.getLegacyCredentials(provider, userId);
     }
@@ -239,14 +242,14 @@ export class CloudCredentialManager {
     // Temporarily disable master password requirement for development
     // TODO: Re-enable master password protection later
     if (!this.masterKey) {
-      console.warn('[CloudCredentialManager] Master password disabled for development - credentials stored in plain text');
+      logger.warn('Master password disabled for development - credentials stored in plain text');
       this.masterKey = 'temp-dev-key'; // Use a temporary key for encryption/decryption
     }
 
     try {
       const storedCredentials = await this.getAllStoredCredentials();
-      console.log('[CloudCredentialManager] Looking for legacy credentials for provider:', provider, 'userId:', userId);
-      console.log('[CloudCredentialManager] Available legacy credentials:', storedCredentials.map(c => ({ provider: c.provider, userId: c.userId, hasToken: !!c.encrypted })));
+      logger.log('Looking for legacy credentials for provider:', provider, 'userId:', userId);
+      logger.log('Available legacy credentials:', storedCredentials.map(c => ({ provider: c.provider, userId: c.userId, hasToken: !!c.encrypted })));
 
       // Find credentials for the specified provider and user
       // If no userId is specified, find the first matching provider
@@ -255,7 +258,7 @@ export class CloudCredentialManager {
         (userId === undefined || cred.userId === userId)
       );
 
-      console.log('[CloudCredentialManager] Found stored legacy credentials:', !!stored);
+      logger.log('Found stored legacy credentials:', !!stored);
 
       if (!stored) {
         return null;
@@ -286,7 +289,7 @@ export class CloudCredentialManager {
         userId: credentials.userId,
       };
     } catch (error) {
-      console.error('[CloudCredentialManager] Failed to retrieve legacy credentials:', error);
+      logger.error('Failed to retrieve legacy credentials:', error);
       return null;
     }
   }
@@ -352,14 +355,14 @@ export class CloudCredentialManager {
         if (oauthProvider) {
           try {
             await this.oauthManager.logout(oauthProvider);
-            console.log('[CloudCredentialManager] Removed credentials from OAuth system for provider:', provider);
+            logger.log('Removed credentials from OAuth system for provider:', provider);
           } catch (oauthError) {
-            console.warn('[CloudCredentialManager] Error removing OAuth credentials:', oauthError);
+            logger.warn('Error removing OAuth credentials:', oauthError);
           }
         }
       }
     } catch (error) {
-      console.error('[CloudCredentialManager] Error removing OAuth credentials:', error);
+      logger.error('Error removing OAuth credentials:', error);
     }
 
     // Also remove from legacy storage
@@ -374,9 +377,9 @@ export class CloudCredentialManager {
       } else {
         localStorage.setItem(CLOUD_STORAGE_KEY, JSON.stringify(filteredCredentials));
       }
-      console.log('[CloudCredentialManager] Removed credentials from legacy storage for provider:', provider);
+      logger.log('Removed credentials from legacy storage for provider:', provider);
     } catch (error) {
-      console.error('[CloudCredentialManager] Error removing legacy credentials:', error);
+      logger.error('Error removing legacy credentials:', error);
     }
   }
 

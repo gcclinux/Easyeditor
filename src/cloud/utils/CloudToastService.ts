@@ -4,6 +4,9 @@
  */
 
 import { ErrorHandler, CloudError } from './ErrorHandler';
+import { createLogger } from '../../utils/logger';
+
+const logger = createLogger('CloudToastService');
 
 export type ToastType = 'success' | 'error' | 'info' | 'warning' | 'loading';
 
@@ -108,7 +111,7 @@ export class CloudToastService {
     if (toastId && message) {
       // In a real implementation, we'd update the existing toast
       // For now, we'll show progress in console for development
-      console.log(`[${operationId}] ${progress}% - ${message}`);
+      logger.log(`[${operationId}] ${progress}% - ${message}`);
     }
   }
 
@@ -253,8 +256,8 @@ export class CloudToastService {
       const appType = type === 'loading' ? 'info' : type as 'success' | 'error' | 'info' | 'warning';
       this.showToastCallback(message, appType, options);
     } else {
-      console.warn('CloudToastService not initialized with callback');
-      console.log(`[${type.toUpperCase()}] ${message}`);
+      logger.warn('CloudToastService not initialized with callback');
+      logger.log(`[${type.toUpperCase()}] ${message}`);
     }
 
     return toastId;

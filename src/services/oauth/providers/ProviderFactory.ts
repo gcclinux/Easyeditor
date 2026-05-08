@@ -4,6 +4,7 @@
  */
 
 import { GoogleOAuthProvider } from './GoogleOAuthProvider';
+import { OneDriveOAuthProvider } from './OneDriveOAuthProvider';
 import type { OAuthProvider, OAuthProviderConfig } from '../interfaces';
 
 export class ProviderFactory {
@@ -20,8 +21,7 @@ export class ProviderFactory {
         throw new Error('Dropbox provider not yet implemented');
       
       case 'onedrive':
-        // Future implementation
-        throw new Error('OneDrive provider not yet implemented');
+        return new OneDriveOAuthProvider(config);
       
       default:
         throw new Error(`Unknown OAuth provider: ${providerName}`);
@@ -32,7 +32,7 @@ export class ProviderFactory {
    * Get list of supported provider names
    */
   static getSupportedProviders(): string[] {
-    return ['google']; // Add 'dropbox', 'onedrive' when implemented
+    return ['google', 'onedrive'];
   }
 
   /**

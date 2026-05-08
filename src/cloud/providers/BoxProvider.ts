@@ -9,6 +9,9 @@ import { CloudProvider, CloudFile, AuthResult } from '../interfaces/CloudProvide
 import { BOX_CONFIG, isBoxConfigured, getConfigurationErrorMessage } from '../config/box-credentials';
 import { cloudCredentialManager } from '../managers/CloudCredentialManager';
 import LicenseManager from '../../premium/LicenseManager';
+import { createLogger } from '../../utils/logger';
+
+const logger = createLogger('BoxProvider');
 
 interface BoxItemMetadata {
   type: 'file' | 'folder';
@@ -61,7 +64,7 @@ export class BoxProvider implements CloudProvider {
   constructor() {
     if (!isBoxConfigured()) {
       const errorMessage = getConfigurationErrorMessage();
-      console.warn('[BoxProvider] Configuration warning:', errorMessage);
+      logger.warn('Configuration warning:', errorMessage);
     }
 
     this.clientId = BOX_CONFIG.CLIENT_ID;
@@ -69,7 +72,7 @@ export class BoxProvider implements CloudProvider {
     this.redirectUri = BOX_CONFIG.REDIRECT_URI;
     this.scopes = BOX_CONFIG.SCOPES;
 
-    console.log('[BoxProvider] Initialized with config:', {
+    logger.log('Initialized with config:', {
       clientIdConfigured: !!this.clientId && !this.clientId.includes('your-'),
       redirectUri: this.redirectUri,
       scopes: this.scopes
@@ -80,11 +83,11 @@ export class BoxProvider implements CloudProvider {
    * Authenticate with Box using OAuth 2.0 + PKCE
    */
   async authenticate(): Promise<AuthResult> {
-    console.log('[BoxProvider] Starting authentication flow');
+    logger.log('Starting authentication flow');
 
     // Check for premium license first
     if (!LicenseManager.hasActiveLicense()) {
-      console.warn('[BoxProvider] Premium license required for Box integration');
+      logger.warn('Premium license required for Box integration');
       return {
         success: false,
         error: 'Premium license required. Please upgrade to use Box integration.'
@@ -93,7 +96,7 @@ export class BoxProvider implements CloudProvider {
 
     if (!isBoxConfigured()) {
       const errorMessage = getConfigurationErrorMessage();
-      console.error('[BoxProvider] Cannot authenticate - not configured:', errorMessage);
+      logger.error('Cannot authenticate - not configured:', errorMessage);
       return {
         success: false,
         error: errorMessage
@@ -111,7 +114,7 @@ export class BoxProvider implements CloudProvider {
       // Build authorization URL
       const authUrl = this.buildAuthorizationUrl(pkce.challenge);
 
-      console.log('[BoxProvider] Opening authorization URL');
+      logger.log('Opening authorization URL');
 
       // Open authorization URL in new window
       const authWindow = window.open(authUrl, 'box_auth', 'width=600,height=700,noopener=no');
@@ -125,7 +128,7 @@ export class BoxProvider implements CloudProvider {
 
       return result;
     } catch (error) {
-      console.error('[BoxProvider] Authentication error:', error);
+      logger.error('Authentication error:', error);
       return {
         success: false,
         error: error instanceof Error ? error.message : 'Authentication failed'
@@ -141,13 +144,13 @@ export class BoxProvider implements CloudProvider {
       const credentials = await cloudCredentialManager.getCredentials(this.name);
 
       if (!credentials || !credentials.accessToken) {
-        console.log('[BoxProvider] No credentials found');
+        logger.log('No credentials found');
         return false;
       }
 
       // Check if token is expired
       if (credentials.expiresAt && credentials.expiresAt <= new Date()) {
-        console.log('[BoxProvider] Token expired, attempting refresh');
+        logger.log('Token expired, attempting refresh');
 
         // Try to refresh token
         if (credentials.refreshToken) {
@@ -155,7 +158,7 @@ export class BoxProvider implements CloudProvider {
             await this.refreshAccessToken(credentials.refreshToken);
             return true;
           } catch (error) {
-            console.error('[BoxProvider] Token refresh failed:', error);
+            logger.error('Token refresh failed:', error);
             return false;
           }
         }
@@ -163,10 +166,10 @@ export class BoxProvider implements CloudProvider {
         return false;
       }
 
-      console.log('[BoxProvider] User is authenticated');
+      logger.log('User is authenticated');
       return true;
     } catch (error) {
-      console.error('[BoxProvider] Error checking authentication:', error);
+      logger.error('Error checking authentication:', error);
       return false;
     }
   }
@@ -175,7 +178,7 @@ export class BoxProvider implements CloudProvider {
    * Disconnect from Box and revoke tokens
    */
   async disconnect(): Promise<void> {
-    console.log('[BoxProvider] Disconnecting from Box');
+    logger.log('Disconnecting from Box');
 
     try {
       const credentials = await cloudCredentialManager.getCredentials(this.name);
@@ -184,9 +187,9 @@ export class BoxProvider implements CloudProvider {
         // Revoke the access token via Box revocation endpoint
         try {
           await this.revokeToken(credentials.accessToken);
-          console.log('[BoxProvider] Token revoked successfully');
+          logger.log('Token revoked successfully');
         } catch (error) {
-          console.warn('[BoxProvider] Token revocation failed:', error);
+          logger.warn('Token revocation failed:', error);
           // Continue with credential removal even if revocation fails
         }
       }
@@ -197,9 +200,9 @@ export class BoxProvider implements CloudProvider {
       // Reset internal state
       this.applicationFolderId = null;
 
-      console.log('[BoxProvider] Disconnected successfully');
+      logger.log('Disconnected successfully');
     } catch (error) {
-      console.error('[BoxProvider] Error during disconnect:', error);
+      logger.error('Error during disconnect:', error);
       // Always clear credentials even if something fails
       await cloudCredentialManager.removeCredentials(this.name);
       this.applicationFolderId = null;
@@ -211,7 +214,7 @@ export class BoxProvider implements CloudProvider {
    * Create or find the application folder in Box
    */
   async createApplicationFolder(): Promise<string> {
-    console.log('[BoxProvider] Creating/finding application folder');
+    logger.log('Creating/finding application folder');
 
     // Return cached folder ID if available
     if (this.applicationFolderId) {
@@ -223,7 +226,7 @@ export class BoxProvider implements CloudProvider {
       const existingFolderId = await this.findApplicationFolder();
 
       if (existingFolderId) {
-        console.log('[BoxProvider] Found existing application folder:', existingFolderId);
+        logger.log('Found existing application folder:', existingFolderId);
         this.applicationFolderId = existingFolderId;
         return existingFolderId;
       }
@@ -247,7 +250,7 @@ export class BoxProvider implements CloudProvider {
         const errorText = await response.text();
         if (response.status === 409) {
           // Folder already exists (conflict), try to find it again
-          console.log('[BoxProvider] Folder already exists, searching again');
+          logger.log('Folder already exists, searching again');
           const folderId = await this.findApplicationFolder();
           if (folderId) {
             this.applicationFolderId = folderId;
@@ -259,11 +262,11 @@ export class BoxProvider implements CloudProvider {
 
       const data = await response.json();
       this.applicationFolderId = data.id;
-      console.log('[BoxProvider] Created application folder:', this.applicationFolderId);
+      logger.log('Created application folder:', this.applicationFolderId);
 
       return this.applicationFolderId!;
     } catch (error) {
-      console.error('[BoxProvider] Error creating application folder:', error);
+      logger.error('Error creating application folder:', error);
       throw error;
     }
   }
@@ -272,7 +275,7 @@ export class BoxProvider implements CloudProvider {
    * List files in a Box folder
    */
   async listFiles(folderId: string): Promise<CloudFile[]> {
-    console.log('[BoxProvider] Listing files in folder:', folderId);
+    logger.log('Listing files in folder:', folderId);
 
     try {
       const response = await this.makeApiCall(
@@ -286,10 +289,10 @@ export class BoxProvider implements CloudProvider {
         .filter(entry => entry.type === 'file')
         .map(entry => this.mapBoxFileToCloudFile(entry));
 
-      console.log('[BoxProvider] Found', files.length, 'files');
+      logger.log('Found', files.length, 'files');
       return files;
     } catch (error) {
-      console.error('[BoxProvider] Error listing files:', error);
+      logger.error('Error listing files:', error);
       throw error;
     }
   }
@@ -298,7 +301,7 @@ export class BoxProvider implements CloudProvider {
    * Download file content from Box
    */
   async downloadFile(fileId: string): Promise<string | Uint8Array> {
-    console.log('[BoxProvider] Downloading file:', fileId);
+    logger.log('Downloading file:', fileId);
 
     try {
       const accessToken = await this.getValidAccessToken();
@@ -344,7 +347,7 @@ export class BoxProvider implements CloudProvider {
               throw new Error(`Download failed: ${retryResponse.status} ${retryResponse.statusText}`);
             }
             const content = await retryResponse.text();
-            console.log('[BoxProvider] Downloaded file successfully (after refresh), size:', content.length);
+            logger.log('Downloaded file successfully (after refresh), size:', content.length);
             return content;
           }
           throw new Error(`Download failed: ${response.status} Unauthorized`);
@@ -357,15 +360,15 @@ export class BoxProvider implements CloudProvider {
       if (isBinary) {
         const buffer = await response.arrayBuffer();
         const content = new Uint8Array(buffer);
-        console.log('[BoxProvider] Downloaded binary file successfully, size:', content.length);
+        logger.log('Downloaded binary file successfully, size:', content.length);
         return content;
       }
 
       const content = await response.text();
-      console.log('[BoxProvider] Downloaded file successfully, size:', content.length);
+      logger.log('Downloaded file successfully, size:', content.length);
       return content;
     } catch (error) {
-      console.error('[BoxProvider] Error downloading file:', error);
+      logger.error('Error downloading file:', error);
       throw error;
     }
   }
@@ -374,7 +377,7 @@ export class BoxProvider implements CloudProvider {
    * Upload a new file to Box
    */
   async uploadFile(folderId: string, fileName: string, content: string | Uint8Array): Promise<CloudFile> {
-    console.log('[BoxProvider] Uploading file:', fileName, 'to folder:', folderId);
+    logger.log('Uploading file:', fileName, 'to folder:', folderId);
 
     try {
       const accessToken = await this.getValidAccessToken();
@@ -408,7 +411,7 @@ export class BoxProvider implements CloudProvider {
           const errorData = await response.json();
           const conflictFileId = errorData?.context_info?.conflicts?.id;
           if (conflictFileId) {
-            console.log('[BoxProvider] File already exists, updating existing file:', conflictFileId);
+            logger.log('File already exists, updating existing file:', conflictFileId);
             return await this.updateFile(conflictFileId, content);
           }
         }
@@ -445,10 +448,10 @@ export class BoxProvider implements CloudProvider {
       const uploadedFile = data.entries[0];
       const cloudFile = this.mapBoxFileToCloudFile(uploadedFile);
 
-      console.log('[BoxProvider] Uploaded file successfully:', cloudFile.id);
+      logger.log('Uploaded file successfully:', cloudFile.id);
       return cloudFile;
     } catch (error) {
-      console.error('[BoxProvider] Error uploading file:', error);
+      logger.error('Error uploading file:', error);
       throw error;
     }
   }
@@ -457,7 +460,7 @@ export class BoxProvider implements CloudProvider {
    * Update an existing file in Box (upload new version)
    */
   async updateFile(fileId: string, content: string | Uint8Array): Promise<CloudFile> {
-    console.log('[BoxProvider] Updating file:', fileId);
+    logger.log('Updating file:', fileId);
 
     try {
       const accessToken = await this.getValidAccessToken();
@@ -509,10 +512,10 @@ export class BoxProvider implements CloudProvider {
       const updatedFile = data.entries[0];
       const cloudFile = this.mapBoxFileToCloudFile(updatedFile);
 
-      console.log('[BoxProvider] Updated file successfully');
+      logger.log('Updated file successfully');
       return cloudFile;
     } catch (error) {
-      console.error('[BoxProvider] Error updating file:', error);
+      logger.error('Error updating file:', error);
       throw error;
     }
   }
@@ -521,7 +524,7 @@ export class BoxProvider implements CloudProvider {
    * Delete a file from Box
    */
   async deleteFile(fileId: string): Promise<void> {
-    console.log('[BoxProvider] Deleting file:', fileId);
+    logger.log('Deleting file:', fileId);
 
     try {
       const accessToken = await this.getValidAccessToken();
@@ -550,7 +553,7 @@ export class BoxProvider implements CloudProvider {
               const errorText = await retryResponse.text();
               throw new Error(`Delete failed: ${retryResponse.status} ${errorText}`);
             }
-            console.log('[BoxProvider] Deleted file successfully (after refresh)');
+            logger.log('Deleted file successfully (after refresh)');
             return;
           }
         }
@@ -560,9 +563,9 @@ export class BoxProvider implements CloudProvider {
         }
       }
 
-      console.log('[BoxProvider] Deleted file successfully');
+      logger.log('Deleted file successfully');
     } catch (error) {
-      console.error('[BoxProvider] Error deleting file:', error);
+      logger.error('Error deleting file:', error);
       throw error;
     }
   }
@@ -644,7 +647,7 @@ export class BoxProvider implements CloudProvider {
 
       // Listen for OAuth callback message
       const messageHandler = async (event: MessageEvent) => {
-        console.log('[BoxProvider] Received message:', {
+        logger.log('Received message:', {
           origin: event.origin,
           type: event.data?.type,
           hasCode: !!event.data?.code
@@ -656,11 +659,11 @@ export class BoxProvider implements CloudProvider {
         );
 
         if (!isAuthorizedOrigin) {
-          console.warn('[BoxProvider] Received message from unauthorized origin:', event.origin);
+          logger.warn('Received message from unauthorized origin:', event.origin);
         }
 
         if (event.data.type === 'box_oauth_callback') {
-          console.log('[BoxProvider] Valid OAuth callback message received');
+          logger.log('Valid OAuth callback message received');
           messageReceived = true;
           window.removeEventListener('message', messageHandler);
           clearInterval(pollInterval);
@@ -704,7 +707,7 @@ export class BoxProvider implements CloudProvider {
         }
       };
 
-      console.log('[BoxProvider] Setting up message listener');
+      logger.log('Setting up message listener');
       window.addEventListener('message', messageHandler);
 
       // Poll the popup window to check if it has navigated to callback URL
@@ -718,7 +721,7 @@ export class BoxProvider implements CloudProvider {
           const age = Date.now() - timestamp;
 
           if (age < 60000) {
-            console.log('[BoxProvider] Found OAuth code in sessionStorage');
+            logger.log('Found OAuth code in sessionStorage');
             clearInterval(pollInterval);
             window.removeEventListener('message', messageHandler);
 
@@ -754,7 +757,7 @@ export class BoxProvider implements CloudProvider {
         }
 
         if (!authWindow || authWindow.closed) {
-          console.log('[BoxProvider] Popup window was closed');
+          logger.log('Popup window was closed');
           clearInterval(pollInterval);
           window.removeEventListener('message', messageHandler);
 
@@ -793,7 +796,7 @@ export class BoxProvider implements CloudProvider {
           const popupUrl = authWindow.location.href;
 
           if (popupUrl.includes('/box-oauth-callback.html')) {
-            console.log('[BoxProvider] Detected callback URL in popup');
+            logger.log('Detected callback URL in popup');
 
             const url = new URL(popupUrl);
             const code = url.searchParams.get('code');
@@ -842,7 +845,7 @@ export class BoxProvider implements CloudProvider {
 
       // Timeout after 5 minutes
       setTimeout(() => {
-        console.log('[BoxProvider] OAuth timeout reached');
+        logger.log('OAuth timeout reached');
         clearInterval(pollInterval);
         window.removeEventListener('message', messageHandler);
 
@@ -862,7 +865,7 @@ export class BoxProvider implements CloudProvider {
    * Exchange authorization code for access token
    */
   private async exchangeCodeForToken(code: string, verifier: string): Promise<AuthResult> {
-    console.log('[BoxProvider] Exchanging code for token');
+    logger.log('Exchanging code for token');
 
     try {
       const params = new URLSearchParams({
@@ -902,7 +905,7 @@ export class BoxProvider implements CloudProvider {
         userId: ''
       });
 
-      console.log('[BoxProvider] Token exchange successful');
+      logger.log('Token exchange successful');
 
       return {
         success: true,
@@ -911,7 +914,7 @@ export class BoxProvider implements CloudProvider {
         expiresAt
       };
     } catch (error) {
-      console.error('[BoxProvider] Token exchange error:', error);
+      logger.error('Token exchange error:', error);
       throw error;
     }
   }
@@ -929,7 +932,7 @@ export class BoxProvider implements CloudProvider {
     // Check if token is expired or will expire soon (within 5 minutes)
     const expiryBuffer = 5 * 60 * 1000;
     if (credentials.expiresAt && credentials.expiresAt.getTime() - Date.now() < expiryBuffer) {
-      console.log('[BoxProvider] Token expired or expiring soon, refreshing');
+      logger.log('Token expired or expiring soon, refreshing');
 
       if (!credentials.refreshToken) {
         throw new Error('No refresh token available');
@@ -946,7 +949,7 @@ export class BoxProvider implements CloudProvider {
    * Refresh access token using refresh token
    */
   private async refreshAccessToken(refreshToken: string): Promise<string> {
-    console.log('[BoxProvider] Refreshing access token');
+    logger.log('Refreshing access token');
 
     try {
       const params = new URLSearchParams({
@@ -981,11 +984,11 @@ export class BoxProvider implements CloudProvider {
         expiresAt
       });
 
-      console.log('[BoxProvider] Token refreshed successfully');
+      logger.log('Token refreshed successfully');
 
       return data.access_token;
     } catch (error) {
-      console.error('[BoxProvider] Token refresh error:', error);
+      logger.error('Token refresh error:', error);
       throw error;
     }
   }
@@ -994,7 +997,7 @@ export class BoxProvider implements CloudProvider {
    * Revoke access token via Box revocation endpoint
    */
   private async revokeToken(accessToken: string): Promise<void> {
-    console.log('[BoxProvider] Revoking token');
+    logger.log('Revoking token');
 
     try {
       const params = new URLSearchParams({
@@ -1015,9 +1018,9 @@ export class BoxProvider implements CloudProvider {
         throw new Error(`Token revocation failed: ${response.status}`);
       }
 
-      console.log('[BoxProvider] Token revoked successfully');
+      logger.log('Token revoked successfully');
     } catch (error) {
-      console.error('[BoxProvider] Token revocation error:', error);
+      logger.error('Token revocation error:', error);
       throw error;
     }
   }
@@ -1040,7 +1043,7 @@ export class BoxProvider implements CloudProvider {
 
       return folder ? folder.id : null;
     } catch (error) {
-      console.error('[BoxProvider] Error finding application folder:', error);
+      logger.error('Error finding application folder:', error);
       return null;
     }
   }
@@ -1069,7 +1072,7 @@ export class BoxProvider implements CloudProvider {
     if (!response.ok) {
       // On 401, attempt token refresh and retry once
       if (response.status === 401) {
-        console.log('[BoxProvider] Got 401, attempting token refresh and retry');
+        logger.log('Got 401, attempting token refresh and retry');
         const credentials = await cloudCredentialManager.getCredentials(this.name);
         if (credentials?.refreshToken) {
           try {
@@ -1115,7 +1118,7 @@ export class BoxProvider implements CloudProvider {
       error.statusCode = response.status;
       error.response = errorText;
 
-      console.error('[BoxProvider] API error:', {
+      logger.error('API error:', {
         url,
         status: response.status,
         statusText: response.statusText,

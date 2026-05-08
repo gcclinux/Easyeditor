@@ -16,6 +16,9 @@ import {
 import { validateGoogleDriveConfiguration } from '../config/config-validator';
 import { ErrorHandler } from '../utils/ErrorHandler';
 import { cloudToastService } from '../utils/CloudToastService';
+import { createLogger } from '../../utils/logger';
+
+const logger = createLogger('OAuthGoogleDriveProvider');
 
 interface GoogleDriveFile {
   id: string;
@@ -44,13 +47,13 @@ export class OAuthGoogleDriveProvider implements CloudProvider {
     validateConfiguration();
 
     if (!isGoogleDriveConfigured()) {
-      console.warn('Google Drive integration not configured. Users will see a helpful error message.');
+      logger.warn('Google Drive integration not configured. Users will see a helpful error message.');
 
       const isDevelopment = (typeof process !== 'undefined' && process.env.NODE_ENV === 'development') ||
         (typeof window !== 'undefined' && (window as any).import?.meta?.env?.MODE === 'development');
       if (isDevelopment) {
         const validation = validateGoogleDriveConfiguration(true);
-        console.warn('Configuration validation:', validation);
+        logger.warn('Configuration validation:', validation);
       }
     }
 
@@ -62,18 +65,18 @@ export class OAuthGoogleDriveProvider implements CloudProvider {
     this.googleProvider = new GoogleOAuthProvider(GOOGLE_DRIVE_CONFIG.CLIENT_ID, GOOGLE_DRIVE_CONFIG.CLIENT_SECRET);
     this.oauthManager.registerProvider(this.googleProvider);
 
-    console.log('[OAuthGoogleDriveProvider] Initialized with shared OAuth manager');
+    logger.log('Initialized with shared OAuth manager');
   }
 
   async authenticate(): Promise<AuthResult> {
     try {
-      console.log('[OAuthGoogleDriveProvider] Starting OAuth authentication...');
+      logger.log('Starting OAuth authentication...');
 
       // Validate configuration before attempting authentication
       const validation = validateGoogleDriveConfiguration();
       if (!validation.isValid) {
         const error = getConfigurationErrorMessage();
-        console.error('[OAuthGoogleDriveProvider] Configuration validation failed:', validation);
+        logger.error('Configuration validation failed:', validation);
         cloudToastService.showConfigurationMessage(this.displayName, false);
         return {
           success: false,
@@ -81,7 +84,7 @@ export class OAuthGoogleDriveProvider implements CloudProvider {
         };
       }
 
-      console.log('[OAuthGoogleDriveProvider] Configuration valid, starting OAuth flow...');
+      logger.log('Configuration valid, starting OAuth flow...');
 
       return await ErrorHandler.withRetry(async () => {
         // Use OAuth manager to authenticate
@@ -101,7 +104,7 @@ export class OAuthGoogleDriveProvider implements CloudProvider {
           );
         }
 
-        console.log('[OAuthGoogleDriveProvider] OAuth authentication completed successfully');
+        logger.log('OAuth authentication completed successfully');
 
         return {
           success: true,
@@ -115,7 +118,7 @@ export class OAuthGoogleDriveProvider implements CloudProvider {
       );
 
     } catch (error) {
-      console.error('[OAuthGoogleDriveProvider] Authentication failed:', error);
+      logger.error('Authentication failed:', error);
       const cloudError = ErrorHandler.enhanceError(error, {
         operation: 'authenticate',
         provider: this.name
@@ -130,49 +133,49 @@ export class OAuthGoogleDriveProvider implements CloudProvider {
 
   async isAuthenticated(): Promise<boolean> {
     try {
-      console.log('[OAuthGoogleDriveProvider] Checking authentication status...');
+      logger.log('Checking authentication status...');
 
       // Use OAuth manager to check authentication
       const isAuth = await this.oauthManager.isAuthenticated('google');
-      console.log('[OAuthGoogleDriveProvider] Authentication status:', isAuth);
+      logger.log('Authentication status:', isAuth);
 
       return isAuth;
 
     } catch (error) {
-      console.error('Error checking authentication status:', error);
+      logger.error('Error checking authentication status:', error);
       return false;
     }
   }
 
   async disconnect(): Promise<void> {
     try {
-      console.log('[OAuthGoogleDriveProvider] Disconnecting...');
+      logger.log('Disconnecting...');
 
       // Use OAuth manager to logout
       await this.oauthManager.logout('google');
 
-      console.log('[OAuthGoogleDriveProvider] Successfully disconnected');
+      logger.log('Successfully disconnected');
 
     } catch (error) {
-      console.error('Error during disconnect:', error);
+      logger.error('Error during disconnect:', error);
       throw error;
     }
   }
 
   async createApplicationFolder(): Promise<string> {
     try {
-      console.log('[OAuthGoogleDriveProvider] Creating application folder...');
+      logger.log('Creating application folder...');
       const accessToken = await this.getValidAccessToken();
-      console.log('[OAuthGoogleDriveProvider] Got access token, checking for existing folder...');
+      logger.log('Got access token, checking for existing folder...');
 
       // Check if EasyEditor folder already exists
       const existingFolder = await this.findApplicationFolder();
       if (existingFolder) {
-        console.log('[OAuthGoogleDriveProvider] Found existing folder:', existingFolder);
+        logger.log('Found existing folder:', existingFolder);
         return existingFolder;
       }
 
-      console.log('[OAuthGoogleDriveProvider] No existing folder found, creating new one...');
+      logger.log('No existing folder found, creating new one...');
 
       // Create new Easyeditor folder
       const response = await this.makeApiCall('/drive/v3/files', {
@@ -188,17 +191,17 @@ export class OAuthGoogleDriveProvider implements CloudProvider {
         })
       });
 
-      console.log('[OAuthGoogleDriveProvider] Create folder response:', response);
+      logger.log('Create folder response:', response);
 
       if (!response.id) {
         throw new Error('Failed to create application folder - no ID returned');
       }
 
-      console.log('[OAuthGoogleDriveProvider] Successfully created folder with ID:', response.id);
+      logger.log('Successfully created folder with ID:', response.id);
       return response.id;
 
     } catch (error) {
-      console.error('[OAuthGoogleDriveProvider] Error creating application folder:', error);
+      logger.error('Error creating application folder:', error);
       throw new Error(`Failed to create application folder: ${(error as Error).message}`);
     }
   }
@@ -224,11 +227,11 @@ export class OAuthGoogleDriveProvider implements CloudProvider {
         pageToken = response.nextPageToken;
       } while (pageToken);
 
-      console.log(`[OAuthGoogleDriveProvider] Raw files from API: ${allFiles.length}`, allFiles.map(f => `${f.name} (${f.mimeType})`));
+      logger.log(`Raw files from API: ${allFiles.length}`, allFiles.map(f => `${f.name} (${f.mimeType})`));
 
       // Filter to only include .md and .sstp files by extension
       const filtered = allFiles.filter(file => /\.(md|sstp)$/i.test(file.name));
-      console.log(`[OAuthGoogleDriveProvider] After extension filter: ${filtered.length} files`);
+      logger.log(`After extension filter: ${filtered.length} files`);
 
       return filtered.map(file => ({
         id: file.id,
@@ -465,7 +468,7 @@ export class OAuthGoogleDriveProvider implements CloudProvider {
    */
   private async findApplicationFolder(): Promise<string | null> {
     try {
-      console.log('[OAuthGoogleDriveProvider] Searching for existing Easyeditor folder...');
+      logger.log('Searching for existing Easyeditor folder...');
       const accessToken = await this.getValidAccessToken();
 
       const response: GoogleDriveResponse = await this.makeApiCall(
@@ -477,18 +480,18 @@ export class OAuthGoogleDriveProvider implements CloudProvider {
         }
       );
 
-      console.log('[OAuthGoogleDriveProvider] Search response:', response);
+      logger.log('Search response:', response);
 
       if (response.files && response.files.length > 0) {
-        console.log('[OAuthGoogleDriveProvider] Found existing folder:', response.files[0]);
+        logger.log('Found existing folder:', response.files[0]);
         return response.files[0].id;
       }
 
-      console.log('[OAuthGoogleDriveProvider] No existing folder found');
+      logger.log('No existing folder found');
       return null;
 
     } catch (error) {
-      console.error('[OAuthGoogleDriveProvider] Error finding application folder:', error);
+      logger.error('Error finding application folder:', error);
       return null;
     }
   }

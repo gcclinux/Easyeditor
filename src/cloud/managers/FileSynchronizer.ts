@@ -6,6 +6,9 @@
 import type { CloudProvider, CloudFile, NoteMetadata, SyncResult } from '../interfaces';
 import { ErrorHandler } from '../utils/ErrorHandler';
 import * as CryptoJS from 'crypto-js';
+import { createLogger } from '../../utils/logger';
+
+const logger = createLogger('FileSynchronizer');
 
 export interface RetryOptions {
   maxRetries: number;
@@ -175,7 +178,7 @@ export class FileSynchronizer {
     let filesProcessed = 0;
 
     try {
-      console.log(`[FileSynchronizer] Syncing note: ${metadata.title} (${metadata.id})`);
+      logger.log(`Syncing note: ${metadata.title} (${metadata.id})`);
 
       // Create a CloudFile object from metadata to download content
       const cloudFile: CloudFile = {
@@ -186,7 +189,7 @@ export class FileSynchronizer {
         mimeType: 'text/markdown'
       };
 
-      console.log(`[FileSynchronizer] Downloading cloud content for file: ${cloudFile.id}`);
+      logger.log(`Downloading cloud content for file: ${cloudFile.id}`);
       const cloudContent = await this.downloadNote(provider, cloudFile);
       const cloudChecksum = this.calculateChecksum(cloudContent);
 
@@ -232,7 +235,7 @@ export class FileSynchronizer {
       };
 
     } catch (error) {
-      console.error(`[FileSynchronizer] Error syncing note ${metadata.title}:`, error);
+      logger.error(`Error syncing note ${metadata.title}:`, error);
       const errorMessage = error instanceof Error ? error.message : 'Unknown sync error';
       errors.push(errorMessage);
 
@@ -280,7 +283,7 @@ export class FileSynchronizer {
     // - Create backup copies
     // - Use timestamps to determine which is newer
 
-    console.warn(`Conflict detected for note ${metadata.title}. Using cloud version.`);
+    logger.warn(`Conflict detected for note ${metadata.title}. Using cloud version.`);
 
     // For now, prioritize cloud data as specified in requirements 7.5
     return cloudContent;

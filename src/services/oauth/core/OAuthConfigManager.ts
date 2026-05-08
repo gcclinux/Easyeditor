@@ -303,13 +303,13 @@ export class OAuthConfigManager {
       };
     }
 
-    // OneDrive provider configuration (future)
+    // OneDrive provider configuration
     if (this.environmentVars.ONEDRIVE_OAUTH_CLIENT_ID) {
       config.providers.onedrive = {
         clientId: this.environmentVars.ONEDRIVE_OAUTH_CLIENT_ID,
-        scope: ['Files.ReadWrite'],
-        authorizationUrl: 'https://login.microsoftonline.com/common/oauth2/v2.0/authorize',
-        tokenUrl: 'https://login.microsoftonline.com/common/oauth2/v2.0/token',
+        scope: ['Files.ReadWrite.AppFolder', 'offline_access'],
+        authorizationUrl: 'https://login.microsoftonline.com/consumers/oauth2/v2.0/authorize',
+        tokenUrl: 'https://login.microsoftonline.com/consumers/oauth2/v2.0/token',
         enabled: true
       };
     }
