@@ -106,48 +106,36 @@ export function APIModal({ open, onClose, showToast }: APIModalProps) {
     return () => unsubscribe();
   }, []);
 
-  React.useEffect(() => {
-    if (isLicenseValid && licenseKey) {
-      const fetchCredits = async () => {
-        try {
-          const gateway = import.meta.env.VITE_TOKENS_GATEWAY;
-          const primeKey = import.meta.env.VITE_GATEWAY_PRIME_KEY;
-
-          if (!gateway || !primeKey) {
-            console.warn('[APIModal] Gateway or PrimeKey missing in Vite build context!');
-            return;
-          }
-
-          const isTauri = typeof window !== 'undefined' && ((window as any).__TAURI__ !== undefined || (window as any).__TAURI_INTERNALS__ !== undefined);
-          let res;
-
-          if (isTauri) {
-            const { fetch: tauriFetch } = await import('@tauri-apps/plugin-http');
-            res = await tauriFetch(`${gateway}/api/credits/${licenseKey}`, {
-              method: 'GET',
-              headers: { 'X-API-Key': primeKey }
-            });
-          } else {
-            res = await fetch(`/api/gateway-proxy/api/credits/${licenseKey}`, {
-              method: 'GET',
-              headers: { 'X-API-Key': primeKey }
-            });
-          }
-
-          if (res.ok) {
-            const data = await res.json();
-            setMonthlyCredits(data.monthlyToken ?? 0);
-            setTopUpCredits(data.topUpToken ?? 0);
-            setUsedCredits(data.usedToken ?? 0);
-            setBalanceCredits(data.availableToken ?? 0);
-          }
-        } catch (e) {
-          console.error("Failed to fetch EasyAI credits", e);
-        }
-      };
-      fetchCredits();
-    }
-  }, [isLicenseValid, licenseKey]);
+  // TODO: Re-enable when credits system is active
+  // React.useEffect(() => {
+  //   if (isLicenseValid && licenseKey) {
+  //     const fetchCredits = async () => {
+  //       try {
+  //         const gateway = import.meta.env.VITE_TOKENS_GATEWAY;
+  //         const primeKey = import.meta.env.VITE_GATEWAY_PRIME_KEY;
+  //         if (!gateway || !primeKey) return;
+  //         const isTauri = typeof window !== 'undefined' && ((window as any).__TAURI__ !== undefined || (window as any).__TAURI_INTERNALS__ !== undefined);
+  //         let res;
+  //         if (isTauri) {
+  //           const { fetch: tauriFetch } = await import('@tauri-apps/plugin-http');
+  //           res = await tauriFetch(`${gateway}/api/credits/${licenseKey}`, { method: 'GET', headers: { 'X-API-Key': primeKey } });
+  //         } else {
+  //           res = await fetch(`/api/gateway-proxy/api/credits/${licenseKey}`, { method: 'GET', headers: { 'X-API-Key': primeKey } });
+  //         }
+  //         if (res.ok) {
+  //           const data = await res.json();
+  //           setMonthlyCredits(data.monthlyToken ?? 0);
+  //           setTopUpCredits(data.topUpToken ?? 0);
+  //           setUsedCredits(data.usedToken ?? 0);
+  //           setBalanceCredits(data.availableToken ?? 0);
+  //         }
+  //       } catch (e) {
+  //         console.error("Failed to fetch EasyAI credits", e);
+  //       }
+  //     };
+  //     fetchCredits();
+  //   }
+  // }, [isLicenseValid, licenseKey]);
 
   const licenseTier: 'Free' | 'Premium' | 'PremiumPlus' = isLicenseValid
     ? (type === 'PremiumPlus' ? 'PremiumPlus' : 'Premium')
