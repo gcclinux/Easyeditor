@@ -107,10 +107,28 @@ const PreviewComponent: React.FC<PreviewComponentProps> = React.memo(({
   useEffect(() => {
     if (!previewRef.current) return;
 
+    const syncScroll = () => {
+      if (previewRef.current) {
+        const ta = document.getElementById('editor-textarea') as HTMLTextAreaElement | null;
+        if (ta) {
+          const taScrollTop = ta.scrollTop;
+          const taScrollHeight = ta.scrollHeight;
+          const taClientHeight = ta.clientHeight;
+          
+          if (taScrollHeight > taClientHeight) {
+            const ratio = taScrollTop / (taScrollHeight - taClientHeight);
+            const prScrollHeight = previewRef.current.scrollHeight;
+            const prClientHeight = previewRef.current.clientHeight;
+            previewRef.current.scrollTop = ratio * (prScrollHeight - prClientHeight);
+          }
+        }
+      }
+    };
+
     const observer = new MutationObserver(() => {
       if (previewRef.current) {
         setTimeout(() => {
-          previewRef.current!.scrollTop = previewRef.current!.scrollHeight;
+          syncScroll();
         }, 100);
       }
     });
@@ -122,12 +140,24 @@ const PreviewComponent: React.FC<PreviewComponentProps> = React.memo(({
     });
 
     setTimeout(() => {
-      if (previewRef.current) {
-        previewRef.current.scrollTop = previewRef.current.scrollHeight;
-      }
+      syncScroll();
     }, 100);
 
-    return () => observer.disconnect();
+    const ta = document.getElementById('editor-textarea');
+    if (ta) {
+      ta.addEventListener('scroll', syncScroll);
+      ta.addEventListener('click', syncScroll);
+      ta.addEventListener('keyup', syncScroll);
+    }
+
+    return () => {
+      observer.disconnect();
+      if (ta) {
+        ta.removeEventListener('scroll', syncScroll);
+        ta.removeEventListener('click', syncScroll);
+        ta.removeEventListener('keyup', syncScroll);
+      }
+    };
   }, [editorContent]);
 
   return (
