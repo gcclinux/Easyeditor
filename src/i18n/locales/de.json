@@ -572,7 +572,28 @@
     "timeline_desc": "Mermaid Zeitachse generieren",
     "rows": "Zeilen:",
     "columns": "Spalten:",
-    "insert": "Einfügen"
+    "insert": "Einfügen",
+    "transfer_md": "MD übertragen",
+    "transfer_md_desc": "MD-Dateien zwischen lokal und Cloud kopieren"
+  },
+  "transfer_md": {
+    "title": "MD-Dateien übertragen",
+    "subtitle": "Kopieren Sie Markdown-Dateien zwischen lokalem Speicher und Cloud-Anbietern",
+    "source": "Quelle",
+    "target": "Ziel",
+    "local_folder": "Lokaler Ordner",
+    "select_folder": "Ordner auswählen",
+    "start_transfer": "Übertragung starten",
+    "processing": "Verarbeitung...",
+    "completed": "Übertragung abgeschlossen!",
+    "skipped": "Übersprungen (Identisch)",
+    "renamed": "Umbenannt (Konflikt)",
+    "uploaded": "Hochgeladen",
+    "error": "Fehler bei der Übertragung",
+    "no_files": "Keine MD-Dateien in der Quelle gefunden",
+    "select_source_target": "Bitte wählen Sie sowohl Quelle als auch Ziel aus",
+    "connected": "Verbunden",
+    "not_connected": "Nicht verbunden"
   },
   "icons": {
     "categories": {

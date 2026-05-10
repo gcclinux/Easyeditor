@@ -572,7 +572,28 @@
     "timeline_desc": "Genereer Mermaid tijdlijn",
     "rows": "Rijen:",
     "columns": "Kolommen:",
-    "insert": "Invoegen"
+    "insert": "Invoegen",
+    "transfer_md": "MD Overzetten",
+    "transfer_md_desc": "MD-bestanden kopiëren tussen lokaal en cloud"
+  },
+  "transfer_md": {
+    "title": "MD-bestanden overzetten",
+    "subtitle": "Kopieer Markdown-bestanden tussen lokale opslag en cloudaanbieders",
+    "source": "Bron",
+    "target": "Doel",
+    "local_folder": "Lokale map",
+    "select_folder": "Map selecteren",
+    "start_transfer": "Start overdracht",
+    "processing": "Verwerken...",
+    "completed": "Overdracht voltooid!",
+    "skipped": "Overgeslagen (Identiek)",
+    "renamed": "Hernoemd (Conflict)",
+    "uploaded": "Geüpload",
+    "error": "Fout tijdens overdracht",
+    "no_files": "Geen MD-bestanden gevonden in bron",
+    "select_source_target": "Selecteer zowel bron als doel",
+    "connected": "Verbonden",
+    "not_connected": "Niet verbonden"
   },
   "icons": {
     "categories": {

@@ -572,7 +572,28 @@
     "timeline_desc": "Generar diagramas de línea de tiempo Mermaid",
     "rows": "Filas:",
     "columns": "Columnas:",
-    "insert": "Insertar"
+    "insert": "Insertar",
+    "transfer_md": "Transferir MD",
+    "transfer_md_desc": "Copiar archivos MD entre local y nube"
+  },
+  "transfer_md": {
+    "title": "Transferir archivos MD",
+    "subtitle": "Copiar archivos Markdown entre el almacenamiento local y los proveedores de la nube",
+    "source": "Origen",
+    "target": "Destino",
+    "local_folder": "Carpeta local",
+    "select_folder": "Seleccionar carpeta",
+    "start_transfer": "Iniciar transferencia",
+    "processing": "Procesando...",
+    "completed": "¡Transferencia completada!",
+    "skipped": "Omitido (Idéntico)",
+    "renamed": "Renombrado (Conflicto)",
+    "uploaded": "Subido",
+    "error": "Error durante la transferencia",
+    "no_files": "No se encontraron archivos MD en el origen",
+    "select_source_target": "Por favor, seleccione tanto el origen como el destino",
+    "connected": "Conectado",
+    "not_connected": "No conectado"
   },
   "icons": {
     "categories": {

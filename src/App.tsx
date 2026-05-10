@@ -109,6 +109,7 @@ import { generateDocumentation } from './components/easyai/docGenerator';
 import FeaturesModal from './components/FeaturesModal';
 import ThemeModal from './components/ThemeModal';
 import ImportThemeModal from './components/ImportThemeModal';
+import TransferMDModal from './components/TransferMDModal';
 
 import { decryptFile } from './cryptoHandler';
 import PasswordModal from './components/PasswordModal';
@@ -199,6 +200,7 @@ const App = () => {
   const [showImagesModal, setShowImagesModal] = useState(false);
   const [showExportModal, setShowExportModal] = useState(false);
   const [showTemplatesModal, setShowTemplatesModal] = useState(false);
+  const [showTransferMDModal, setShowTransferMDModal] = useState(false);
   const [showFileModal, setShowFileModal] = useState(false);
   const [aboutOpen, setAboutOpen] = useState(false);
   const [licenseOpen, setLicenseOpen] = useState(false);
@@ -2852,10 +2854,15 @@ const App = () => {
               onImportMD={() => setImportMDModalOpen(true)}
               onImportDocx={handleImportDocx}
               onImportPdf={handleImportPdf}
+              onTransferMD={() => { setShowAutoModal(false); setShowTransferMDModal(true); }}
               onClose={() => setShowAutoModal(false)}
             />
           )
         }
+        <TransferMDModal
+          isOpen={showTransferMDModal}
+          onClose={() => setShowTransferMDModal(false)}
+        />
         {
           showTemplatesModal && (
             <TemplatesModal

@@ -572,7 +572,28 @@
     "timeline_desc": "Generate Mermaid timeline charts",
     "rows": "Rows:",
     "columns": "Columns:",
-    "insert": "Insert"
+    "insert": "Insert",
+    "transfer_md": "Transfer MD",
+    "transfer_md_desc": "Copy MD files between local and cloud"
+  },
+  "transfer_md": {
+    "title": "Transfer MD Files",
+    "subtitle": "Copy Markdown files between local storage and cloud providers",
+    "source": "Source",
+    "target": "Target",
+    "local_folder": "Local Folder",
+    "select_folder": "Select Folder",
+    "start_transfer": "Start Transfer",
+    "processing": "Processing...",
+    "completed": "Transfer Completed!",
+    "skipped": "Skipped (Identical)",
+    "renamed": "Renamed (Conflict)",
+    "uploaded": "Uploaded",
+    "error": "Error during transfer",
+    "no_files": "No MD files found in source",
+    "select_source_target": "Please select both source and target",
+    "connected": "Connected",
+    "not_connected": "Not Connected"
   },
   "icons": {
     "categories": {

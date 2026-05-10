@@ -10,6 +10,7 @@ type Props = {
     onImportMD: () => void;
     onImportDocx: () => void;
     onImportPdf?: () => void;
+    onTransferMD: () => void;
     onClose: () => void;
 };
 
@@ -20,6 +21,7 @@ export default function AutoModal({
     onImportMD,
     onImportDocx,
     onImportPdf,
+    onTransferMD,
     onClose
 }: Props) {
     const { t } = useLanguage();
@@ -91,6 +93,12 @@ export default function AutoModal({
                             t('templates.import_pdf') || 'Import PDF',
                             t('templates.import_pdf_desc') || 'Import PDF Document to Markdown',
                             onImportPdf
+                        )}
+                        {renderTile(
+                            <FaBolt />,
+                            t('auto_generate.transfer_md') || 'Transfer MD',
+                            t('auto_generate.transfer_md_desc') || 'Copy MD files between local and cloud',
+                            onTransferMD
                         )}
                     </div>
                 </div>

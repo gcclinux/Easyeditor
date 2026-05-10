@@ -1,0 +1,205 @@
+.transfer-md-modal {
+    max-width: 800px !important;
+    width: 90% !important;
+}
+
+.modal-subtitle {
+    color: var(--color-text-secondary);
+    margin-bottom: 24px;
+    font-size: 14px;
+}
+
+.transfer-sections {
+    display: flex;
+    gap: 20px;
+    align-items: flex-start;
+    margin-bottom: 24px;
+}
+
+.transfer-section {
+    flex: 1;
+}
+
+.transfer-section h3 {
+    font-size: 16px;
+    margin-bottom: 12px;
+    color: var(--color-primary);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.provider-options {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.provider-option {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    gap: 12px;
+    padding: 10px 15px;
+    background: var(--bg-secondary);
+    border: 2px solid var(--border-secondary);
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    text-align: left;
+    width: 100%;
+}
+
+.provider-option:hover:not(.disabled) {
+    border-color: var(--color-primary);
+    background: var(--bg-hover);
+    transform: translateY(-2px);
+}
+
+.provider-option.active {
+    border-color: var(--color-primary);
+    background: var(--bg-active);
+    box-shadow: 0 0 10px rgba(var(--color-primary-rgb), 0.2);
+}
+
+.provider-option.disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    filter: grayscale(1);
+}
+
+.provider-option svg, .provider-icon {
+    font-size: 18px;
+    margin-bottom: 0;
+    color: var(--color-primary);
+    display: flex;
+    align-items: center;
+    flex-shrink: 0;
+}
+
+.provider-icon svg {
+    width: 18px;
+    height: 18px;
+}
+
+.provider-info {
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    flex: 1;
+}
+
+.provider-option span {
+    font-weight: 600;
+    font-size: 13px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.provider-option small {
+    font-size: 10px;
+    color: var(--color-text-secondary);
+    margin-top: 4px;
+    max-width: 100%;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.transfer-divider {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding-top: 50px;
+    color: var(--color-text-secondary);
+    font-size: 20px;
+}
+
+.transfer-progress-section {
+    background: var(--bg-secondary);
+    padding: 15px;
+    border-radius: 12px;
+    margin-bottom: 20px;
+}
+
+.progress-info {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 10px;
+    font-size: 13px;
+    font-weight: 500;
+}
+
+.progress-bar-container {
+    height: 8px;
+    background: var(--bg-input);
+    border-radius: 4px;
+    overflow: hidden;
+}
+
+.progress-bar-fill {
+    height: 100%;
+    background: linear-gradient(90deg, var(--color-primary), var(--color-secondary));
+    transition: width 0.3s ease;
+}
+
+.transfer-results {
+    background: var(--bg-success-light);
+    padding: 15px;
+    border-radius: 12px;
+    border: 1px solid var(--color-success);
+    margin-bottom: 20px;
+}
+
+.result-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-weight: 600;
+    margin-bottom: 8px;
+}
+
+.result-item.success {
+    color: var(--color-success);
+}
+
+.result-stats {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 15px;
+    font-size: 12px;
+    color: var(--color-text-primary);
+}
+
+.result-stats span.error {
+    color: var(--color-error);
+}
+
+.modal-footer {
+    display: flex;
+    justify-content: flex-end;
+    gap: 12px;
+    padding-top: 20px;
+    border-top: 1px solid var(--border-secondary);
+}
+
+.primary-button {
+    background: var(--color-primary);
+    color: white;
+}
+
+.primary-button:disabled {
+    background: var(--color-disabled);
+    cursor: not-allowed;
+}
+
+@media (max-width: 600px) {
+    .transfer-sections {
+        flex-direction: column;
+    }
+    .transfer-divider {
+        padding: 10px 0;
+        transform: rotate(90deg);
+    }
+}

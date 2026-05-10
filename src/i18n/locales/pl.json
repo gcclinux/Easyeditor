@@ -572,7 +572,28 @@
     "timeline_desc": "Generuj oś czasu",
     "rows": "Wiersze:",
     "columns": "Kolumny:",
-    "insert": "Wstaw"
+    "insert": "Wstaw",
+    "transfer_md": "Przenieś MD",
+    "transfer_md_desc": "Kopiuj pliki MD między lokalnymi a chmurą"
+  },
+  "transfer_md": {
+    "title": "Przenieś pliki MD",
+    "subtitle": "Kopiuj pliki Markdown między lokalnym dyskiem a dostawcami chmury",
+    "source": "Źródło",
+    "target": "Cel",
+    "local_folder": "Folder lokalny",
+    "select_folder": "Wybierz folder",
+    "start_transfer": "Rozpocznij transfer",
+    "processing": "Przetwarzanie...",
+    "completed": "Transfer zakończony!",
+    "skipped": "Pominięto (Identyczny)",
+    "renamed": "Zmieniono nazwę (Konflikt)",
+    "uploaded": "Przesłano",
+    "error": "Błąd podczas transferu",
+    "no_files": "Nie znaleziono plików MD w źródle",
+    "select_source_target": "Wybierz źródło i cel",
+    "connected": "Połączono",
+    "not_connected": "Nie połączono"
   },
   "icons": {
     "categories": {

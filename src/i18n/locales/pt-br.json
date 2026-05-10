@@ -572,7 +572,28 @@
     "timeline_desc": "Gerar linha do tempo",
     "rows": "Linhas:",
     "columns": "Colunas:",
-    "insert": "Inserir"
+    "insert": "Inserir",
+    "transfer_md": "Transferir MD",
+    "transfer_md_desc": "Copiar arquivos MD entre local e nuvem"
+  },
+  "transfer_md": {
+    "title": "Transferir arquivos MD",
+    "subtitle": "Copiar arquivos Markdown entre o armazenamento local e provedores de nuvem",
+    "source": "Origem",
+    "target": "Destino",
+    "local_folder": "Pasta local",
+    "select_folder": "Selecionar pasta",
+    "start_transfer": "Iniciar transferência",
+    "processing": "Processando...",
+    "completed": "Transferência concluída!",
+    "skipped": "Pulado (Idêntico)",
+    "renamed": "Renomeado (Conflito)",
+    "uploaded": "Enviado",
+    "error": "Erro durante a transferência",
+    "no_files": "Nenhum arquivo MD encontrado na origem",
+    "select_source_target": "Selecione a origem e o destino",
+    "connected": "Conectado",
+    "not_connected": "Não conectado"
   },
   "icons": {
     "categories": {
