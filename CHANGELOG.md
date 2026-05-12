@@ -7,6 +7,7 @@ EasyEditor is an easy markdown editor that allows you to write Markdown (MD) and
 *EasyEditor is a free and open-source project. You can use it for free and modify it as you like.*
 
 ## Latest CODE version
+- 1.7.5 - feat: Markdown file transfer, Implemented OneDrive cloud, Preview Component inline with editor
 - 1.7.4 - feat: Initial PDF text extractor to Markdown, feat: Introduced Spanish as native language, including Get API link, enhanced the license model look & feel, feat: included button to apply for Premium License
 - 1.7.3 - feat: Box Cloud Integration — users can now connect to Box cloud storage account to EasyEditor, enabling them to open, edit, and save Markdown files directly from Box, with full OAuth2 authentication flow, file/folder browsing, bug: opening repo will now accurately load repo images also, feat: templates with JIRA User Story & KaTeX (Free)
 - 1.7.2 - feat: AI Inappropriate Content Reporting — users can now flag problematic AI-generated content via a structured report dialog in the EasyAI panel, with categorized reports (offensive, inaccurate, harmful, explicit, spam, other), optional descriptions, local persistence with 100-entry FIFO cap, Tauri file logging, web download export, and full localization across all five supported locales (en, de, nl, pl, pt-br)
