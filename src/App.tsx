@@ -2590,7 +2590,7 @@ const App = () => {
               closeAllDropdowns();
               setShowEasyAIPanel(!showEasyAIPanel);
             }}
-            title="EasyAI"
+            title={LicenseManager.hasActiveLicense() ? 'EasyAI — Premium: Gemini & more' : 'EasyAI — Free: Ollama only'}
             style={{ backgroundColor: showEasyAIPanel ? '#4a5568' : undefined }}
           >
             <FaRobot /> &nbsp; EasyAI
@@ -3414,7 +3414,7 @@ const App = () => {
           lastAIAction={lastAIAction}
           lastUserPrompt={lastUserPrompt}
           lastAIResponse={lastAIResponse}
-          onActionSelect={async (actionId, promptText) => {
+          onActionSelect={async (actionId, promptText, forcePremiumDefault) => {
             setLastAIAction(actionId);
             setLastUserPrompt(promptText);
             setLastAIResponse(null);
@@ -3527,7 +3527,7 @@ const App = () => {
             setShowEasyAIPanel(false);
 
             try {
-              const aiResponse = await queryEasyAI(systemPrompt, promptText);
+              const aiResponse = await queryEasyAI(systemPrompt, promptText, forcePremiumDefault ?? false);
               setLastAIResponse(aiResponse);
               if (aiResponse.trim()) {
                 if (actionId === 'rewrite') {

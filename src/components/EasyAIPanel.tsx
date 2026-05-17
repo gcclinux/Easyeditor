@@ -1,16 +1,17 @@
-import React, { useState, useRef, useEffect } from 'react';
-import { FaRobot, FaTimes, FaFlag, FaDownload } from 'react-icons/fa';
+import React, { useState, useRef, useEffect, useCallback } from 'react';
+import { FaRobot, FaTimes, FaFlag, FaDownload, FaLock } from 'react-icons/fa';
 import { useLanguage } from '../i18n/LanguageContext';
 import { getPersonaDescription } from './easyai/aiPersonas';
-import { loadEasyAIConfig, EasyAIConfig } from './easyai/aiService';
+import { loadEasyAIConfig, EasyAIConfig, hasPremiumAccess, hasCustomConfig, getPremiumDefaults } from './easyai/aiService';
 import ReportContentModal from './ReportContentModal';
 import { downloadReportsAsFile, getReports, isTauriEnv } from './easyai/reportService';
+import LicenseManager from '../premium/LicenseManager';
 
 interface EasyAIPanelProps {
   showEasyAIPanel: boolean;
   setShowEasyAIPanel: (show: boolean) => void;
   showToast: (message: string, type?: 'success' | 'error' | 'info' | 'warning') => void;
-  onActionSelect?: (action: string, prompt: string) => void;
+  onActionSelect?: (action: string, prompt: string, forcePremiumDefault?: boolean) => void;
   lastAIAction?: string | null;
   lastUserPrompt?: string | null;
   lastAIResponse?: string | null;
@@ -29,24 +30,51 @@ const EasyAIPanel: React.FC<EasyAIPanelProps> = ({
   const [prompt, setPrompt] = useState('');
   const [aiConfig, setAiConfig] = useState<EasyAIConfig | null>(null);
   const [showReportModal, setShowReportModal] = useState<boolean>(false);
+  const [isPremium, setIsPremium] = useState<boolean>(false);
+  /** True = use saved custom config; False = use pre-configured premium default */
+  const [useCustomConfig, setUseCustomConfig] = useState<boolean>(false);
+  /** True when the user has a non-Ollama/non-default config saved */
+  const [hasCustomCfg, setHasCustomCfg] = useState<boolean>(false);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const panelRef = useRef<HTMLDivElement>(null);
 
-  // Load AI config when panel opens
+  // Track license status
+  useEffect(() => {
+    setIsPremium(hasPremiumAccess());
+    const unsub = LicenseManager.subscribe(() => {
+      setIsPremium(hasPremiumAccess());
+    });
+    return unsub;
+  }, []);
+
+  // Check whether user has a saved custom config whenever panel opens or premium changes
   useEffect(() => {
     if (showEasyAIPanel) {
-      loadEasyAIConfig().then(setAiConfig).catch(() => setAiConfig(null));
+      hasCustomConfig().then(has => {
+        setHasCustomCfg(has);
+        // If they have no custom config saved, always use premium default
+        if (!has) setUseCustomConfig(false);
+      });
     }
-  }, [showEasyAIPanel]);
+  }, [showEasyAIPanel, isPremium]);
+
+  // Reload the displayed config whenever the toggle or panel visibility changes
+  const reloadConfig = useCallback(() => {
+    // forcePremiumDefault = true when toggle is OFF (use premium default)
+    const forceDefault = isPremium && !useCustomConfig;
+    loadEasyAIConfig(forceDefault).then(setAiConfig).catch(() => setAiConfig(null));
+  }, [isPremium, useCustomConfig]);
+
+  useEffect(() => {
+    if (showEasyAIPanel) reloadConfig();
+  }, [showEasyAIPanel, reloadConfig]);
 
   // Auto-resize textarea
   useEffect(() => {
     if (textareaRef.current) {
-      textareaRef.current.style.height = 'auto'; // Reset height
-      // Limit to approximately 10 lines
+      textareaRef.current.style.height = 'auto';
       const scrollHeight = textareaRef.current.scrollHeight;
-      // assuming roughly 20px line height, 5 lines ~ 100px, 10 lines ~ 200px
-      textareaRef.current.style.height = `${Math.min(scrollHeight, 200)}px`;
+      textareaRef.current.style.height = `${Math.min(scrollHeight, 350)}px`;
     }
   }, [prompt]);
 
@@ -66,31 +94,60 @@ const EasyAIPanel: React.FC<EasyAIPanelProps> = ({
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, [showEasyAIPanel, setShowEasyAIPanel]);
 
-  const panelWidth = 480; // Single panel width like EasyNotes
+  const panelWidth = 624;
 
   const actionButtons = [
     { id: 'markdown', label: t('easyai.markdown') },
     { id: 'mermaid', label: t('easyai.mermaid') },
     { id: 'user-story', label: t('easyai.user_story') },
     { id: 'documentation', label: t('easyai.documentation') },
-    { id: 'plantuml', label: t('easyai.plantuml') },
-    { id: 'md-table', label: t('easyai.md_table') },
     { id: 'fix-code', label: t('easyai.fix_code') },
-    { id: 'rewrite', label: t('easyai.rewrite') }
+    { id: 'rewrite', label: t('easyai.rewrite') },
+    { id: 'architecture', label: t('easyai.architecture') },
+    { id: 'implementation', label: t('easyai.implementation') }
   ];
 
   const handleActionClick = (actionId: string) => {
+    if (!isPremium && aiConfig?.agent !== 'Ollama') {
+      showToast('EasyAI with external models requires a Premium license. Free users can use Ollama.', 'warning');
+      return;
+    }
     if (!prompt.trim()) {
       showToast(t('easyai.toast_empty_prompt'), 'warning');
       return;
     }
 
+    // Pass whether we're forcing the premium default so queryEasyAI uses the right config
+    const forcePremiumDefault = isPremium && hasCustomCfg && !useCustomConfig;
+
     if (onActionSelect) {
-      onActionSelect(actionId, prompt);
+      onActionSelect(actionId, prompt, forcePremiumDefault);
     } else {
       showToast(t('easyai.toast_action_not_bound').replace('{{action}}', actionId), 'info');
     }
   };
+
+  // ── Toggle: only shown for Premium users who have a custom config saved ──
+  const showToggle = isPremium && hasCustomCfg;
+  const premiumDefaults = getPremiumDefaults();
+
+  // Badge text & colour
+  const buildBadge = () => {
+    if (!aiConfig) return null;
+    const isUsingCustom = !aiConfig.isPremiumDefault;
+    const color = isUsingCustom ? '#63b3ed' : '#48bb78';
+    let text: string;
+    if (aiConfig.agent === 'Ollama') {
+      text = `✓ Ollama (host: ${aiConfig.host.replace(/^https?:\/\//, '')}, model: ${aiConfig.model})`;
+    } else if (isUsingCustom) {
+      text = `✓ ${aiConfig.agent} (model: ${aiConfig.model}) — your config`;
+    } else {
+      text = `✓ ${aiConfig.agent} (model: ${aiConfig.model}) — Default`;
+    }
+    return { text, color };
+  };
+
+  const badge = buildBadge();
 
   return (
     <div
@@ -98,7 +155,7 @@ const EasyAIPanel: React.FC<EasyAIPanelProps> = ({
       className={`easyai-panel ${showEasyAIPanel ? 'easyai-panel-open' : ''}`}
       style={{
         position: 'fixed',
-        top: '120px', // Below the menu bars
+        top: '120px',
         right: showEasyAIPanel ? '0' : `-${panelWidth + 35}px`,
         width: `${panelWidth}px`,
         height: 'calc(100vh - 120px)',
@@ -121,19 +178,77 @@ const EasyAIPanel: React.FC<EasyAIPanelProps> = ({
         boxSizing: 'border-box'
       }}>
         {/* Header */}
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '20px' }}>
-          <div>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '16px' }}>
+          <div style={{ flex: 1, minWidth: 0 }}>
             <h2 style={{ margin: 0, fontSize: '1.5rem', display: 'flex', alignItems: 'center' }}>
               <FaRobot style={{ marginRight: '10px' }} />
               EasyAI (Beta)
             </h2>
-            {aiConfig && (
-              <p style={{ margin: '4px 0 0 0', fontSize: '0.75rem', color: 'var(--color-text-secondary, #888)', display: 'flex', alignItems: 'center', gap: '4px' }}>
-                <span style={{ color: '#48bb78' }}>✓</span> {aiConfig.agent} ({aiConfig.agent === 'Ollama' ? `host: ${aiConfig.host.replace(/^https?:\/\//, '')}, ` : ''}model: {aiConfig.model})
-              </p>
+
+            {/* Combined: badge + optional toggle on one line */}
+            {(badge || !isPremium) && (
+              <div style={{
+                display: 'flex',
+                alignItems: 'center',
+                flexWrap: 'wrap',
+                gap: '6px',
+                marginTop: '5px',
+              }}>
+                {/* Toggle pill — front of line (Premium with custom config only) */}
+                {showToggle && (
+                  <button
+                    id="easyai-source-toggle"
+                    role="switch"
+                    aria-checked={useCustomConfig}
+                    title={useCustomConfig ? 'Switch to Premium Default' : 'Switch to My Config'}
+                    onClick={() => setUseCustomConfig(prev => !prev)}
+                    style={{
+                      position: 'relative',
+                      width: '34px',
+                      height: '19px',
+                      borderRadius: '10px',
+                      border: 'none',
+                      cursor: 'pointer',
+                      flexShrink: 0,
+                      backgroundColor: useCustomConfig ? '#63b3ed' : '#48bb78',
+                      transition: 'background-color 0.25s',
+                      padding: 0,
+                      outline: 'none',
+                    }}
+                  >
+                    <span style={{
+                      position: 'absolute',
+                      top: '2.5px',
+                      left: useCustomConfig ? '17px' : '2.5px',
+                      width: '14px',
+                      height: '14px',
+                      borderRadius: '50%',
+                      backgroundColor: '#ffffff',
+                      transition: 'left 0.25s',
+                      boxShadow: '0 1px 3px rgba(0,0,0,0.3)',
+                    }} />
+                  </button>
+                )}
+
+                {/* AI source badge */}
+                {badge && (
+                  <span style={{ fontSize: '0.75rem', color: badge.color, whiteSpace: 'nowrap' }}>
+                    {badge.text}
+                  </span>
+                )}
+
+                {/* Free user notice */}
+                {!isPremium && (
+                  <span style={{ fontSize: '0.72rem', color: '#f6ad55', display: 'flex', alignItems: 'center', gap: '4px' }}>
+                    <FaLock style={{ fontSize: '0.65rem' }} />
+                    Free — Ollama only.
+                  </span>
+                )}
+              </div>
             )}
           </div>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginLeft: '8px' }}>
             <button
               onClick={() => setShowReportModal(true)}
               aria-label={t('easyai.report.button')}
@@ -188,8 +303,8 @@ const EasyAIPanel: React.FC<EasyAIPanelProps> = ({
               resize: 'none',
               outline: 'none',
               boxSizing: 'border-box',
-              minHeight: '100px', // About 5 lines
-              maxHeight: '200px', // About 10 lines
+              minHeight: '180px',
+              maxHeight: '350px',
               overflowY: 'auto',
               fontFamily: 'inherit'
             }}

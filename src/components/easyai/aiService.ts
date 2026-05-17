@@ -1,28 +1,78 @@
 /**
  * EasyAI Service — connects the persona system prompts to the AI backend.
  *
- * Reads config from:
- *   - Tauri: ~/.easyeditor/easyai-config.env
- *   - Web:   localStorage key "easyai-config"
+ * Config priority:
+ *   1. User's own saved config (Tauri: ~/.easyeditor/easyai-config.env | Web: localStorage)
+ *   2. Pre-configured Premium model from .env.local (Premium/PremiumPlus only)
+ *   3. Ollama defaults (Free users)
  */
+import LicenseManager from '../../premium/LicenseManager';
 
 export interface EasyAIConfig {
   agent: string;   // Ollama | Gemini | Bedrock | Claude
   host: string;    // e.g. http://localhost:11434
   model: string;   // e.g. ministral-3:3b
   apiKey: string;
+  /** True when using the pre-configured Premium model (not user's own config) */
+  isPremiumDefault?: boolean;
+}
+
+/**
+ * Returns true if the user has Premium or PremiumPlus license.
+ */
+export function hasPremiumAccess(): boolean {
+  return LicenseManager.hasActiveLicense();
+}
+
+/**
+ * Returns true if the user has PremiumPlus license.
+ */
+export function hasPremiumPlusAccess(): boolean {
+  return LicenseManager.hasActiveLicense() && LicenseManager.getType() === 'PremiumPlus';
+}
+
+/**
+ * Returns the pre-configured premium model details from .env.local.
+ * These are the defaults baked into the app for Premium subscribers.
+ */
+export function getPremiumDefaults(): { agent: string; model: string; apiKey: string } {
+  return {
+    agent: import.meta.env.VITE_PREMIUM_AGENT || import.meta.env.AGENT || 'Gemini',
+    model: import.meta.env.VITE_PREMIUM_MODEL || import.meta.env.EASYAI_MODEL || 'gemini-3.1-flash-lite',
+    apiKey: import.meta.env.GEMINI_API || '',
+  };
 }
 
 /**
  * Load the EasyAI config from the appropriate storage.
+ *
+ * Priority (without override):
+ *   1. User's own saved custom config (any license tier — Ollama always available)
+ *   2. Pre-configured Premium model from .env.local (Premium/PremiumPlus only)
+ *   3. Ollama defaults (Free users)
+ *
+ * @param forcePremiumDefault - when true, skip the user's saved config and return the
+ *   pre-configured premium model directly (Premium/PremiumPlus only).
  */
-export async function loadEasyAIConfig(): Promise<EasyAIConfig> {
-  const defaults: EasyAIConfig = {
+export async function loadEasyAIConfig(forcePremiumDefault = false): Promise<EasyAIConfig> {
+  const ollamaDefaults: EasyAIConfig = {
     agent: 'Ollama',
     host: 'http://localhost:11434',
     model: 'ministral-3:3b',
     apiKey: '',
   };
+
+  // If the caller wants the premium default explicitly, return it straight away
+  if (forcePremiumDefault && hasPremiumAccess()) {
+    const pd = getPremiumDefaults();
+    return {
+      agent: pd.agent,
+      host: 'https://generativelanguage.googleapis.com',
+      model: pd.model,
+      apiKey: pd.apiKey,
+      isPremiumDefault: true,
+    };
+  }
 
   try {
     const isTauri = !!(window as any).__TAURI__;
@@ -36,25 +86,31 @@ export async function loadEasyAIConfig(): Promise<EasyAIConfig> {
       if (await exists(configPath)) {
         const content = await readTextFile(configPath);
         const get = (key: string, fallback: string) => {
-          const m = content.match(new RegExp(`${key}=(.*)`));
+          const m = content.match(new RegExp(`${key}=(.*)`) );
           return m ? m[1].trim() : fallback;
         };
+        // User has their own config — use it regardless of license tier
         return {
-          agent: get('EASYAI_AGENT', defaults.agent),
-          host: get('EASYAI_HOST', defaults.host),
-          model: get('EASYAI_MODEL', defaults.model),
-          apiKey: get('EASYAI_API_KEY', defaults.apiKey),
+          agent: get('EASYAI_AGENT', ollamaDefaults.agent),
+          host: get('EASYAI_HOST', ollamaDefaults.host),
+          model: get('EASYAI_MODEL', ollamaDefaults.model),
+          apiKey: get('EASYAI_API_KEY', ollamaDefaults.apiKey),
+          isPremiumDefault: false,
         };
       }
     } else {
       const raw = localStorage.getItem('easyai-config');
       if (raw) {
         const parsed = JSON.parse(raw);
+        const customAgent = parsed.agent || ollamaDefaults.agent;
+        const customApiKey = parsed.apiKey ?? ollamaDefaults.apiKey;
+        // User has their own config saved — use it
         return {
-          agent: parsed.agent || defaults.agent,
-          host: parsed.host || defaults.host,
-          model: parsed.model || defaults.model,
-          apiKey: parsed.apiKey ?? defaults.apiKey,
+          agent: customAgent,
+          host: parsed.host || ollamaDefaults.host,
+          model: parsed.model || ollamaDefaults.model,
+          apiKey: customApiKey,
+          isPremiumDefault: false,
         };
       }
     }
@@ -62,7 +118,47 @@ export async function loadEasyAIConfig(): Promise<EasyAIConfig> {
     console.warn('[EasyAI] Could not load config, using defaults:', err);
   }
 
-  return defaults;
+  // No custom config found — apply license-based defaults
+  if (hasPremiumAccess()) {
+    // Premium/PremiumPlus: inject pre-configured model from .env.local
+    const premiumDefaults = getPremiumDefaults();
+    console.log('[EasyAI] No custom config — using Premium pre-configured model:', premiumDefaults.agent, premiumDefaults.model);
+    return {
+      agent: premiumDefaults.agent,
+      host: 'https://generativelanguage.googleapis.com',
+      model: premiumDefaults.model,
+      apiKey: premiumDefaults.apiKey,
+      isPremiumDefault: true,
+    };
+  }
+
+  // Free users: Ollama only
+  console.log('[EasyAI] No premium license — using Ollama defaults');
+  return { ...ollamaDefaults, isPremiumDefault: false };
+}
+
+/**
+ * Returns true when the user has a saved custom config stored
+ * (i.e. they have gone into Settings > About > EasyAI API Hosting and saved something).
+ */
+export async function hasCustomConfig(): Promise<boolean> {
+  try {
+    const isTauri = !!(window as any).__TAURI__;
+    if (isTauri) {
+      const { homeDir, join } = await import('@tauri-apps/api/path');
+      const { exists } = await import('@tauri-apps/plugin-fs');
+      const homePath = await homeDir();
+      const configPath = await join(homePath, '.easyeditor', 'easyai-config.env');
+      return await exists(configPath);
+    } else {
+      const raw = localStorage.getItem('easyai-config');
+      if (!raw) return false;
+      const parsed = JSON.parse(raw);
+      return !!(parsed.apiKey || (parsed.agent && parsed.agent !== 'Ollama'));
+    }
+  } catch {
+    return false;
+  }
 }
 
 
@@ -305,14 +401,18 @@ async function callBedrock(
 
 /**
  * Main entry point — dispatches to the correct backend based on config.agent.
+ *
+ * @param forcePremiumDefault - when true, bypass any saved user config and use
+ *   the pre-configured premium model from .env.local.
  */
 export async function queryEasyAI(
   systemPrompt: string,
   userPrompt: string,
+  forcePremiumDefault = false,
 ): Promise<string> {
-  const config = await loadEasyAIConfig();
+  const config = await loadEasyAIConfig(forcePremiumDefault);
 
-  console.log(`[EasyAI] Using agent=${config.agent}, model=${config.model}, host=${config.host}`);
+  console.log(`[EasyAI] Using agent=${config.agent}, model=${config.model}, host=${config.host}, premiumDefault=${config.isPremiumDefault}`);
 
   switch (config.agent) {
     case 'Ollama':
