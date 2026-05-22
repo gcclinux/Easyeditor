@@ -1,0 +1,21 @@
+services:
+  easyeditor:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: gcclinux/easyeditor:latest
+    platform: linux/amd64
+    container_name: easyeditor
+    ports:
+      - "3024:3024"
+    environment:
+      - NODE_ENV=production
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "wget", "-q", "--spider", "http://localhost:3024"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 10s
+    labels:
+      - "com.centurylinklabs.watchtower.enable=true"
