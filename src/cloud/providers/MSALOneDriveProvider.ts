@@ -10,7 +10,6 @@ import { PublicClientApplication, Configuration, AuthenticationResult } from '@a
 import { CloudProvider, CloudFile, AuthResult } from '../interfaces/CloudProvider';
 import { ONEDRIVE_CONFIG, isOneDriveConfigured, getConfigurationErrorMessage } from '../config/onedrive-credentials';
 import { cloudCredentialManager } from '../managers/CloudCredentialManager';
-import LicenseManager from '../../premium/LicenseManager';
 import { createLogger } from '../../utils/logger';
 
 const logger = createLogger('MSALOneDriveProvider');
@@ -73,15 +72,6 @@ export class MSALOneDriveProvider implements CloudProvider {
    */
   async authenticate(): Promise<AuthResult> {
     logger.log('Starting authentication flow');
-
-    // Check for premium license first
-    if (!LicenseManager.hasActiveLicense()) {
-      logger.warn('Premium license required for OneDrive integration');
-      return {
-        success: false,
-        error: 'Premium license required. Please upgrade to use OneDrive integration.'
-      };
-    }
 
     if (!isOneDriveConfigured()) {
       const errorMessage = getConfigurationErrorMessage();

@@ -161,15 +161,7 @@ describe('OAuthOneDriveProvider', () => {
       expect(result.error).toContain('no tokens received');
     });
 
-    it('should return error when no premium license', async () => {
-      const LicenseManager = require('../../../premium/LicenseManager').default;
-      LicenseManager.hasActiveLicense.mockReturnValueOnce(false);
 
-      const result = await provider.authenticate();
-
-      expect(result.success).toBe(false);
-      expect(result.error).toContain('Premium license required');
-    });
 
     it('should return error when not configured', async () => {
       const { isOneDriveConfigured, getConfigurationErrorMessage } = require('../../config/onedrive-credentials');

@@ -517,23 +517,21 @@ describe('EasyNotesSidebar - OneDrive Integration', () => {
     });
   });
 
-  describe('License gating hides OneDrive when no license (Req 8.1, 8.2)', () => {
-    test('shows upgrade prompt instead of providers when no license', async () => {
+  describe('No license gating for EasyNotes (EasyNotes is free)', () => {
+    test('shows providers including OneDrive even when no license', async () => {
       mockHasActiveLicense.mockReturnValue(false);
 
       await act(async () => {
         render(<EasyNotesSidebar {...defaultProps} />);
       });
 
-      // Should show upgrade prompt
       await waitFor(() => {
-        expect(screen.getByText('Upgrade to Premium to sync notes across devices')).toBeInTheDocument();
-        expect(screen.getByText('Enable Premium')).toBeInTheDocument();
+        expect(screen.getByText('OneDrive')).toBeInTheDocument();
       });
 
-      // Should NOT show OneDrive or other providers
-      expect(screen.queryByText('OneDrive')).not.toBeInTheDocument();
-      expect(screen.queryByText('Google Drive')).not.toBeInTheDocument();
+      // Should NOT show upgrade prompt or enable button
+      expect(screen.queryByText('Upgrade to Premium to sync notes across devices')).not.toBeInTheDocument();
+      expect(screen.queryByText('Enable Premium')).not.toBeInTheDocument();
     });
 
     test('shows providers including OneDrive when license is active', async () => {
@@ -547,26 +545,9 @@ describe('EasyNotesSidebar - OneDrive Integration', () => {
         expect(screen.getByText('OneDrive')).toBeInTheDocument();
       });
 
-      // Should NOT show upgrade prompt
+      // Should NOT show upgrade prompt or enable button
       expect(screen.queryByText('Upgrade to Premium to sync notes across devices')).not.toBeInTheDocument();
-    });
-
-    test('upgrade button triggers onUpgradeClick callback', async () => {
-      mockHasActiveLicense.mockReturnValue(false);
-
-      await act(async () => {
-        render(<EasyNotesSidebar {...defaultProps} />);
-      });
-
-      await waitFor(() => {
-        expect(screen.getByText('Enable Premium')).toBeInTheDocument();
-      });
-
-      await act(async () => {
-        fireEvent.click(screen.getByText('Enable Premium'));
-      });
-
-      expect(defaultProps.onUpgradeClick).toHaveBeenCalled();
+      expect(screen.queryByText('Enable Premium')).not.toBeInTheDocument();
     });
   });
 });

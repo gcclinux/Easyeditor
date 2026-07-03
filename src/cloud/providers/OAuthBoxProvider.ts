@@ -14,7 +14,6 @@ import { OAuthManager } from '../../services/oauth/core/OAuthManager';
 import { getSharedOAuthManager } from '../../services/oauth/tauri/SharedOAuthManager';
 import { BoxOAuthProvider } from '../../services/oauth/providers/BoxOAuthProvider';
 import { BOX_CONFIG, isBoxConfigured, getConfigurationErrorMessage } from '../config/box-credentials';
-import LicenseManager from '../../premium/LicenseManager';
 import { createLogger } from '../../utils/logger';
 
 const logger = createLogger('OAuthBoxProvider');
@@ -78,15 +77,6 @@ export class OAuthBoxProvider implements CloudProvider {
    */
   async authenticate(): Promise<AuthResult> {
     logger.log('Starting OAuth authentication');
-
-    // Check for premium license first
-    if (!LicenseManager.hasActiveLicense()) {
-      logger.warn('Premium license required for Box integration');
-      return {
-        success: false,
-        error: 'Premium license required. Please upgrade to use Box integration.'
-      };
-    }
 
     if (!isBoxConfigured()) {
       const errorMessage = getConfigurationErrorMessage();

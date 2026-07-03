@@ -8,7 +8,6 @@
 import { CloudProvider, CloudFile, AuthResult } from '../interfaces/CloudProvider';
 import { DROPBOX_CONFIG, isDropboxConfigured, getConfigurationErrorMessage } from '../config/dropbox-credentials';
 import { cloudCredentialManager } from '../managers/CloudCredentialManager';
-import LicenseManager from '../../premium/LicenseManager';
 import { createLogger } from '../../utils/logger';
 
 const logger = createLogger('DropboxProvider');
@@ -74,15 +73,6 @@ export class DropboxProvider implements CloudProvider {
    */
   async authenticate(): Promise<AuthResult> {
     logger.log('Starting authentication flow');
-
-    // Check for premium license first
-    if (!LicenseManager.hasActiveLicense()) {
-      logger.warn('Premium license required for Dropbox integration');
-      return {
-        success: false,
-        error: 'Premium license required. Please upgrade to use Dropbox integration.'
-      };
-    }
 
     if (!isDropboxConfigured()) {
       const errorMessage = getConfigurationErrorMessage();

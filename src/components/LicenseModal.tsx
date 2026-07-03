@@ -132,6 +132,8 @@ export function LicenseModal({ open, onClose, showToast }: LicenseModalProps) {
               <li>{t('about.free_li15')}</li>
               <li>{t('about.free_li16')}</li>
               <li>{t('about.free_li17')}</li>
+              <li>{t('about.free_li18')}</li>
+              <li>{t('about.free_li19')}</li>
             </ul>
           </div>
 
@@ -139,10 +141,6 @@ export function LicenseModal({ open, onClose, showToast }: LicenseModalProps) {
           <div className="about-card" style={{ display: 'flex', flexDirection: 'column' }}>
             <h3>{t('about.premium_features')}</h3>
             <ul style={{ paddingLeft: '20px', lineHeight: '1.6', fontSize: '0.9em', marginTop: '10px' }}>
-              <li>{t('about.premium_li1')}</li>
-              <li>{t('about.premium_li2')}</li>
-              <li>{t('about.premium_li3')}</li>
-              <li>{t('about.premium_li5')}</li>
               <li>{t('about.premium_li4')}</li>
 
               <li>{t('about.premiumplus_li1')}</li>

@@ -25,7 +25,6 @@ import { OAuthManager } from '../../services/oauth/core/OAuthManager';
 import { getSharedOAuthManager } from '../../services/oauth/tauri/SharedOAuthManager';
 import { OneDriveOAuthProvider } from '../../services/oauth/providers/OneDriveOAuthProvider';
 import { ONEDRIVE_CONFIG, isOneDriveConfigured, getConfigurationErrorMessage } from '../config/onedrive-credentials';
-import LicenseManager from '../../premium/LicenseManager';
 import { createLogger } from '../../utils/logger';
 
 const logger = createLogger('OAuthOneDriveProvider');
@@ -88,15 +87,6 @@ export class OAuthOneDriveProvider implements CloudProvider {
    */
   async authenticate(): Promise<AuthResult> {
     logger.log('Starting OAuth authentication');
-
-    // Check for premium license first
-    if (!LicenseManager.hasActiveLicense()) {
-      logger.warn('Premium license required for OneDrive integration');
-      return {
-        success: false,
-        error: 'Premium license required. Please upgrade to use OneDrive integration.'
-      };
-    }
 
     if (!isOneDriveConfigured()) {
       const errorMessage = getConfigurationErrorMessage();

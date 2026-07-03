@@ -98,24 +98,9 @@ describe('OAuthDropboxProvider', () => {
   });
 
   describe('authenticate', () => {
-    it('should return error when no premium license', async () => {
-      const LicenseManager = require('../../../premium/LicenseManager').default;
-      
-      // Mock license as inactive
-      LicenseManager.hasActiveLicense.mockReturnValueOnce(false);
-
-      const result = await provider.authenticate();
-
-      expect(result.success).toBe(false);
-      expect(result.error).toBe('Premium license required. Please upgrade to use Dropbox integration.');
-    });
-
     it('should return error when not configured', async () => {
       const { isDropboxConfigured, getConfigurationErrorMessage } = require('../../config/dropbox-credentials');
-      const LicenseManager = require('../../../premium/LicenseManager').default;
       
-      // Mock license as active so we can test configuration error
-      LicenseManager.hasActiveLicense.mockReturnValueOnce(true);
       isDropboxConfigured.mockReturnValueOnce(false);
       getConfigurationErrorMessage.mockReturnValueOnce('Configuration error');
 

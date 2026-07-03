@@ -24,13 +24,7 @@ jest.mock('../managers/CloudCredentialManager', () => ({
   }
 }));
 
-// Mock LicenseManager
-jest.mock('../../premium/LicenseManager', () => ({
-  __esModule: true,
-  default: {
-    hasActiveLicense: jest.fn().mockReturnValue(true),
-  }
-}));
+
 
 // Mock box-credentials
 jest.mock('../config/box-credentials', () => ({
@@ -84,8 +78,7 @@ describe('BoxProvider Unit Tests', () => {
 
   describe('Authentication - Popup Blocked', () => {
     it('should return error when popup is blocked (window.open returns null)', async () => {
-      const LicenseManager = require('../../premium/LicenseManager').default;
-      LicenseManager.hasActiveLicense.mockReturnValue(true);
+
 
       const { isBoxConfigured } = require('../config/box-credentials');
       isBoxConfigured.mockReturnValue(true);
@@ -132,23 +125,11 @@ describe('BoxProvider Unit Tests', () => {
     });
   });
 
-  describe('Authentication - No License', () => {
-    it('should return error when user has no active license', async () => {
-      const LicenseManager = require('../../premium/LicenseManager').default;
-      LicenseManager.hasActiveLicense.mockReturnValue(false);
 
-      const result = await provider.authenticate();
-
-      expect(result.success).toBe(false);
-      expect(result.error).toBeDefined();
-      expect(result.error!.toLowerCase()).toContain('license');
-    });
-  });
 
   describe('Authentication - Missing Config', () => {
     it('should return error when Box is not configured', async () => {
-      const LicenseManager = require('../../premium/LicenseManager').default;
-      LicenseManager.hasActiveLicense.mockReturnValue(true);
+
 
       const { isBoxConfigured, getConfigurationErrorMessage } = require('../config/box-credentials');
       isBoxConfigured.mockReturnValue(false);

@@ -48,7 +48,7 @@ export function AboutModal({ open, onClose }: AboutModalProps) {
               <span className="badge">{t('about.badge_easygit')}</span>
               <span className="badge">{t('about.badge_easynotes')}</span>
               <span className="badge">{t('about.badge_easyai')}</span>
-              <a href="https://easyeditor.co.uk/" target="_blank" rel="noopener noreferrer" style={{ textDecoration: 'none' }}>
+              <a href="https://easysmartapps.co.uk/" target="_blank" rel="noopener noreferrer" style={{ textDecoration: 'none' }}>
                 <span className="badge">{t('about.badge_roadmap')}</span>
               </a>
             </div>
@@ -117,10 +117,15 @@ export function AboutModal({ open, onClose }: AboutModalProps) {
                 </p>
               </div>
             </div>
+            <div className="about-card">
+              <h3>{t('about.cloud_integration_title')}</h3>
+              <div style={{ lineHeight: '1.6', fontSize: '0.95em' }}>
+                <p dangerouslySetInnerHTML={{ __html: t('about.cloud_integration_desc') }} />
+              </div>
+            </div>
             <div className="about-card" style={{ flex: 1 }}>
               <h3>{t('about.premium_features')}</h3>
               <div style={{ lineHeight: '1.6', fontSize: '0.95em' }}>
-                <p style={{ marginBottom: '10px' }} dangerouslySetInnerHTML={{ __html: t('about.premium_features_desc1') }} />
                 <p style={{ marginBottom: '10px' }} dangerouslySetInnerHTML={{ __html: t('about.premium_features_desc2') }} />
                 <p style={{ marginBottom: '10px' }} dangerouslySetInnerHTML={{ __html: t('about.premium_features_desc3') }} />
                 <p dangerouslySetInnerHTML={{ __html: t('about.premium_features_desc4') }} />

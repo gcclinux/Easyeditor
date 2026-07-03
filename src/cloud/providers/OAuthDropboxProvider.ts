@@ -14,7 +14,6 @@ import { OAuthManager } from '../../services/oauth/core/OAuthManager';
 import { getSharedOAuthManager } from '../../services/oauth/tauri/SharedOAuthManager';
 import { DropboxOAuthProvider } from '../../services/oauth/providers/DropboxOAuthProvider';
 import { DROPBOX_CONFIG, isDropboxConfigured, getConfigurationErrorMessage } from '../config/dropbox-credentials';
-import LicenseManager from '../../premium/LicenseManager';
 import { createLogger } from '../../utils/logger';
 
 const logger = createLogger('OAuthDropboxProvider');
@@ -78,15 +77,6 @@ export class OAuthDropboxProvider implements CloudProvider {
    */
   async authenticate(): Promise<AuthResult> {
     logger.log('Starting OAuth authentication');
-
-    // Check for premium license first
-    if (!LicenseManager.hasActiveLicense()) {
-      logger.warn('Premium license required for Dropbox integration');
-      return {
-        success: false,
-        error: 'Premium license required. Please upgrade to use Dropbox integration.'
-      };
-    }
 
     if (!isDropboxConfigured()) {
       const errorMessage = getConfigurationErrorMessage();

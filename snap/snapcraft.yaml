@@ -1,5 +1,5 @@
 name: easyeditor
-version: '1.7.6'
+version: '1.8.0'
 summary: Easy Markdown Editor
 description: |
   Easyeditor is a robust Markdown editor designed for developers and writers.
@@ -28,7 +28,7 @@ base: core24
 title: Easyedit
 license: AGPL-3.0
 contact: https://github.com/gcclinux/easyeditor/discussions
-website: https://easyeditor.co.uk
+website: https://easysmartapps.co.uk
 source-code: https://github.com/gcclinux/easyeditor
 issues: https://github.com/gcclinux/easyeditor/issues
 donation: https://github.com/sponsors/gcclinux

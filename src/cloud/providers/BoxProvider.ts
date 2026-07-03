@@ -8,7 +8,6 @@
 import { CloudProvider, CloudFile, AuthResult } from '../interfaces/CloudProvider';
 import { BOX_CONFIG, isBoxConfigured, getConfigurationErrorMessage } from '../config/box-credentials';
 import { cloudCredentialManager } from '../managers/CloudCredentialManager';
-import LicenseManager from '../../premium/LicenseManager';
 import { createLogger } from '../../utils/logger';
 
 const logger = createLogger('BoxProvider');
@@ -84,15 +83,6 @@ export class BoxProvider implements CloudProvider {
    */
   async authenticate(): Promise<AuthResult> {
     logger.log('Starting authentication flow');
-
-    // Check for premium license first
-    if (!LicenseManager.hasActiveLicense()) {
-      logger.warn('Premium license required for Box integration');
-      return {
-        success: false,
-        error: 'Premium license required. Please upgrade to use Box integration.'
-      };
-    }
 
     if (!isBoxConfigured()) {
       const errorMessage = getConfigurationErrorMessage();

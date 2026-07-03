@@ -102,7 +102,7 @@ export default function FileModal({
                         {renderTile(<FaGithub />, 'menu.support', 'menu.support_desc', onSupport)}
                         {renderTile(<FaHeart />, 'menu.buy_coffee', 'menu.sponsor', onBuyCoffee)}
                         {renderTile(<FaGlobe />, 'menu.website', 'menu.website_desc', async () => {
-                            const url = 'https://easyeditor.co.uk';
+                            const url = 'https://easysmartapps.co.uk';
                             const isTauri = typeof window !== 'undefined' &&
                                 ((window as any).__TAURI__ || (window as any).__TAURI_INTERNALS__ ||
                                     typeof (window as any).__TAURI_INVOKE__ === 'function');

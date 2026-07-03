@@ -2,7 +2,7 @@
 
  
 
-[🏠 Home](https://easyeditor.co.uk/) | [💻 Code](https://github.com/gcclinux/easyeditor.git) | [🌐 WebApp](https://easyedit-cloud.web.app/)
+[🏠 Home](https://easysmartapps.co.uk/) | [💻 Code](https://github.com/gcclinux/easyeditor.git) | [🌐 WebApp](https://easyedit-cloud.web.app/)
 
 **The Ultimate Real-Time Markdown Editor for Professionals, Developers & Writers**
 
