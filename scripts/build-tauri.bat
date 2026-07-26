@@ -39,7 +39,16 @@ setlocal
 set WEBKIT_DISABLE_DMABUF_RENDERER=1
 set WEBKIT_DISABLE_COMPOSITING_MODE=1
 echo Building Tauri application for Windows...
-npm run tauri build
+
+if defined CI (
+    echo [CI Environment] Overriding certificateThumbprint to skip signing...
+    npx tauri build --config "{\"bundle\":{\"windows\":{\"certificateThumbprint\":null}}}"
+) else if "%2"=="--nosign" (
+    echo [NoSign Requested] Overriding certificateThumbprint to skip signing...
+    npx tauri build --config "{\"bundle\":{\"windows\":{\"certificateThumbprint\":null}}}"
+) else (
+    npm run tauri build
+)
 endlocal
 echo Build finished.
 goto :eof
