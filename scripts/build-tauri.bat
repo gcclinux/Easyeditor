@@ -7,11 +7,22 @@ echo Setting up build environment...
 REM Add Rust to PATH
 set PATH=%PATH%;%USERPROFILE%\.cargo\bin
 
-REM Add Windows SDK (SignTool) to PATH
-set PATH=%PATH%;C:\Program Files (x86)\Windows Kits\10\bin\10.0.26100.0\x64
+REM Set SignTool path dynamically if specific version exists or find installed SDK
+if exist "C:\Program Files (x86)\Windows Kits\10\bin\10.0.26100.0\x64\signtool.exe" (
+    set TAURI_WINDOWS_SIGNTOOL_PATH=C:\Program Files (x86)\Windows Kits\10\bin\10.0.26100.0\x64\signtool.exe
+    set PATH=%PATH%;C:\Program Files (x86)\Windows Kits\10\bin\10.0.26100.0\x64
+) else (
+    for /f "delims=" %%f in ('dir /b /s "C:\Program Files (x86)\Windows Kits\10\bin\*signtool.exe" 2^>nul') do (
+        echo %%f | findstr /i "\\x64\\" >nul
+        if not errorlevel 1 (
+            set "TAURI_WINDOWS_SIGNTOOL_PATH=%%f"
+        )
+    )
+)
 
-REM Tell Tauri where to find SignTool
-set TAURI_WINDOWS_SIGNTOOL_PATH=C:\Program Files (x86)\Windows Kits\10\bin\10.0.26100.0\x64\signtool.exe
+if defined TAURI_WINDOWS_SIGNTOOL_PATH (
+    echo Using SignTool at: %TAURI_WINDOWS_SIGNTOOL_PATH%
+)
 
 REM Add WiX Toolset to PATH
 set PATH=%PATH%;%CD%\src-tauri\target\release\wix\x64\wix
