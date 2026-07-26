@@ -75,7 +75,8 @@ jobs:
           "@
 
       - name: Build Tauri application
-        run: npm run tauri:build
+        shell: cmd
+        run: scripts\build-tauri.bat build
 
       - name: Extract version from tag
         id: version
