@@ -48,3 +48,5 @@ prime
 stage
 .craft
 src/services/oauth/__tests__/
+# Graphify
+graphify-out/cache

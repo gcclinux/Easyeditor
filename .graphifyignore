@@ -1,0 +1,75 @@
+# Rust & Tauri build artifacts
+/target/
+.cargo/
+.cargo/config.toml
+src-tauri/target/
+src-tauri/Cargo.lock
+src-tauri/gen/
+
+# IDE & Editor files
+.idea/
+.vscode/*
+!.vscode/extensions.json
+*.sw?
+*.swp
+*.swo
+*~
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+.idx/*
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Build, Node & Web artifacts
+node_modules/
+dist/
+dist-ssr/
+dist-web/
+*dist
+test-deploy/
+*.firebase
+
+# Snapcraft, Flatpak & Windows packaging
+*.snap
+parts/
+prime/
+stage/
+snap/.snapcraft/
+.craft/
+.flatpak-builder/
+build-flathub/
+sdl2-dev/
+.wix/
+rustup-init.exe
+vs_buildtools.exe
+install-build-tools.ps1
+
+# Kiro spec tooling
+.kiro/
+*.kiro
+
+# Logs
+logs/
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
+
+# Security, Cache & Environment
+.cache_ggshield
+.local
+*.local
+*.pem
+
+# Runtime data
+leaderboard.json
+settings.json
+
+# Test directories
+src/services/oauth/__tests__/
