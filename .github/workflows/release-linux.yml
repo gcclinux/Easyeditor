@@ -57,7 +57,10 @@ jobs:
             patchelf \
             dpkg-dev \
             rpm \
-            wget
+            wget \
+            xdg-utils \
+            file \
+            squashfs-tools
 
       - name: Create .env.local
         run: |
