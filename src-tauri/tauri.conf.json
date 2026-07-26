@@ -1,6 +1,6 @@
 {
   "productName": "easyeditor",
-  "version": "1.8.0",
+  "version": "1.8.1",
   "identifier": "RicardoWagemaker.Easyeditor",
   "build": {
     "beforeBuildCommand": "npm run build",
@@ -35,6 +35,7 @@
   },
   "bundle": {
     "active": true,
+    "targets": "all",
     "publisher": "Ricardo Wagemaker",
     "windows": {
       "certificateThumbprint": "A9D97675327F7BF344BA308A357E91141A1DDE50",

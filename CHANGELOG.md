@@ -7,6 +7,7 @@ EasyEditor is an easy markdown editor that allows you to write Markdown (MD) and
 *EasyEditor is a free and open-source project. You can use it for free and modify it as you like.*
 
 ## Latest CODE version
+- 1.8.1 - Bump version to 1.8.1
 - 1.8.0 - feat: Cloud-Integration-Update, feat: License-API Update and new License Modal for all four languages
 - 1.7.6 - feat: New personas and enable default Gemini LLM for subscriber
 - 1.7.5 - feat: Markdown file transfer, Implemented OneDrive cloud, Preview Component inline with editor

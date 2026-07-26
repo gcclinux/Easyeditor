@@ -100,12 +100,23 @@ To build the native desktop application provided by Tauri:
 # Development
 npm run dev
 
+# Version Management
+node ./scripts/check_versions.js  # Verify version consistency across files
+./bump_version.sh 1.8.1           # Update all files with new version and create git tag
+
 # Production Build
-scripts\build-tauri.bat
-scripts\build-snap.sh
-scripts\build-docker.sh
-npm run tauri:build `**Linux Specific**`
+npm run tauri:build # Build Tauri desktop app (Linux/macOS/Windows)
+scripts/build-tauri.bat # Windows script wrapper
+scripts/build-snap.sh # Snap package build
+scripts/build-docker.sh # Docker build
 ```
+
+### 4. Automated CI/CD Release Workflows
+Automated cross-platform releases are built automatically via GitHub Actions whenever a version tag (e.g. `v1.8.0`) is pushed or manually via `workflow_dispatch`:
+* **Linux AMD64**: `.github/workflows/release-linux.yml` (Generates `.deb`, `.rpm`, `.AppImage`)
+* **Linux ARM64**: `.github/workflows/release-linux-arm64.yml` (Generates ARM64 `.deb`, `.rpm`, `.AppImage`)
+* **macOS**: `.github/workflows/release-macos.yml` (Generates `.dmg` and `.app`)
+* **Windows**: `.github/workflows/release-windows.yml` (Generates `.msi`, installer `.exe`, and portable `.exe`)
 
 ---
 

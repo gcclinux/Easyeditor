@@ -1,7 +1,7 @@
 {
   "name": "easyeditor",
   "description": "EasyEditor - A simple Markdown editor",
-  "version": "1.8.0",
+  "version": "1.8.1",
   "type": "module",
   "scripts": {
     "dev": "vite",
@@ -19,7 +19,9 @@
     "test:coverage": "jest --coverage",
     "tauri": "tauri",
     "tauri:dev": "WEBKIT_DISABLE_DMABUF_RENDERER=1 WEBKIT_DISABLE_COMPOSITING_MODE=1 tauri dev",
-    "tauri:build": "WEBKIT_DISABLE_DMABUF_RENDERER=1 WEBKIT_DISABLE_COMPOSITING_MODE=1 tauri build"
+    "tauri:build": "WEBKIT_DISABLE_DMABUF_RENDERER=1 WEBKIT_DISABLE_COMPOSITING_MODE=1 tauri build",
+    "check-versions": "node scripts/check_versions.js",
+    "bump-version": "./bump_version.sh"
   },
   "author": "Ricardo Wagemaker <wagemra@gmail.com>",
   "license": "SEE LICENSE IN LICENSE",

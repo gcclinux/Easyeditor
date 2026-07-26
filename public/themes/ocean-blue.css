@@ -46,6 +46,7 @@
      PREVIEW PANEL (Right side - rendered markdown)
      ============================================ */
    --bg-preview: #ffffff;
+   --color-text-preview: #ffffff;
    --bg-code-block: #d4e8f0;
    --color-text-code: #0a1015;
    --bg-table-header: #e8f4f8;

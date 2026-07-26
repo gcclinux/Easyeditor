@@ -95,6 +95,7 @@ Here's a minimal theme template you can use:
 
   /* PREVIEW PANEL */
   --bg-preview: #ffffff;
+  --color-text-preview: #ffffff;
   --bg-code-block: #e3e3e3;
   --color-text-code: #000000;
   --bg-table-header: #f2f2f2;

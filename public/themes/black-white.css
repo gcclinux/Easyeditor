@@ -28,6 +28,7 @@
 
   /* PREVIEW PANEL */
   --bg-preview: #ffffff;
+  --color-text-preview: #ffffff;
   --bg-code-block: #f0f0f0;
   --color-text-code: #000000;
   --bg-table-header: #e0e0e0;

@@ -138,6 +138,7 @@ html,
   font-family: monospace;
   letter-spacing: normal;
   word-spacing: normal;
+  color: var(--color-text-preview, #ffffff);
 
   /* Font rendering improvements */
   -webkit-font-smoothing: antialiased;

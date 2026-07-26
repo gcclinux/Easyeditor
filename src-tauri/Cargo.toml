@@ -1,6 +1,6 @@
 [package]
 name = "easyeditor"
-version = "1.8.0"
+version = "1.8.1"
 description = "Easy Markdown Editor"
 authors = ["Ricardo Wagemaker <wagemra@gmail.com>"]
 license = "MIT"
