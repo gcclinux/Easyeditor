@@ -6,6 +6,11 @@ on:
       - 'v*'
       - '[0-9]*'
   workflow_dispatch:
+    inputs:
+      tag_name:
+        description: 'Tag name to publish release under (e.g. v1.8.1)'
+        required: false
+        type: string
 
 permissions:
   contents: write
@@ -76,8 +81,17 @@ jobs:
         id: version
         shell: pwsh
         run: |
-          $tag = "${{ github.ref_name }}"
+          $inputTag = "${{ inputs.tag_name }}"
+          if ($inputTag) {
+              $tag = $inputTag
+          } elseif ("${{ github.ref_type }}" -eq "tag") {
+              $tag = "${{ github.ref_name }}"
+          } else {
+              $pkgVer = node -p "require('./package.json').version"
+              $tag = "v$pkgVer"
+          }
           $version = $tag -replace '^v', ''
+          echo "tag=$tag" >> $env:GITHUB_OUTPUT
           echo "version=$version" >> $env:GITHUB_OUTPUT
 
       - name: Rename portable executable
@@ -101,6 +115,7 @@ jobs:
         uses: softprops/action-gh-release@v2
         if: startsWith(github.ref, 'refs/tags/') || github.event_name == 'workflow_dispatch'
         with:
+          tag_name: ${{ steps.version.outputs.tag }}
           files: |
             src-tauri/target/release/bundle/msi/*.msi
             src-tauri/target/release/bundle/nsis/*.exe
