@@ -1,0 +1,172 @@
+name: Release Linux Bookworm Packages (GLIBC 2.36)
+
+on:
+  push:
+    tags:
+      - 'v*'
+      - '[0-9]*'
+  workflow_dispatch:
+    inputs:
+      tag_name:
+        description: 'Tag name to publish release under (e.g. v1.8.1)'
+        required: false
+        type: string
+
+permissions:
+  contents: write
+
+jobs:
+  build-linux-bookworm:
+    name: Build Linux Bookworm (${{ matrix.arch }})
+    runs-on: ${{ matrix.runner }}
+    container:
+      image: debian:bookworm
+
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - arch: amd64
+            runner: ubuntu-latest
+            cache-key: bookworm-amd64
+          - arch: arm64
+            runner: ubuntu-24.04-arm
+            cache-key: bookworm-arm64
+
+    steps:
+      - name: Install base tools
+        run: |
+          apt-get update
+          apt-get install -y git curl ca-certificates xz-utils
+
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install npm dependencies
+        run: npm ci
+
+      - name: Install Rust toolchain
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: Cache Cargo registry & build
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.cargo/registry
+            ~/.cargo/git
+            src-tauri/target
+          key: ${{ runner.os }}-${{ matrix.cache-key }}-cargo-${{ hashFiles('**/Cargo.lock') }}
+          restore-keys: ${{ runner.os }}-${{ matrix.cache-key }}-cargo-
+
+      - name: Install system dependencies
+        run: |
+          apt-get update
+          apt-get install -y \
+            libgtk-3-dev \
+            libwebkit2gtk-4.1-dev \
+            libayatana-appindicator3-dev \
+            librsvg2-dev \
+            patchelf \
+            dpkg-dev \
+            rpm \
+            wget \
+            xdg-utils \
+            file \
+            squashfs-tools \
+            build-essential \
+            pkg-config \
+            libssl-dev
+
+      - name: Create .env.local
+        run: |
+          cat << 'EOF' > .env.local
+          VITE_GOOGLE_CLIENT_ID=${{ secrets.VITE_GOOGLE_CLIENT_ID }}
+          VITE_GOOGLE_API_KEY=${{ secrets.VITE_GOOGLE_API_KEY }}
+          VITE_GOOGLE_CLIENT_APP=${{ secrets.VITE_GOOGLE_CLIENT_APP }}
+          VITE_GOOGLE_CLIENT_SECRET=${{ secrets.VITE_GOOGLE_CLIENT_SECRET }}
+          VITE_GOOGLE_CLIENT_ID_PROD=${{ secrets.VITE_GOOGLE_CLIENT_ID_PROD || secrets.VITE_GOOGLE_CLIENT_ID }}
+          VITE_GOOGLE_API_KEY_PROD=${{ secrets.VITE_GOOGLE_API_KEY_PROD || secrets.VITE_GOOGLE_API_KEY }}
+          VITE_ENVIRONMENT=production
+          VITE_DROPBOX_CLIENT_ID=${{ secrets.VITE_DROPBOX_CLIENT_ID }}
+          VITE_DROPBOX_CLIENT_SECRET=${{ secrets.VITE_DROPBOX_CLIENT_SECRET }}
+          VITE_DROPBOX_CLIENT_ID_PROD=${{ secrets.VITE_DROPBOX_CLIENT_ID_PROD || secrets.VITE_DROPBOX_CLIENT_ID }}
+          VITE_DROPBOX_CLIENT_SECRET_PROD=${{ secrets.VITE_DROPBOX_CLIENT_SECRET_PROD || secrets.VITE_DROPBOX_CLIENT_SECRET }}
+          VITE_BOX_CLIENT_ID=${{ secrets.VITE_BOX_CLIENT_ID }}
+          VITE_BOX_CLIENT_SECRET=${{ secrets.VITE_BOX_CLIENT_SECRET }}
+          VITE_BOX_CLIENT_ID_PROD=${{ secrets.VITE_BOX_CLIENT_ID_PROD || secrets.VITE_BOX_CLIENT_ID }}
+          VITE_BOX_CLIENT_SECRET_PROD=${{ secrets.VITE_BOX_CLIENT_SECRET_PROD || secrets.VITE_BOX_CLIENT_SECRET }}
+          VITE_ONEDRIVE_CLIENT_ID=${{ secrets.VITE_ONEDRIVE_CLIENT_ID }}
+          VITE_ONEDRIVE_CLIENT_SECRET=${{ secrets.VITE_ONEDRIVE_CLIENT_SECRET }}
+          VITE_PREMIUM_AGENT=${{ secrets.VITE_PREMIUM_AGENT }}
+          VITE_PREMIUM_MODEL=${{ secrets.VITE_PREMIUM_MODEL }}
+          AGENT=${{ secrets.AGENT }}
+          EASYAI_MODEL=${{ secrets.EASYAI_MODEL }}
+          GEMINI_API=${{ secrets.GEMINI_API }}
+          EOF
+
+      - name: Build Tauri application
+        run: npm run tauri:build
+
+      - name: Extract version from tag
+        id: version
+        run: |
+          INPUT_TAG="${{ inputs.tag_name }}"
+          if [ -n "$INPUT_TAG" ]; then
+            TAG="$INPUT_TAG"
+          elif [ "${GITHUB_REF_TYPE}" = "tag" ]; then
+            TAG="${GITHUB_REF_NAME}"
+          else
+            TAG="v$(node -p "require('./package.json').version")"
+          fi
+          VERSION="${TAG#v}"
+          echo "tag=$TAG" >> "$GITHUB_OUTPUT"
+          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
+
+      - name: Rename packages with bookworm suffix
+        run: |
+          echo "Renaming packages to include bookworm identifier..."
+          # Rename .deb files
+          for f in src-tauri/target/release/bundle/deb/*.deb; do
+            [ -f "$f" ] || continue
+            newname=$(echo "$f" | sed 's/\.deb$/-bookworm.deb/')
+            mv "$f" "$newname"
+            echo "  $f -> $newname"
+          done
+          # Rename .rpm files
+          for f in src-tauri/target/release/bundle/rpm/*.rpm; do
+            [ -f "$f" ] || continue
+            newname=$(echo "$f" | sed 's/\.rpm$/-bookworm.rpm/')
+            mv "$f" "$newname"
+            echo "  $f -> $newname"
+          done
+          # Rename .AppImage files
+          for f in src-tauri/target/release/bundle/appimage/*.AppImage; do
+            [ -f "$f" ] || continue
+            newname=$(echo "$f" | sed 's/\.AppImage$/-bookworm.AppImage/')
+            mv "$f" "$newname"
+            echo "  $f -> $newname"
+          done
+
+      - name: List built packages
+        run: |
+          echo "Contents of src-tauri/target/release/bundle:"
+          find src-tauri/target/release/bundle -name "*.deb" -o -name "*.AppImage" -o -name "*.rpm" || true
+
+      - name: Upload Bookworm packages to GitHub Release
+        uses: softprops/action-gh-release@v2
+        if: startsWith(github.ref, 'refs/tags/') || github.event_name == 'workflow_dispatch'
+        with:
+          tag_name: ${{ steps.version.outputs.tag }}
+          files: |
+            src-tauri/target/release/bundle/deb/*.deb
+            src-tauri/target/release/bundle/appimage/*.AppImage
+            src-tauri/target/release/bundle/rpm/*.rpm
+          fail_on_unmatched_files: false
+          generate_release_notes: true
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

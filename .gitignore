@@ -40,7 +40,6 @@ src-tauri/Cargo.lock
 src-tauri/gen/
 rustup-init.exe
 vs_buildtools.exe
-install-build-tools.ps1
 
 # Snapcraft
 parts
