@@ -1,4 +1,4 @@
-{
+﻿{
   "toasts": {
     "import_success": "Markdown importado com sucesso",
     "import_error": "Falha ao importar",
@@ -662,7 +662,15 @@
     "filter_cloud": "Apenas provedores de nuvem",
     "filter_local": "Apenas biblioteca local",
     "library_name": "Nome da biblioteca",
-    "library_name_placeholder": "ex.: Notas pessoais, Trabalho"
+    "library_name_placeholder": "ex.: Notas pessoais, Trabalho",
+    "new_library": "Nova biblioteca",
+    "new_note": "Nova nota",
+    "sync": "Sincronizar",
+    "syncing": "Sincronizando...",
+    "local_libraries": "Bibliotecas locais",
+    "add_library": "Adicionar biblioteca",
+    "add": "Adicionar",
+    "library_removed": "Biblioteca removida"
   },
   "features_modal": {
     "title": "Funcionalidades",

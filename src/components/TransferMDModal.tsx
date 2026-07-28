@@ -40,19 +40,39 @@ export default function TransferMDModal({ isOpen, onClose }: Props) {
     const loadProviders = async () => {
         if (!cloudManager) return;
         const available = await cloudManager.getAvailableProviders();
-        const status = await Promise.all(available.map(async p => {
-            const connected = await cloudManager!.isProviderConnected(p.name);
-            const displayName = p.name === 'locallibrary' 
-                ? (localStorage.getItem('easynotes_locallibrary_name') || t('easynotes.local_library') || p.displayName) 
-                : p.displayName;
-            return {
-                name: p.name,
-                displayName,
-                connected,
-                icon: p.icon
-            };
-        }));
-        setProviders(status);
+        const localLibs = cloudManager.getLocalLibraries();
+        const list: ProviderStatus[] = [];
+
+        for (const p of available) {
+            if (p.name === 'locallibrary') {
+                if (localLibs.length > 0) {
+                    for (const lib of localLibs) {
+                        list.push({
+                            name: `locallibrary:${lib.id}`,
+                            displayName: lib.name,
+                            connected: true,
+                            icon: p.icon
+                        });
+                    }
+                } else {
+                    list.push({
+                        name: 'locallibrary',
+                        displayName: t('easynotes.local_library') || p.displayName,
+                        connected: false,
+                        icon: p.icon
+                    });
+                }
+            } else {
+                const connected = await cloudManager!.isProviderConnected(p.name);
+                list.push({
+                    name: p.name,
+                    displayName: p.displayName,
+                    connected,
+                    icon: p.icon
+                });
+            }
+        }
+        setProviders(list);
     };
 
     const handleProviderClick = async (provider: ProviderStatus, isSource: boolean) => {

@@ -13,6 +13,8 @@ export interface NoteMetadata {
   lastSynced: Date;
   size: number;
   checksum: string;
+  libraryId?: string;
+  libraryName?: string;
 }
 
 export interface CloudCredentials {

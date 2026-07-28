@@ -662,7 +662,15 @@
     "filter_cloud": "Show Cloud Providers Only",
     "filter_local": "Show Local Library Only",
     "library_name": "Library Name",
-    "library_name_placeholder": "e.g. Personal Notes, Work Vault"
+    "library_name_placeholder": "e.g. Personal Notes, Work Vault",
+    "new_library": "New Library",
+    "new_note": "New Note",
+    "sync": "Sync",
+    "syncing": "Syncing",
+    "local_libraries": "Local Libraries",
+    "add_library": "Add Library",
+    "add": "Add",
+    "library_removed": "Library removed"
   },
   "features_modal": {
     "title": "Features",

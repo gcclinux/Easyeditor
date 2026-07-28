@@ -1,5 +1,5 @@
-import { useState } from 'react';
-import { FaFolderOpen, FaCheckCircle, FaShieldAlt, FaInfoCircle, FaTimes } from 'react-icons/fa';
+import { useState, useEffect } from 'react';
+import { FaFolderOpen, FaCheckCircle, FaShieldAlt, FaInfoCircle, FaTimes, FaSave } from 'react-icons/fa';
 import { useLanguage } from '../i18n/LanguageContext';
 import { isTauriEnvironment } from '../utils/environment';
 import './localLibraryConfigModal.css';
@@ -13,13 +13,15 @@ interface Props {
 export default function LocalLibraryConfigModal({ isOpen, onClose, onSelectFolder }: Props) {
   const { t } = useLanguage();
   const [isProcessing, setIsProcessing] = useState(false);
-  const [libraryName, setLibraryName] = useState(() => {
-    if (typeof localStorage !== 'undefined') {
-      return localStorage.getItem('easynotes_locallibrary_name') || '';
-    }
-    return '';
-  });
+  const [libraryName, setLibraryName] = useState('');
   const isTauri = isTauriEnvironment();
+
+  useEffect(() => {
+    if (isOpen) {
+      setLibraryName('');
+      setIsProcessing(false);
+    }
+  }, [isOpen]);
 
   if (!isOpen) return null;
 
@@ -46,20 +48,20 @@ export default function LocalLibraryConfigModal({ isOpen, onClose, onSelectFolde
           </div>
           <h2>{t('easynotes.local_library') || 'Local Library Setup'}</h2>
           <p className="locallib-modal-subtitle">
-            Configure a persistent local folder on your computer for your EasyNotes library.
+            Link a folder on your computer — notes you create will be saved directly there as <strong>.md</strong> files.
           </p>
         </div>
 
         <div className="locallib-modal-body">
           <div style={{ marginBottom: '16px' }}>
             <label style={{ display: 'block', fontSize: '0.85rem', fontWeight: 600, color: 'var(--color-text-dropdown, #e1e4ea)', marginBottom: '6px' }}>
-              {t('easynotes.library_name') || 'Library Name'}
+              {t('easynotes.library_name') || 'Library Name'} <span style={{ fontWeight: 400, color: '#9ca3af' }}>(optional)</span>
             </label>
             <input
               type="text"
               value={libraryName}
               onChange={e => setLibraryName(e.target.value)}
-              placeholder={t('easynotes.library_name_placeholder') || 'e.g. Personal Notes, Work Vault'}
+              placeholder="e.g. Personal Notes, Work Vault (leave blank to use folder name)"
               style={{
                 width: '100%',
                 padding: '10px 12px',
@@ -74,41 +76,67 @@ export default function LocalLibraryConfigModal({ isOpen, onClose, onSelectFolde
             />
           </div>
 
+          {!isTauri && (
+            <div style={{
+              background: 'rgba(59,130,246,0.08)',
+              border: '1px solid rgba(59,130,246,0.3)',
+              borderRadius: '8px',
+              padding: '12px 14px',
+              marginBottom: '16px',
+              display: 'flex',
+              gap: '10px',
+              alignItems: 'flex-start'
+            }}>
+              <FaSave style={{ color: '#60a5fa', marginTop: '2px', flexShrink: 0, fontSize: '16px' }} />
+              <div style={{ fontSize: '13px', color: '#93c5fd', lineHeight: 1.5 }}>
+                <strong style={{ display: 'block', marginBottom: '2px', color: '#bfdbfe' }}>Notes save directly to your folder</strong>
+                Clicking <em>Select Folder</em> opens a picker. Your browser will ask for
+                read &amp; write permission once — after that, every note you create or
+                save is written as a real <code>.md</code> file inside the chosen folder.
+              </div>
+            </div>
+          )}
+
           <div className="locallib-features-list">
             <div className="locallib-feature-item">
               <FaCheckCircle className="feature-icon check" />
               <div>
-                <strong>Persistent Local Storage</strong>
-                <p>Your notes stay saved directly on your computer's storage.</p>
+                <strong>Real Filesystem Storage</strong>
+                <p>Notes are saved as actual <code>.md</code> files you can open in any editor.</p>
               </div>
             </div>
             <div className="locallib-feature-item">
               <FaCheckCircle className="feature-icon check" />
               <div>
-                <strong>Offline First & Private</strong>
+                <strong>Works with Empty Folders</strong>
+                <p>Start fresh — select an empty folder and fill it with new notes.</p>
+              </div>
+            </div>
+            <div className="locallib-feature-item">
+              <FaCheckCircle className="feature-icon check" />
+              <div>
+                <strong>Offline First &amp; Private</strong>
                 <p>No cloud account required. Access and edit your files anytime offline.</p>
               </div>
             </div>
           </div>
-
-          {!isTauri && (
-            <div className="locallib-permission-notice">
-              <FaShieldAlt className="notice-icon" />
-              <div>
-                <strong>Browser Permission Notice</strong>
-                <p>
-                  After picking a folder, your browser will ask <em>"Allow this site to edit files?"</em>. Click <strong>Allow</strong> to grant permission.
-                </p>
-              </div>
-            </div>
-          )}
 
           {isTauri && (
             <div className="locallib-tauri-notice">
               <FaInfoCircle className="notice-icon" />
               <div>
                 <strong>Desktop Native Storage</strong>
-                <p>Direct filesystem access is enabled in desktop mode.</p>
+                <p>Direct filesystem access is enabled — notes write to disk instantly.</p>
+              </div>
+            </div>
+          )}
+
+          {!isTauri && (
+            <div className="locallib-tauri-notice" style={{ borderColor: 'rgba(251,191,36,0.3)', background: 'rgba(251,191,36,0.06)' }}>
+              <FaShieldAlt className="notice-icon" style={{ color: '#fbbf24' }} />
+              <div>
+                <strong style={{ color: '#fde68a' }}>One-time browser permission</strong>
+                <p>Your browser will ask permission to read &amp; write the selected folder. This only happens once when adding the library.</p>
               </div>
             </div>
           )}
@@ -120,7 +148,7 @@ export default function LocalLibraryConfigModal({ isOpen, onClose, onSelectFolde
           </button>
           <button className="locallib-btn-primary" onClick={handleSelect} disabled={isProcessing}>
             <FaFolderOpen style={{ marginRight: '6px' }} />
-            {isProcessing ? 'Opening Folder Selector...' : (t('easynotes.select_local_library') || 'Select Library Folder')}
+            {isProcessing ? 'Opening folder picker...' : (t('easynotes.select_local_library') || 'Select Folder')}
           </button>
         </div>
       </div>

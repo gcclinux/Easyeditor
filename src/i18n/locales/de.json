@@ -1,4 +1,4 @@
-{
+﻿{
   "toasts": {
     "import_success": "Markdown erfolgreich importiert",
     "import_error": "Import fehlgeschlagen",
@@ -662,7 +662,15 @@
     "filter_cloud": "Nur Cloud-Anbieter anzeigen",
     "filter_local": "Nur lokale Bibliothek anzeigen",
     "library_name": "Bibliotheksname",
-    "library_name_placeholder": "z. B. Persönliche Notizen, Arbeitsordner"
+    "library_name_placeholder": "z. B. Persönliche Notizen, Arbeitsordner",
+    "new_library": "Neue Bibliothek",
+    "new_note": "Neue Notiz",
+    "sync": "Synchronisieren",
+    "syncing": "Synchronisiert...",
+    "local_libraries": "Lokale Bibliotheken",
+    "add_library": "Bibliothek hinzufügen",
+    "add": "Hinzuf\u00fcgen",
+    "library_removed": "Bibliothek entfernt"
   },
   "features_modal": {
     "title": "Funktionen",

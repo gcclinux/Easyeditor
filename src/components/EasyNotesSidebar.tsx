@@ -1,13 +1,13 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
-import { FaStickyNote, FaCloud, FaSync, FaPlus, FaTrash, FaKey, FaFolder } from 'react-icons/fa';
+import { FaStickyNote, FaCloud, FaSync, FaPlus, FaTrash, FaKey, FaFolder, FaFolderPlus } from 'react-icons/fa';
 import ConfirmationModal from './ConfirmationModal';
 import LocalLibraryConfigModal from './LocalLibraryConfigModal';
 import { cloudManager } from '../cloud/managers/CloudManager';
 import { cloudToastService } from '../cloud/utils/CloudToastService';
 import { offlineManager } from '../cloud/utils/OfflineManager';
 
-import CloudSyncIndicator from './CloudSyncIndicator';
 import type { NoteMetadata, ProviderMetadata } from '../cloud/interfaces';
+import type { LocalLibraryConfig } from '../cloud/providers/LocalLibraryProvider';
 import { isTauriEnvironment } from '../utils/environment';
 import { useLanguage } from '../i18n/LanguageContext';
 import { createLogger } from '../utils/logger';
@@ -39,8 +39,7 @@ const EasyNotesSidebar: React.FC<EasyNotesSidebarProps> = ({
   // Use singleton CloudManager instance
   const [notes, setNotes] = useState<NoteMetadata[]>([]);
   const [providers, setProviders] = useState<Record<string, ProviderMetadata>>({});
-  const [localLibraryPath, setLocalLibraryPath] = useState<string | null>(null);
-  const [localLibraryName, setLocalLibraryName] = useState<string | null>(null);
+  const [localLibraries, setLocalLibraries] = useState<LocalLibraryConfig[]>([]);
   const [loading, setLoading] = useState(false);
   const [syncing, setSyncing] = useState(false);
   const [showNewNoteDialog, setShowNewNoteDialog] = useState(false);
@@ -57,6 +56,7 @@ const EasyNotesSidebar: React.FC<EasyNotesSidebarProps> = ({
 
   const handleSectionFilterChange = (newFilter: 'all' | 'cloud' | 'local') => {
     setSectionFilter(newFilter);
+    setActiveProviderFilter('all');
     localStorage.setItem('easynotes_section_filter', newFilter);
   };
 
@@ -220,16 +220,11 @@ const EasyNotesSidebar: React.FC<EasyNotesSidebarProps> = ({
         }
       }
 
-      const storedCustomName = localStorage.getItem('easynotes_locallibrary_name');
-      setLocalLibraryName(storedCustomName);
-
-      if (storedCustomName && providerMetadata['locallibrary']) {
-        providerMetadata['locallibrary'].displayName = storedCustomName;
-      }
+      const libs = cloudManager ? cloudManager.getLocalLibraries() : [];
+      setLocalLibraries(libs);
 
       logger.log('Final provider metadata:', providerMetadata);
       setProviders(providerMetadata);
-      setLocalLibraryPath(localStorage.getItem('easynotes_locallibrary_path'));
     } catch (error) {
       logger.error('Failed to load notes and providers:', error);
       showToast('Failed to load notes', 'error');
@@ -245,16 +240,35 @@ const EasyNotesSidebar: React.FC<EasyNotesSidebarProps> = ({
   const handleExecuteLocalLibraryConfig = async (customName?: string) => {
     if (!cloudManager) return;
     try {
-      const success = await cloudManager.connectProvider('locallibrary', customName);
-      if (success) {
-        setLocalLibraryPath(localStorage.getItem('easynotes_locallibrary_path'));
-        setLocalLibraryName(localStorage.getItem('easynotes_locallibrary_name'));
+      const lib = await cloudManager.addLocalLibrary(customName);
+      if (lib) {
         showToast(t('easynotes.configured') || 'Local Library configured', 'success');
         await loadNotesAndProviders();
       }
     } catch (err) {
       logger.error('Failed to configure local library:', err);
       showToast('Failed to configure Local Library', 'error');
+    }
+  };
+
+  const handleRemoveLocalLibrary = async (libraryId: string) => {
+    if (!cloudManager) return;
+    setOperationStates(prev => ({
+      ...prev,
+      disconnecting: { ...prev.disconnecting, [libraryId]: true }
+    }));
+    try {
+      await cloudManager.removeLocalLibrary(libraryId);
+      showToast(t('easynotes.library_removed') || 'Library removed', 'success');
+      await loadNotesAndProviders();
+    } catch (err) {
+      logger.error('Failed to remove local library:', err);
+      showToast('Failed to remove library', 'error');
+    } finally {
+      setOperationStates(prev => ({
+        ...prev,
+        disconnecting: { ...prev.disconnecting, [libraryId]: false }
+      }));
     }
   };
 
@@ -330,9 +344,6 @@ const EasyNotesSidebar: React.FC<EasyNotesSidebarProps> = ({
 
     try {
       await cloudManager.disconnectProvider(providerName);
-      if (providerName === 'locallibrary') {
-        setLocalLibraryPath(null);
-      }
       showToast(
         providerName === 'locallibrary'
           ? (t('easynotes.local_library_removed') || 'Local Library configuration removed')
@@ -364,8 +375,22 @@ const EasyNotesSidebar: React.FC<EasyNotesSidebarProps> = ({
       return;
     }
 
-    if (!providers[selectedProvider]?.connected) {
-      showToast('Please connect to a cloud provider first', 'warning');
+    let targetProvider = selectedProvider;
+    let targetFolderId: string | undefined = undefined;
+    if (selectedProvider.startsWith('locallibrary:')) {
+      targetProvider = 'locallibrary';
+      targetFolderId = selectedProvider.split(':')[1];
+    } else if (selectedProvider === 'locallibrary' && localLibraries.length > 0) {
+      targetProvider = 'locallibrary';
+      targetFolderId = localLibraries[0].id;
+    }
+
+    const isConnected = targetProvider === 'locallibrary'
+      ? localLibraries.length > 0
+      : providers[targetProvider]?.connected;
+
+    if (!isConnected) {
+      showToast('Please connect to a provider first', 'warning');
       return;
     }
 
@@ -376,7 +401,7 @@ const EasyNotesSidebar: React.FC<EasyNotesSidebarProps> = ({
     }));
 
     try {
-      const newNote = await cloudManager.createNote(selectedProvider, newNoteTitle.trim());
+      const newNote = await cloudManager.createNote(targetProvider, newNoteTitle.trim(), targetFolderId);
       showToast(`Created note "${newNote.title}"`, 'success');
       setNewNoteTitle('');
       setShowNewNoteDialog(false);
@@ -527,30 +552,18 @@ const EasyNotesSidebar: React.FC<EasyNotesSidebarProps> = ({
   const filteredNotes = notes.filter(n => {
     if (sectionFilter === 'cloud' && n.provider === 'locallibrary') return false;
     if (sectionFilter === 'local' && n.provider !== 'locallibrary') return false;
-    if (activeProviderFilter !== 'all' && n.provider !== activeProviderFilter) return false;
+    if (activeProviderFilter !== 'all') {
+      if (activeProviderFilter.startsWith('locallibrary:')) {
+        const targetLibId = activeProviderFilter.split(':')[1];
+        if (n.provider !== 'locallibrary') return false;
+        if (n.libraryId && n.libraryId !== targetLibId) return false;
+        if (!n.libraryId && n.cloudFileId && !n.cloudFileId.startsWith(`${targetLibId}::`)) return false;
+      } else {
+        if (n.provider !== activeProviderFilter) return false;
+      }
+    }
     return true;
   });
-
-  const handleUpgradeClick = async (e: React.MouseEvent) => {
-    e.preventDefault();
-    if (onUpgradeClick) {
-      onUpgradeClick();
-      return;
-    }
-    const url = 'https://easyeditor.co.uk/#pricing';
-
-    if (isTauriEnvironment()) {
-      try {
-        const { open } = await import('@tauri-apps/plugin-shell');
-        await open(url);
-      } catch (err) {
-        logger.error('Failed to open URL', err);
-        showToast('Failed to open browser', 'error');
-      }
-    } else {
-      window.open(url, '_blank', 'noopener,noreferrer');
-    }
-  };
 
 
   // Calculate notes per column for overflow columns (which only have a small heading)
@@ -737,7 +750,9 @@ const EasyNotesSidebar: React.FC<EasyNotesSidebarProps> = ({
           </div>
         </div>
         <div style={{ fontSize: '12px', color: 'var(--color-text-light)' }}>
-          {providerMetadata?.displayName || note.provider} • {Math.round(note.size / 1024)}KB
+          {(note.provider === 'locallibrary'
+            ? (note.libraryName || localLibraries.find(l => l.id === note.libraryId || note.cloudFileId?.startsWith(`${l.id}::`))?.name || 'Local Library')
+            : (providerMetadata?.displayName || note.provider))} • {Math.round(note.size / 1024)}KB
         </div>
       </div>
     );
@@ -780,7 +795,7 @@ const EasyNotesSidebar: React.FC<EasyNotesSidebarProps> = ({
           minWidth: '400px',
           maxWidth: '400px',
           padding: '20px',
-          overflow: 'hidden',
+          overflowY: 'auto',
           display: 'flex',
           flexDirection: 'column',
           boxSizing: 'border-box'
@@ -887,206 +902,283 @@ const EasyNotesSidebar: React.FC<EasyNotesSidebarProps> = ({
 
           {/* Cloud Providers Section */}
           {(sectionFilter === 'all' || sectionFilter === 'cloud') && (
-            <div style={{ marginBottom: '20px' }}>
-              <h3 style={{ fontSize: '1rem', marginBottom: '10px', color: 'var(--color-text-dropdown)' }}>
+            <div style={{ marginBottom: '16px' }}>
+              <h3 style={{ fontSize: '1rem', marginBottom: '8px', color: 'var(--color-text-dropdown)' }}>
                 <FaCloud style={{ marginRight: '8px' }} />
                 Cloud Providers
               </h3>
 
-              {Object.entries(providers)
-                .filter(([name]) => name !== 'locallibrary')
-                .map(([providerName, metadata]) => (
-                  <div key={providerName} style={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'space-between',
-                    padding: '8px 12px',
-                    marginBottom: '8px',
-                    backgroundColor: metadata.connected ? 'var(--bg-success-light)' : 'var(--bg-dropdown-hover)',
-                    border: '1px solid var(--border-secondary)',
-                    borderRadius: '6px'
-                  }}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                      <span style={{ fontSize: '16px' }}>{metadata.icon}</span>
-                      <span style={{ fontSize: '14px' }}>{metadata.displayName}</span>
-                      {metadata.connected && metadata.lastSync && (
-                        <span style={{ fontSize: '12px', color: 'var(--color-text-light)' }}>
-                          {formatDate(metadata.lastSync)}
-                        </span>
-                      )}
+              <div style={{ maxHeight: '200px', overflowY: 'auto', paddingRight: '2px' }}>
+                {Object.entries(providers)
+                  .filter(([name]) => name !== 'locallibrary')
+                  .map(([providerName, metadata]) => (
+                    <div key={providerName} style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'space-between',
+                      padding: '8px 12px',
+                      marginBottom: '8px',
+                      backgroundColor: metadata.connected ? 'var(--bg-success-light)' : 'var(--bg-dropdown-hover)',
+                      border: '1px solid var(--border-secondary)',
+                      borderRadius: '6px'
+                    }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                        <span style={{ fontSize: '16px' }}>{metadata.icon}</span>
+                        <span style={{ fontSize: '14px' }}>{metadata.displayName}</span>
+                        {metadata.connected && metadata.lastSync && (
+                          <span style={{ fontSize: '12px', color: 'var(--color-text-light)' }}>
+                            {formatDate(metadata.lastSync)}
+                          </span>
+                        )}
+                      </div>
+                      <button
+                        onClick={() => metadata.connected ? handleDisconnectProvider(providerName) : handleConnectProvider(providerName)}
+                        disabled={operationStates.connecting[providerName] || operationStates.disconnecting[providerName] || operationStates.authenticating[providerName]}
+                        style={{
+                          padding: '4px 8px',
+                          fontSize: '12px',
+                          backgroundColor: metadata.connected ? 'var(--bg-error)' : 'var(--bg-success)',
+                          color: 'white',
+                          border: 'none',
+                          borderRadius: '4px',
+                          cursor: (operationStates.connecting[providerName] || operationStates.disconnecting[providerName] || operationStates.authenticating[providerName]) ? 'not-allowed' : 'pointer',
+                          opacity: (operationStates.connecting[providerName] || operationStates.disconnecting[providerName] || operationStates.authenticating[providerName]) ? 0.6 : 1,
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: '4px'
+                        }}
+                      >
+                        {(operationStates.connecting[providerName] || operationStates.authenticating[providerName]) && (
+                          <FaSync className="fa-spin" style={{ fontSize: '10px' }} />
+                        )}
+                        {operationStates.disconnecting[providerName] && (
+                          <FaSync className="fa-spin" style={{ fontSize: '10px' }} />
+                        )}
+                        {operationStates.connecting[providerName] ? 'Connecting...' :
+                          operationStates.authenticating[providerName] ? 'Authenticating...' :
+                            operationStates.disconnecting[providerName] ? 'Disconnecting...' :
+                              metadata.connected ? 'Disconnect' : 'Connect'}
+                      </button>
                     </div>
-                    <button
-                      onClick={() => metadata.connected ? handleDisconnectProvider(providerName) : handleConnectProvider(providerName)}
-                      disabled={operationStates.connecting[providerName] || operationStates.disconnecting[providerName] || operationStates.authenticating[providerName]}
-                      style={{
-                        padding: '4px 8px',
-                        fontSize: '12px',
-                        backgroundColor: metadata.connected ? 'var(--bg-error)' : 'var(--bg-success)',
-                        color: 'white',
-                        border: 'none',
-                        borderRadius: '4px',
-                        cursor: (operationStates.connecting[providerName] || operationStates.disconnecting[providerName] || operationStates.authenticating[providerName]) ? 'not-allowed' : 'pointer',
-                        opacity: (operationStates.connecting[providerName] || operationStates.disconnecting[providerName] || operationStates.authenticating[providerName]) ? 0.6 : 1,
-                        display: 'flex',
-                        alignItems: 'center',
-                        gap: '4px'
-                      }}
-                    >
-                      {(operationStates.connecting[providerName] || operationStates.authenticating[providerName]) && (
-                        <FaSync className="fa-spin" style={{ fontSize: '10px' }} />
-                      )}
-                      {operationStates.disconnecting[providerName] && (
-                        <FaSync className="fa-spin" style={{ fontSize: '10px' }} />
-                      )}
-                      {operationStates.connecting[providerName] ? 'Connecting...' :
-                        operationStates.authenticating[providerName] ? 'Authenticating...' :
-                          operationStates.disconnecting[providerName] ? 'Disconnecting...' :
-                            metadata.connected ? 'Disconnect' : 'Connect'}
-                    </button>
-                  </div>
-                ))}
+                  ))}
+              </div>
             </div>
           )}
 
           {/* Local Library Section */}
           {(sectionFilter === 'all' || sectionFilter === 'local') && (
-            <div style={{ marginBottom: '20px' }}>
-              <h3 style={{ fontSize: '1rem', marginBottom: '10px', color: 'var(--color-text-dropdown)' }}>
-                <FaFolder style={{ marginRight: '8px' }} />
-                {t('easynotes.local_library') || 'Local Library'}
-              </h3>
+            <div style={{ marginBottom: '16px' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
+                <h3 style={{ fontSize: '1rem', margin: 0, color: 'var(--color-text-dropdown)' }}>
+                  <FaFolder style={{ marginRight: '8px' }} />
+                  {t('easynotes.local_libraries') || 'Local Libraries'}
+                </h3>
+                <button
+                  onClick={handleConfigureLocalLibrary}
+                  style={{
+                    padding: '3px 8px',
+                    fontSize: '11px',
+                    backgroundColor: 'var(--bg-primary)',
+                    color: 'white',
+                    border: 'none',
+                    borderRadius: '4px',
+                    cursor: 'pointer',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '4px'
+                  }}
+                >
+                  <FaPlus style={{ fontSize: '10px' }} />
+                  {t('easynotes.add_library') || 'Add Library'}
+                </button>
+              </div>
 
-              <div style={{
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'space-between',
-                padding: '8px 12px',
-                marginBottom: '8px',
-                backgroundColor: providers['locallibrary']?.connected ? 'var(--bg-success-light)' : 'var(--bg-dropdown-hover)',
-                border: '1px solid var(--border-secondary)',
-                borderRadius: '6px'
-              }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '8px', overflow: 'hidden', flex: 1 }}>
-                  <span style={{ fontSize: '16px' }}>📁</span>
-                  <div style={{ display: 'flex', flexDirection: 'column', minWidth: 0, overflow: 'hidden' }}>
-                    <span style={{ fontSize: '14px', fontWeight: '500' }}>
-                      {t('easynotes.local_library') || 'Local Library'}
-                    </span>
-                    <span style={{ fontSize: '11px', color: 'var(--color-text-light)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }} title={localLibraryName || localLibraryPath || ''}>
-                      {providers['locallibrary']?.connected
-                        ? (localLibraryName || localLibraryPath || t('easynotes.configured') || 'Configured')
-                        : (t('easynotes.not_configured') || 'Not Configured')}
-                    </span>
-                  </div>
-                </div>
+              <div style={{ maxHeight: '160px', overflowY: 'auto', paddingRight: '2px' }}>
+                {localLibraries.length > 0 ? (
+                  localLibraries.map(lib => (
+                    <div key={lib.id} style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'space-between',
+                      padding: '8px 12px',
+                      marginBottom: '8px',
+                      backgroundColor: 'var(--bg-success-light)',
+                      border: '1px solid var(--border-secondary)',
+                      borderRadius: '6px'
+                    }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '8px', overflow: 'hidden', flex: 1 }}>
+                        <span style={{ fontSize: '16px' }}>📁</span>
+                        <div style={{ display: 'flex', flexDirection: 'column', minWidth: 0, overflow: 'hidden' }}>
+                          <span style={{ fontSize: '14px', fontWeight: '500' }}>
+                            {lib.name}
+                          </span>
+                          <span style={{ fontSize: '11px', color: 'var(--color-text-light)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }} title={lib.path}>
+                            {lib.path}
+                          </span>
+                        </div>
+                      </div>
 
-                <div style={{ display: 'flex', gap: '4px', flexShrink: 0, marginLeft: '8px' }}>
-                  <button
-                    onClick={handleConfigureLocalLibrary}
-                    disabled={operationStates.disconnecting['locallibrary']}
-                    style={{
-                      padding: '4px 8px',
-                      fontSize: '12px',
-                      backgroundColor: 'var(--bg-primary)',
-                      color: 'white',
-                      border: 'none',
-                      borderRadius: '4px',
-                      cursor: operationStates.disconnecting['locallibrary'] ? 'not-allowed' : 'pointer',
-                      whiteSpace: 'nowrap'
-                    }}
-                  >
-                    {t('easynotes.configure') || 'Configure'}
-                  </button>
-                  {providers['locallibrary']?.connected && (
+                      <div style={{ display: 'flex', gap: '4px', flexShrink: 0, marginLeft: '8px' }}>
+                        <button
+                          onClick={() => handleRemoveLocalLibrary(lib.id)}
+                          disabled={operationStates.disconnecting[lib.id]}
+                          style={{
+                            padding: '4px 8px',
+                            fontSize: '12px',
+                            backgroundColor: 'var(--bg-error)',
+                            color: 'white',
+                            border: 'none',
+                            borderRadius: '4px',
+                            cursor: operationStates.disconnecting[lib.id] ? 'not-allowed' : 'pointer',
+                            opacity: operationStates.disconnecting[lib.id] ? 0.6 : 1,
+                            whiteSpace: 'nowrap',
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: '4px'
+                          }}
+                        >
+                          {operationStates.disconnecting[lib.id] && (
+                            <FaSync className="fa-spin" style={{ fontSize: '10px' }} />
+                          )}
+                          {t('easynotes.remove') || 'Remove'}
+                        </button>
+                      </div>
+                    </div>
+                  ))
+                ) : (
+                  <div style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'space-between',
+                    padding: '8px 12px',
+                    marginBottom: '8px',
+                    backgroundColor: 'var(--bg-dropdown-hover)',
+                    border: '1px solid var(--border-secondary)',
+                    borderRadius: '6px'
+                  }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                      <span style={{ fontSize: '16px' }}>📁</span>
+                      <span style={{ fontSize: '14px', color: 'var(--color-text-light)' }}>
+                        No Local Library Configured
+                      </span>
+                    </div>
                     <button
-                      onClick={() => handleDisconnectProvider('locallibrary')}
-                      disabled={operationStates.disconnecting['locallibrary']}
+                      onClick={handleConfigureLocalLibrary}
                       style={{
                         padding: '4px 8px',
                         fontSize: '12px',
-                        backgroundColor: 'var(--bg-error)',
+                        backgroundColor: 'var(--bg-primary)',
                         color: 'white',
                         border: 'none',
                         borderRadius: '4px',
-                        cursor: operationStates.disconnecting['locallibrary'] ? 'not-allowed' : 'pointer',
-                        opacity: operationStates.disconnecting['locallibrary'] ? 0.6 : 1,
-                        whiteSpace: 'nowrap',
-                        display: 'flex',
-                        alignItems: 'center',
-                        gap: '4px'
+                        cursor: 'pointer'
                       }}
                     >
-                      {operationStates.disconnecting['locallibrary'] && (
-                        <FaSync className="fa-spin" style={{ fontSize: '10px' }} />
-                      )}
-                      {t('easynotes.remove') || 'Remove'}
+                      {t('easynotes.add') || 'Add'}
                     </button>
-                  )}
-                </div>
+                  </div>
+                )}
               </div>
             </div>
           )}
 
           {/* Actions Section */}
           <div style={{ marginBottom: '20px' }}>
-            <div style={{ display: 'flex', gap: '8px', marginBottom: '10px' }}>
+            <div style={{ display: 'flex', gap: '8px', marginBottom: '10px', width: '100%' }}>
               <button
                 onClick={() => {
-                  // Auto-select first connected provider when opening dialog
-                  const connected = getConnectedProviders();
-                  if (connected.length > 0 && !providers[selectedProvider]?.connected) {
+                  const connected = getConnectedProviders().filter(([name]) => name !== 'locallibrary');
+                  if (connected.length > 0 && (!selectedProvider || !providers[selectedProvider]?.connected || selectedProvider === 'locallibrary')) {
                     setSelectedProvider(connected[0][0]);
+                  } else if (localLibraries.length > 0 && (!selectedProvider || selectedProvider === 'locallibrary' || !selectedProvider.startsWith('locallibrary:'))) {
+                    setSelectedProvider(`locallibrary:${localLibraries[0].id}`);
                   }
                   setShowNewNoteDialog(true);
                 }}
-                disabled={loading || operationStates.creatingNote || getConnectedProviders().length === 0}
+                disabled={loading || operationStates.creatingNote || (getConnectedProviders().length === 0 && localLibraries.length === 0)}
                 style={{
                   flex: 1,
-                  padding: '10px',
-                  backgroundColor: 'var(--bg-success)',
-                  color: 'white',
-                  border: 'none',
+                  padding: '10px 8px',
+                  backgroundColor: 'var(--bg-dropdown-hover, #2d3241)',
+                  color: 'var(--color-text-dropdown, #e1e4ea)',
+                  border: '1px solid var(--border-secondary, #3b4252)',
                   borderRadius: '6px',
-                  cursor: (loading || operationStates.creatingNote || getConnectedProviders().length === 0) ? 'not-allowed' : 'pointer',
-                  fontSize: '14px',
+                  cursor: (loading || operationStates.creatingNote || (getConnectedProviders().length === 0 && localLibraries.length === 0)) ? 'not-allowed' : 'pointer',
+                  fontSize: '13px',
+                  fontWeight: 500,
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'center',
                   gap: '6px',
-                  opacity: (loading || operationStates.creatingNote || getConnectedProviders().length === 0) ? 0.6 : 1
+                  whiteSpace: 'nowrap',
+                  opacity: (loading || operationStates.creatingNote || (getConnectedProviders().length === 0 && localLibraries.length === 0)) ? 0.6 : 1,
+                  boxSizing: 'border-box'
                 }}
+                title={t('easynotes.new_note') || 'New Note'}
               >
                 {operationStates.creatingNote ? (
                   <>
-                    <FaSync className="fa-spin" /> Creating...
+                    <FaSync className="fa-spin" style={{ fontSize: '14px', color: 'var(--bg-primary, #3b82f6)' }} />
+                    <span>Creating...</span>
                   </>
                 ) : (
                   <>
-                    <FaPlus /> New Note
+                    <FaPlus style={{ fontSize: '14px', color: 'var(--bg-primary, #3b82f6)' }} />
+                    <span>{t('easynotes.new_note') || 'New Note'}</span>
                   </>
                 )}
+              </button>
+
+              <button
+                onClick={handleConfigureLocalLibrary}
+                style={{
+                  flex: 1,
+                  padding: '10px 8px',
+                  backgroundColor: 'var(--bg-dropdown-hover, #2d3241)',
+                  color: 'var(--color-text-dropdown, #e1e4ea)',
+                  border: '1px solid var(--border-secondary, #3b4252)',
+                  borderRadius: '6px',
+                  cursor: 'pointer',
+                  fontSize: '13px',
+                  fontWeight: 500,
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  gap: '6px',
+                  whiteSpace: 'nowrap',
+                  boxSizing: 'border-box'
+                }}
+                title={t('easynotes.new_library') || 'New Library'}
+              >
+                <FaFolderPlus style={{ fontSize: '14px', color: 'var(--bg-primary, #3b82f6)' }} />
+                <span>{t('easynotes.new_library') || 'New Library'}</span>
               </button>
 
               <button
                 onClick={handleSyncNotes}
                 disabled={loading || syncing || getConnectedProviders().length === 0}
                 style={{
-                  padding: '10px',
-                  backgroundColor: 'var(--bg-primary)',
-                  color: 'white',
-                  border: 'none',
+                  flex: 1,
+                  padding: '10px 8px',
+                  backgroundColor: 'var(--bg-dropdown-hover, #2d3241)',
+                  color: 'var(--color-text-dropdown, #e1e4ea)',
+                  border: '1px solid var(--border-secondary, #3b4252)',
                   borderRadius: '6px',
                   cursor: (loading || syncing || getConnectedProviders().length === 0) ? 'not-allowed' : 'pointer',
-                  fontSize: '14px',
-                  opacity: (loading || syncing || getConnectedProviders().length === 0) ? 0.6 : 1,
+                  fontSize: '13px',
+                  fontWeight: 500,
                   display: 'flex',
                   alignItems: 'center',
-                  gap: '4px'
+                  justifyContent: 'center',
+                  gap: '6px',
+                  whiteSpace: 'nowrap',
+                  opacity: (loading || syncing || getConnectedProviders().length === 0) ? 0.6 : 1,
+                  boxSizing: 'border-box'
                 }}
-                title={syncing ? 'Syncing notes...' : 'Sync notes'}
+                title={syncing ? (t('easynotes.syncing') || 'Syncing notes...') : (t('easynotes.sync') || 'Sync notes')}
               >
-                <FaSync className={syncing ? 'fa-spin' : ''} />
-                <span style={{ fontSize: '12px' }}>{syncing ? 'Syncing' : 'Sync'}</span>
+                <FaSync className={syncing ? 'fa-spin' : ''} style={{ fontSize: '14px', color: 'var(--bg-primary, #3b82f6)' }} />
+                <span>{syncing ? (t('easynotes.syncing') || 'Syncing') : (t('easynotes.sync') || 'Sync')}</span>
               </button>
             </div>
           </div>
@@ -1097,33 +1189,56 @@ const EasyNotesSidebar: React.FC<EasyNotesSidebarProps> = ({
               Notes ({filteredNotes.length})
             </h3>
 
-            {/* Provider filter tabs - only show when 2+ providers connected */}
-            {getConnectedProviders().length >= 2 && (
-              <div style={{ display: 'flex', gap: '4px', marginBottom: '12px', flexWrap: 'wrap' }}>
-                {[{ key: 'all', label: 'All', icon: '📋' }, ...getConnectedProviders().map(([name, meta]) => ({ key: name, label: meta.displayName, icon: meta.icon }))].map(({ key, label, icon }) => (
-                  <button
-                    key={key}
-                    onClick={() => setActiveProviderFilter(key)}
-                    style={{
-                      padding: '4px 10px',
-                      fontSize: '12px',
-                      border: '1px solid var(--border-secondary)',
-                      borderRadius: '12px',
-                      cursor: 'pointer',
-                      backgroundColor: activeProviderFilter === key ? 'var(--bg-primary)' : 'var(--bg-dropdown-hover)',
-                      color: activeProviderFilter === key ? 'white' : 'var(--color-text-dropdown)',
-                      display: 'flex',
-                      alignItems: 'center',
-                      gap: '4px',
-                      transition: 'background-color 0.15s, color 0.15s'
-                    }}
-                  >
-                    <span>{icon}</span>
-                    <span>{label}</span>
-                  </button>
-                ))}
-              </div>
-            )}
+            {/* Provider & Local Library filter tabs - show when 2+ options exist */}
+            {(() => {
+              const filterOptions: { key: string; label: string; icon: string }[] = [
+                { key: 'all', label: 'All', icon: '📋' }
+              ];
+
+              // Cloud pills — only when sectionFilter is 'all' or 'cloud'
+              if (sectionFilter !== 'local') {
+                const connectedCloud = getConnectedProviders().filter(([name]) => name !== 'locallibrary');
+                for (const [name, meta] of connectedCloud) {
+                  filterOptions.push({ key: name, label: meta.displayName, icon: meta.icon });
+                }
+              }
+
+              // Local library pills — only when sectionFilter is 'all' or 'local'
+              if (sectionFilter !== 'cloud') {
+                for (const lib of localLibraries) {
+                  filterOptions.push({ key: `locallibrary:${lib.id}`, label: lib.name, icon: '📁' });
+                }
+              }
+
+              if (filterOptions.length <= 2) return null;
+
+              return (
+                <div style={{ display: 'flex', gap: '4px', marginBottom: '12px', flexWrap: 'wrap' }}>
+                  {filterOptions.map(({ key, label, icon }) => (
+                    <button
+                      key={key}
+                      onClick={() => setActiveProviderFilter(key)}
+                      style={{
+                        padding: '4px 10px',
+                        fontSize: '12px',
+                        border: '1px solid var(--border-secondary)',
+                        borderRadius: '12px',
+                        cursor: 'pointer',
+                        backgroundColor: activeProviderFilter === key ? 'var(--bg-primary)' : 'var(--bg-dropdown-hover)',
+                        color: activeProviderFilter === key ? 'white' : 'var(--color-text-dropdown)',
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '4px',
+                        transition: 'background-color 0.15s, color 0.15s'
+                      }}
+                    >
+                      <span>{icon}</span>
+                      <span>{label}</span>
+                    </button>
+                  ))}
+                </div>
+              );
+            })()}
 
             {loading && (
               <div style={{ textAlign: 'center', padding: '20px', color: 'var(--color-text-light)' }}>
@@ -1250,9 +1365,16 @@ const EasyNotesSidebar: React.FC<EasyNotesSidebarProps> = ({
                   fontSize: '14px'
                 }}
               >
-                {getConnectedProviders().map(([providerName, metadata]) => (
-                  <option key={providerName} value={providerName}>
-                    {metadata.displayName}
+                {getConnectedProviders()
+                  .filter(([name]) => name !== 'locallibrary')
+                  .map(([providerName, metadata]) => (
+                    <option key={providerName} value={providerName}>
+                      {metadata.displayName}
+                    </option>
+                  ))}
+                {localLibraries.map(lib => (
+                  <option key={`locallibrary:${lib.id}`} value={`locallibrary:${lib.id}`}>
+                    📁 {lib.name}
                   </option>
                 ))}
               </select>

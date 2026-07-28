@@ -1,4 +1,4 @@
-{
+﻿{
   "toasts": {
     "import_success": "Markdown succesvol geïmporteerd",
     "import_error": "Importeren mislukt",
@@ -662,7 +662,15 @@
     "filter_cloud": "Alleen cloudaanbieders tonen",
     "filter_local": "Alleen lokale bibliotheek tonen",
     "library_name": "Bibliotheeknaam",
-    "library_name_placeholder": "bijv. Persoonlijke notities, Werk"
+    "library_name_placeholder": "bijv. Persoonlijke notities, Werk",
+    "new_library": "Nieuwe bibliotheek",
+    "new_note": "Nieuwe notitie",
+    "sync": "Synchroniseren",
+    "syncing": "Synchroniseren...",
+    "local_libraries": "Lokale bibliotheken",
+    "add_library": "Bibliotheek toevoegen",
+    "add": "Toevoegen",
+    "library_removed": "Bibliotheek verwijderd"
   },
   "features_modal": {
     "title": "Functies",

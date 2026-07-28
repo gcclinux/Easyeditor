@@ -228,6 +228,62 @@ export class CloudManager {
   }
 
   /**
+   * Get all configured local libraries
+   */
+  getLocalLibraries(): import('../providers/LocalLibraryProvider').LocalLibraryConfig[] {
+    const provider = this.providers.get('locallibrary');
+    if (provider && 'getLibraries' in provider) {
+      return (provider as any).getLibraries();
+    }
+    return [];
+  }
+
+  /**
+   * Add a new Local Library
+   */
+  async addLocalLibrary(customName?: string, initialFiles?: any[]): Promise<import('../providers/LocalLibraryProvider').LocalLibraryConfig | null> {
+    const provider = this.providers.get('locallibrary');
+    if (provider && 'addLibrary' in provider) {
+      const lib = await (provider as any).addLibrary(customName, initialFiles);
+      if (lib) {
+        const metadata: ProviderMetadata = {
+          connected: true,
+          applicationFolderId: lib.path,
+          lastSync: new Date(),
+          displayName: lib.name,
+          icon: provider.icon
+        };
+        await this.metadataManager.updateProviderMetadata('locallibrary', metadata);
+      }
+      return lib;
+    }
+    return null;
+  }
+
+  /**
+   * Remove a specific Local Library by ID
+   */
+  async removeLocalLibrary(libraryId: string): Promise<void> {
+    const provider = this.providers.get('locallibrary');
+    if (provider && 'removeLibrary' in provider) {
+      await (provider as any).removeLibrary(libraryId);
+      const remaining = (provider as any).getLibraries();
+      if (remaining.length === 0) {
+        await this.disconnectProvider('locallibrary');
+      } else {
+        const metadata: ProviderMetadata = {
+          connected: true,
+          applicationFolderId: remaining[0].path,
+          lastSync: new Date(),
+          displayName: remaining[0].name,
+          icon: provider.icon
+        };
+        await this.metadataManager.updateProviderMetadata('locallibrary', metadata);
+      }
+    }
+  }
+
+  /**
    * Disconnect from a cloud provider and clean up credentials
    * Requirements: 6.4
    */
@@ -283,7 +339,7 @@ export class CloudManager {
    * Create a new note in the specified cloud provider
    * Requirements: 2.1, 2.2, 2.3, 2.5
    */
-  async createNote(providerName: string, title: string): Promise<NoteMetadata> {
+  async createNote(providerName: string, title: string, folderId?: string): Promise<NoteMetadata> {
     await this.ensureProvidersReady();
 
     const provider = this.providers.get(providerName);
@@ -331,7 +387,7 @@ export class CloudManager {
         const cloudFile = await offlineManager.withOfflineFallback(
           () => this.fileSynchronizer.uploadNote(
             provider,
-            providerMetadata.applicationFolderId!,
+            folderId || providerMetadata.applicationFolderId!,
             fileName,
             initialContent
           ),
@@ -340,6 +396,8 @@ export class CloudManager {
           },
           'createNote'
         );
+
+        const extFile = cloudFile as import('../providers/LocalLibraryProvider').ExtendedCloudFile;
 
         // Create note metadata
         const noteMetadata: NoteMetadata = {
@@ -351,7 +409,9 @@ export class CloudManager {
           lastModified: cloudFile.modifiedTime,
           lastSynced: new Date(),
           size: cloudFile.size,
-          checksum: this.calculateChecksum(initialContent)
+          checksum: this.calculateChecksum(initialContent),
+          libraryId: extFile.libraryId || folderId,
+          libraryName: extFile.libraryName || (folderId ? this.getLocalLibraries().find(l => l.id === folderId)?.name : undefined)
         };
 
         // Update progress: Saving metadata
@@ -367,6 +427,7 @@ export class CloudManager {
       );
 
     } catch (error) {
+      console.error('[CloudManager] Error in createNote:', error);
       const cloudError = ErrorHandler.enhanceError(error, {
         operation: 'createNote',
         provider: providerName,
@@ -741,6 +802,37 @@ export class CloudManager {
 
                 // Get existing local notes for comparison
                 const existingNotes = await this.metadataManager.findNotesByProvider(pName);
+
+                // For local library provider, reconcile / migrate existing notes to populate libraryId and libraryName
+                if (pName === 'locallibrary') {
+                  for (const existingNote of existingNotes) {
+                    const matchingCloudFile = cloudFiles.find(f =>
+                      f.id === existingNote.cloudFileId ||
+                      f.name === existingNote.fileName ||
+                      f.id.endsWith(`::${existingNote.fileName}`)
+                    );
+                    if (matchingCloudFile) {
+                      const extFile = matchingCloudFile as import('../providers/LocalLibraryProvider').ExtendedCloudFile;
+                      let updated = false;
+                      if (existingNote.cloudFileId !== matchingCloudFile.id) {
+                        existingNote.cloudFileId = matchingCloudFile.id;
+                        updated = true;
+                      }
+                      if (extFile.libraryId && existingNote.libraryId !== extFile.libraryId) {
+                        existingNote.libraryId = extFile.libraryId;
+                        updated = true;
+                      }
+                      if (extFile.libraryName && existingNote.libraryName !== extFile.libraryName) {
+                        existingNote.libraryName = extFile.libraryName;
+                        updated = true;
+                      }
+                      if (updated) {
+                        await this.metadataManager.updateNote(existingNote);
+                      }
+                    }
+                  }
+                }
+
                 const existingFileIds = new Set(existingNotes.map(note => note.cloudFileId));
 
                 // Find new files that aren't in local metadata
@@ -752,6 +844,7 @@ export class CloudManager {
                   try {
                     // Extract title from filename (remove .md or .sstp extension)
                     const title = cloudFile.name.replace(/\.(md|sstp)$/, '');
+                    const extFile = cloudFile as import('../providers/LocalLibraryProvider').ExtendedCloudFile;
 
                     const noteMetadata: NoteMetadata = {
                       id: this.generateNoteId(),
@@ -762,7 +855,9 @@ export class CloudManager {
                       lastModified: cloudFile.modifiedTime,
                       lastSynced: new Date(),
                       size: cloudFile.size,
-                      checksum: 'unknown' // Will be updated when file is opened/synced
+                      checksum: 'unknown',
+                      libraryId: extFile.libraryId,
+                      libraryName: extFile.libraryName
                     };
 
                     await this.metadataManager.addNote(noteMetadata);
