@@ -28,10 +28,10 @@ jobs:
         include:
           - arch: amd64
             runner: ubuntu-latest
-            cache-key: bookworm-amd64
+            cache-key: glibc236-amd64
           - arch: arm64
             runner: ubuntu-24.04-arm
-            cache-key: bookworm-arm64
+            cache-key: glibc236-arm64
 
     steps:
       - name: Install base tools

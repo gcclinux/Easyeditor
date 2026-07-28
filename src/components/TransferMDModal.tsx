@@ -42,14 +42,39 @@ export default function TransferMDModal({ isOpen, onClose }: Props) {
         const available = await cloudManager.getAvailableProviders();
         const status = await Promise.all(available.map(async p => {
             const connected = await cloudManager!.isProviderConnected(p.name);
+            const displayName = p.name === 'locallibrary' 
+                ? (localStorage.getItem('easynotes_locallibrary_name') || t('easynotes.local_library') || p.displayName) 
+                : p.displayName;
             return {
                 name: p.name,
-                displayName: p.displayName,
+                displayName,
                 connected,
                 icon: p.icon
             };
         }));
         setProviders(status);
+    };
+
+    const handleProviderClick = async (provider: ProviderStatus, isSource: boolean) => {
+        if (!provider.connected) {
+            if (provider.name === 'locallibrary') {
+                const success = await cloudManager!.connectProvider('locallibrary');
+                if (success) {
+                    await loadProviders();
+                    if (isSource) setSource('locallibrary');
+                    else setTarget('locallibrary');
+                }
+            }
+            return;
+        }
+
+        if (isSource) {
+            setSource(provider.name);
+        } else {
+            if (source !== provider.name) {
+                setTarget(provider.name);
+            }
+        }
     };
 
     const handleSelectLocalFolder = async () => {
@@ -362,14 +387,20 @@ export default function TransferMDModal({ isOpen, onClose }: Props) {
                                 {providers.map(p => (
                                     <button
                                         key={p.name}
-                                        className={`provider-option ${source === p.name ? 'active' : ''} ${!p.connected ? 'disabled' : ''}`}
-                                        onClick={() => p.connected && setSource(p.name)}
-                                        disabled={!p.connected}
+                                        className={`provider-option ${source === p.name ? 'active' : ''} ${!p.connected && p.name !== 'locallibrary' ? 'disabled' : ''}`}
+                                        onClick={() => handleProviderClick(p, true)}
+                                        disabled={!p.connected && p.name !== 'locallibrary'}
                                     >
                                         <div dangerouslySetInnerHTML={{ __html: p.icon }} className="provider-icon" />
                                         <div className="provider-info">
                                             <span>{p.displayName}</span>
-                                            <small>{p.connected ? t('transfer_md.connected') : t('transfer_md.not_connected')}</small>
+                                            <small>
+                                                {p.name === 'locallibrary'
+                                                    ? (p.connected
+                                                        ? (localStorage.getItem('easynotes_locallibrary_path') || t('transfer_md.connected'))
+                                                        : (t('easynotes.configure') || 'Configure'))
+                                                    : (p.connected ? t('transfer_md.connected') : t('transfer_md.not_connected'))}
+                                            </small>
                                         </div>
                                     </button>
                                 ))}
@@ -397,14 +428,20 @@ export default function TransferMDModal({ isOpen, onClose }: Props) {
                                 {providers.map(p => (
                                     <button
                                         key={p.name}
-                                        className={`provider-option ${target === p.name ? 'active' : ''} ${!p.connected || source === p.name ? 'disabled' : ''}`}
-                                        onClick={() => p.connected && source !== p.name && setTarget(p.name)}
-                                        disabled={!p.connected || source === p.name}
+                                        className={`provider-option ${target === p.name ? 'active' : ''} ${source === p.name || (!p.connected && p.name !== 'locallibrary') ? 'disabled' : ''}`}
+                                        onClick={() => source !== p.name && handleProviderClick(p, false)}
+                                        disabled={source === p.name || (!p.connected && p.name !== 'locallibrary')}
                                     >
                                         <div dangerouslySetInnerHTML={{ __html: p.icon }} className="provider-icon" />
                                         <div className="provider-info">
                                             <span>{p.displayName}</span>
-                                            <small>{p.connected ? t('transfer_md.connected') : t('transfer_md.not_connected')}</small>
+                                            <small>
+                                                {p.name === 'locallibrary'
+                                                    ? (p.connected
+                                                        ? (localStorage.getItem('easynotes_locallibrary_path') || t('transfer_md.connected'))
+                                                        : (t('easynotes.configure') || 'Configure'))
+                                                    : (p.connected ? t('transfer_md.connected') : t('transfer_md.not_connected'))}
+                                            </small>
                                         </div>
                                     </button>
                                 ))}

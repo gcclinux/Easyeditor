@@ -38,7 +38,7 @@ export class MSALOneDriveProvider implements CloudProvider {
   readonly displayName = 'OneDrive';
   readonly icon = '☁️';
 
-  private msalInstance: PublicClientApplication;
+  private msalInstance: PublicClientApplication | null = null;
   private applicationFolderId: string | null = null;
 
   constructor() {
@@ -47,24 +47,33 @@ export class MSALOneDriveProvider implements CloudProvider {
       logger.warn('Configuration warning:', errorMessage);
     }
 
-    const msalConfig: Configuration = {
-      auth: {
-        clientId: ONEDRIVE_CONFIG.CLIENT_ID,
-        authority: 'https://login.microsoftonline.com/consumers',
-        redirectUri: ONEDRIVE_CONFIG.REDIRECT_URI
-      },
-      cache: {
-        cacheLocation: 'sessionStorage'
-      }
-    };
+    try {
+      this.getMsalInstance();
+      logger.log('Initialized with config:', {
+        clientIdConfigured: !!ONEDRIVE_CONFIG.CLIENT_ID && !ONEDRIVE_CONFIG.CLIENT_ID.includes('your-'),
+        redirectUri: ONEDRIVE_CONFIG.REDIRECT_URI,
+        scopes: ONEDRIVE_CONFIG.SCOPES
+      });
+    } catch (err) {
+      logger.warn('MSAL pre-initialization deferred until authentication:', err);
+    }
+  }
 
-    this.msalInstance = new PublicClientApplication(msalConfig);
-
-    logger.log('Initialized with config:', {
-      clientIdConfigured: !!ONEDRIVE_CONFIG.CLIENT_ID && !ONEDRIVE_CONFIG.CLIENT_ID.includes('your-'),
-      redirectUri: ONEDRIVE_CONFIG.REDIRECT_URI,
-      scopes: ONEDRIVE_CONFIG.SCOPES
-    });
+  private getMsalInstance(): PublicClientApplication {
+    if (!this.msalInstance) {
+      const msalConfig: Configuration = {
+        auth: {
+          clientId: ONEDRIVE_CONFIG.CLIENT_ID || 'your-development-client-id',
+          authority: 'https://login.microsoftonline.com/consumers',
+          redirectUri: ONEDRIVE_CONFIG.REDIRECT_URI || (typeof window !== 'undefined' ? window.location.origin : '')
+        },
+        cache: {
+          cacheLocation: 'sessionStorage'
+        }
+      };
+      this.msalInstance = new PublicClientApplication(msalConfig);
+    }
+    return this.msalInstance;
   }
 
   /**
@@ -83,13 +92,14 @@ export class MSALOneDriveProvider implements CloudProvider {
     }
 
     try {
+      const msal = this.getMsalInstance();
       // MSAL requires initialize() before any auth methods can be used
-      await this.msalInstance.initialize();
+      await msal.initialize();
 
       // Process any pending redirect responses (required for MSAL v5 bridge page flow).
       // This also clears any stuck interaction_in_progress state from previous failed attempts.
       try {
-        await this.msalInstance.handleRedirectPromise();
+        await msal.handleRedirectPromise();
       } catch (redirectError) {
         logger.warn('handleRedirectPromise error (clearing state):', redirectError);
       }
@@ -99,7 +109,7 @@ export class MSALOneDriveProvider implements CloudProvider {
         redirectUri: ONEDRIVE_CONFIG.REDIRECT_URI
       };
 
-      const response: AuthenticationResult = await this.msalInstance.loginPopup(loginRequest);
+      const response: AuthenticationResult = await msal.loginPopup(loginRequest);
 
       if (!response || !response.accessToken) {
         return {
@@ -203,10 +213,11 @@ export class MSALOneDriveProvider implements CloudProvider {
     try {
       // Attempt token revocation via MSAL logout
       try {
-        await this.msalInstance.initialize();
-        const accounts = this.msalInstance.getAllAccounts();
+        const msal = this.getMsalInstance();
+        await msal.initialize();
+        const accounts = msal.getAllAccounts();
         if (accounts.length > 0) {
-          await this.msalInstance.logoutPopup({
+          await msal.logoutPopup({
             account: accounts[0]
           });
         }
@@ -587,8 +598,9 @@ export class MSALOneDriveProvider implements CloudProvider {
    */
   private async refreshToken(): Promise<boolean> {
     try {
-      await this.msalInstance.initialize();
-      const accounts = this.msalInstance.getAllAccounts();
+      const msal = this.getMsalInstance();
+      await msal.initialize();
+      const accounts = msal.getAllAccounts();
 
       if (accounts.length === 0) {
         logger.log('No accounts found for silent refresh');
@@ -600,7 +612,7 @@ export class MSALOneDriveProvider implements CloudProvider {
         account: accounts[0]
       };
 
-      const response = await this.msalInstance.acquireTokenSilent(silentRequest);
+      const response = await msal.acquireTokenSilent(silentRequest);
 
       if (response && response.accessToken) {
         const expiresAt = response.expiresOn ? new Date(response.expiresOn) : new Date(Date.now() + 3600 * 1000);

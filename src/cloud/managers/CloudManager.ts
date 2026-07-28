@@ -72,6 +72,14 @@ export class CloudManager {
         } catch (error) {
           logger.error('Failed to load OneDrive OAuth provider:', error);
         }
+
+        try {
+          const { LocalLibraryProvider } = await import('../providers/LocalLibraryProvider');
+          this.registerProvider(new LocalLibraryProvider());
+          logger.log('LocalLibraryProvider registered successfully');
+        } catch (error) {
+          logger.error('Failed to load LocalLibraryProvider:', error);
+        }
       } else {
         logger.log('Detected web environment, using web providers');
         const { GISGoogleDriveProvider } = await import('../providers/GISGoogleDriveProvider');
@@ -89,11 +97,26 @@ export class CloudManager {
         } catch (error) {
           logger.error('Failed to load OneDrive MSAL provider:', error);
         }
+
+        try {
+          const { LocalLibraryProvider } = await import('../providers/LocalLibraryProvider');
+          this.registerProvider(new LocalLibraryProvider());
+          logger.log('LocalLibraryProvider registered successfully');
+        } catch (error) {
+          logger.error('Failed to load LocalLibraryProvider:', error);
+        }
       }
     } catch (error) {
       logger.error('Failed to initialize providers:', error);
       // Don't throw - allow the manager to work without providers
     }
+  }
+
+  /**
+   * Get specific provider by name
+   */
+  getProvider(providerName: string): CloudProvider | undefined {
+    return this.providers.get(providerName);
   }
 
   /**
@@ -122,7 +145,7 @@ export class CloudManager {
    * Connect to a cloud provider by authenticating and setting up application folder
    * Requirements: 2.1, 3.1, 4.1, 5.1
    */
-  async connectProvider(providerName: string): Promise<boolean> {
+  async connectProvider(providerName: string, customName?: string): Promise<boolean> {
     await this.ensureProvidersReady();
 
     const provider = this.providers.get(providerName);
@@ -137,8 +160,8 @@ export class CloudManager {
 
     try {
       return await ErrorHandler.withRetry(async () => {
-        // Check if offline
-        if (!offlineManager.isCurrentlyOnline()) {
+        // Check if offline (bypassed for locallibrary)
+        if (providerName !== 'locallibrary' && !offlineManager.isCurrentlyOnline()) {
           throw ErrorHandler.enhanceError(
             new Error('Cannot connect while offline'),
             { operation: 'connectProvider', provider: providerName }
@@ -149,7 +172,7 @@ export class CloudManager {
         cloudToastService.updateProgress(operationId, 25, `Authenticating with ${provider.displayName}...`);
 
         // Authenticate with the provider
-        const authResult = await provider.authenticate();
+        const authResult = await (provider as any).authenticate(customName);
         if (!authResult.success) {
           throw ErrorHandler.enhanceError(
             new Error(authResult.error || 'Authentication failed'),
@@ -165,18 +188,26 @@ export class CloudManager {
         const applicationFolderId = await provider.createApplicationFolder();
         logger.log('Application folder ID:', applicationFolderId);
 
+        const storedCustomName = (provider as any).getStoredName?.() || customName;
+
         // Update provider metadata
         const providerMetadata: ProviderMetadata = {
           connected: true,
           applicationFolderId,
           lastSync: new Date(),
-          displayName: provider.displayName,
+          displayName: (providerName === 'locallibrary' && storedCustomName) ? storedCustomName : provider.displayName,
           icon: provider.icon
         };
 
         logger.log('Updating provider metadata:', providerMetadata);
         await this.metadataManager.updateProviderMetadata(providerName, providerMetadata);
         logger.log('Provider metadata updated successfully');
+
+        try {
+          await this.syncNotes(providerName);
+        } catch (syncErr) {
+          logger.warn(`Initial sync for ${providerName} warning:`, syncErr);
+        }
 
         cloudToastService.completeOperation(operationId, `Connected to ${provider.displayName}`, 'success');
         return true;
@@ -348,9 +379,6 @@ export class CloudManager {
     }
   }
 
-  /**
-   * Upload a generic file (e.g., encrypted file) to cloud storage
-   */
   /**
    * Upload a generic file (e.g., encrypted file) to cloud storage
    * Returns metadata if available
@@ -660,8 +688,8 @@ export class CloudManager {
     let filesProcessed = 0;
     const operationId = `sync_${providerName || 'all'}_${Date.now()}`;
 
-    // Check if offline
-    if (!offlineManager.isCurrentlyOnline()) {
+    // Check if offline (bypassed for locallibrary as it is purely local)
+    if (providerName !== 'locallibrary' && !offlineManager.isCurrentlyOnline()) {
       const message = 'Cannot sync while offline';
       cloudToastService.showWarning(message);
       return {
@@ -872,7 +900,22 @@ export class CloudManager {
    * Get provider metadata for UI display
    */
   async getProviderMetadata(providerName: string): Promise<ProviderMetadata | null> {
-    return await this.metadataManager.getProviderMetadata(providerName);
+    let meta = await this.metadataManager.getProviderMetadata(providerName);
+    if ((!meta || !meta.connected) && providerName === 'locallibrary') {
+      const provider = this.providers.get('locallibrary');
+      if (provider && await provider.isAuthenticated()) {
+        const path = (provider as any).getStoredPath?.() || localStorage.getItem('easynotes_locallibrary_path') || 'locallibrary';
+        meta = {
+          connected: true,
+          applicationFolderId: path,
+          lastSync: new Date(),
+          displayName: provider.displayName,
+          icon: provider.icon
+        };
+        await this.metadataManager.updateProviderMetadata('locallibrary', meta);
+      }
+    }
+    return meta;
   }
 
   /**
