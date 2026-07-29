@@ -408,11 +408,22 @@
   "actions": {
     "close": "Close",
     "cancel": "Cancel",
+    "continue": "Continue",
     "delete": "Delete",
     "save": "Save",
     "browse": "Browse..."
   },
   "modals": {
+    "update": {
+      "title": "New Version Available",
+      "subtitle": "A new version of EasyEditor is available for update.",
+      "running_version": "Running Version",
+      "available_version": "Available Version",
+      "release_date": "Build Date",
+      "download": "Download",
+      "continue": "Continue",
+      "close": "Close"
+    },
     "theme": {
       "title": "Select Theme",
       "subtitle": "Choose a color scheme for EasyEditor",

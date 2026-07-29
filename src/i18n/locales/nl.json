@@ -1,4 +1,4 @@
-﻿{
+{
   "toasts": {
     "import_success": "Markdown succesvol geïmporteerd",
     "import_error": "Importeren mislukt",
@@ -408,11 +408,22 @@
   "actions": {
     "close": "Sluiten",
     "cancel": "Annuleren",
+    "continue": "Doorgaan",
     "delete": "Verwijderen",
     "save": "Opslaan",
     "browse": "Bladeren..."
   },
   "modals": {
+    "update": {
+      "title": "Nieuwe Versie Beschikbaar",
+      "subtitle": "Er is een nieuwe versie van EasyEditor beschikbaar om te downloaden.",
+      "running_version": "Huidige Versie",
+      "available_version": "Beschikbare Versie",
+      "release_date": "Bouwdatum",
+      "download": "Downloaden",
+      "continue": "Doorgaan",
+      "close": "Sluiten"
+    },
     "theme": {
       "title": "Selecteer Thema",
       "subtitle": "Kies een kleureschema voor EasyEditor",

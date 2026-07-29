@@ -1,4 +1,4 @@
-﻿{
+{
   "toasts": {
     "import_success": "Pomyślnie zaimportowano Markdown",
     "import_error": "Import nie powiódł się",
@@ -408,11 +408,22 @@
   "actions": {
     "close": "Zamknij",
     "cancel": "Anuluj",
+    "continue": "Kontynuuj",
     "delete": "Usuń",
     "save": "Zapisz",
     "browse": "Przeglądaj..."
   },
   "modals": {
+    "update": {
+      "title": "Dostępna Nowa Wersja",
+      "subtitle": "Nowa wersja programu EasyEditor jest dostępna do pobrania.",
+      "running_version": "Uruchomiona Wersja",
+      "available_version": "Dostępna Wersja",
+      "release_date": "Data Kompilacji",
+      "download": "Pobierz",
+      "continue": "Kontynuuj",
+      "close": "Zamknij"
+    },
     "theme": {
       "title": "Wybierz Motyw",
       "subtitle": "Wybierz schemat kolorów dla EasyEditor",

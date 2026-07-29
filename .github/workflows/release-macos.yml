@@ -113,6 +113,13 @@ jobs:
             src-tauri/target/release/bundle/macos/*.tar.gz
             src-tauri/target/release/bundle/macos/*.zip
           fail_on_unmatched_files: false
-          generate_release_notes: true
+          append_body: true
+          body: |
+            ### macOS Packages
+
+            | Package | Format | Install |
+            | --- | --- | --- |
+            | `.dmg` | Disk Image | Open and drag to Applications |
+            | `.app.tar.gz` | Compressed App | Extract and move to Applications |
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

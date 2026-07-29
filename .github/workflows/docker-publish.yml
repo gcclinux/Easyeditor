@@ -99,3 +99,31 @@ jobs:
         run: |
           FIRST_TAG=$(echo "${TAGS}" | head -n 1)
           cosign sign --yes "${FIRST_TAG}@${DIGEST}"
+
+      - name: Extract version from tag
+        id: version
+        if: startsWith(github.ref, 'refs/tags/')
+        run: |
+          TAG="${GITHUB_REF_NAME}"
+          VERSION="${TAG#v}"
+          echo "tag=$TAG" >> "$GITHUB_OUTPUT"
+          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
+
+      - name: Update GitHub Release Notes with Docker instructions
+        uses: softprops/action-gh-release@v2
+        if: startsWith(github.ref, 'refs/tags/')
+        with:
+          tag_name: ${{ steps.version.outputs.tag }}
+          append_body: true
+          body: |
+            ### Docker Container
+
+            ```bash
+            $ docker pull ghcr.io/gcclinux/easyeditor:latest
+            $ docker run -d --name EASYEDITOR -p 3024:3024 --env-file .env.local ghcr.io/gcclinux/easyeditor:latest
+
+            $ docker pull ghcr.io/gcclinux/easyeditor:${{ steps.version.outputs.version }}
+            $ docker run -d --name EASYEDITOR -p 3024:3024 --env-file .env.local ghcr.io/gcclinux/easyeditor:${{ steps.version.outputs.version }}
+            ```
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

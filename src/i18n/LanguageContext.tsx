@@ -20,7 +20,7 @@ interface Language {
 interface LanguageContextType {
     language: string;
     setLanguage: (lang: string) => void;
-    t: (key: string) => string;
+    t: (key: string, fallback?: string) => string;
     availableLanguages: Language[];
     importLanguage: (code: string, name: string, data: Record<string, any>) => void;
     isLoading: boolean;
@@ -72,24 +72,16 @@ export const LanguageProvider: React.FC<{ children: React.ReactNode }> = ({ chil
                 const isBuiltIn = LANGUAGES.some(l => l.code === language);
 
                 if (isBuiltIn) {
-                    // Dynamic import for built-in locales
-                    // Note: In Vite, we might need to use a different approach if dynamic import with variables doesn't work out of the box
-                    // But usually `import(./locales/${language}.json)` works if files exist.
-                    // However, to be safe and explicit with Vite glob checks:
-                    const locales = import.meta.glob('./locales/*.json');
-                    const match = locales[`./locales/${language}.json`];
+                    const locales = import.meta.glob('./locales/*.json', { eager: true });
+                    const match: any = locales[`./locales/${language}.json`];
                     if (match) {
-                        data = await match();
-                        // handle default export if present, or existing object
-                        data = data.default || data;
+                        data = match.default || match;
                     } else {
                         console.warn(`Locale file for ${language} not found, falling back to English`);
-                        // Fallback to en if not found
                         if (language !== 'en') {
-                            const enMatch = locales['./locales/en.json'];
+                            const enMatch: any = locales['./locales/en.json'];
                             if (enMatch) {
-                                data = await enMatch();
-                                data = data.default || data;
+                                data = enMatch.default || enMatch;
                             }
                         }
                     }
@@ -115,23 +107,52 @@ export const LanguageProvider: React.FC<{ children: React.ReactNode }> = ({ chil
         localStorage.setItem('easyeditor-language', language);
     }, [language]);
 
+    const locales = import.meta.glob('./locales/*.json', { eager: true });
+    const enMatch: any = locales['./locales/en.json'];
+    const enLocale = enMatch ? (enMatch.default || enMatch) : null;
+
     const setLanguage = (lang: string) => {
         setLanguageState(lang);
     };
 
-    const t = (key: string): string => {
+    const t = (key: string, fallback?: string): string => {
         const keys = key.split('.');
-        let value = translations;
+        
+        // Try current language translations first
+        let value: any = translations;
+        let found = true;
 
         for (const k of keys) {
             if (value && typeof value === 'object' && k in value) {
                 value = value[k];
             } else {
-                return key; // Return key if translation needed
+                found = false;
+                break;
             }
         }
 
-        return typeof value === 'string' ? value : key;
+        if (found && typeof value === 'string') {
+            return value;
+        }
+
+        // Try English fallback if not found in active locale
+        if (enLocale) {
+            let enValue: any = enLocale;
+            let enFound = true;
+            for (const k of keys) {
+                if (enValue && typeof enValue === 'object' && k in enValue) {
+                    enValue = enValue[k];
+                } else {
+                    enFound = false;
+                    break;
+                }
+            }
+            if (enFound && typeof enValue === 'string') {
+                return enValue;
+            }
+        }
+
+        return fallback || key;
     };
 
     const importLanguage = (code: string, name: string, data: Record<string, any>) => {

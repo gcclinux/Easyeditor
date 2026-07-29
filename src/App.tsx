@@ -99,6 +99,7 @@ import GitModal from './components/GitModal';
 import TemplatesModal from './components/TemplatesModal';
 import AboutModal from './components/AboutModal';
 import LicenseModal from './components/LicenseModal';
+import UpdateModal from './components/UpdateModal';
 import APIModal from './components/APIModal';
 import EasyNotesSidebar from './components/EasyNotesSidebar';
 import EasyAIPanel from './components/EasyAIPanel';
@@ -135,7 +136,6 @@ import { isFeatureEnabled } from './config/features';
 import { useLanguage } from './i18n/LanguageContext';
 import LanguageModal from './components/LanguageModal';
 import LicenseManager from './premium/LicenseManager';
-import UpdateModal from './components/UpdateModal';
 import { getRunningVersion, getAvailableVersion, compareVersions } from './utils/version';
 import { convertPdfToMarkdown, PdfImportError } from './pdfImporter';
 
@@ -155,6 +155,7 @@ const App = () => {
   const [updateModalOpen, setUpdateModalOpen] = useState(false);
   const [runVersion, setRunVersion] = useState('');
   const [availVersion, setAvailVersion] = useState('');
+  const [releaseDate, setReleaseDate] = useState('');
 
   useEffect(() => {
     const checkUpdate = async () => {
@@ -164,6 +165,7 @@ const App = () => {
       const availableInfo = await getAvailableVersion();
       const available = availableInfo.version;
       setAvailVersion(available);
+      setReleaseDate(availableInfo.date || '');
 
       if (current && available && current !== 'unknown' && available !== 'unknown') {
         if (compareVersions(current, available) < 0) {
@@ -3659,6 +3661,14 @@ const App = () => {
             </div>
           </div>
         )}
+
+        <UpdateModal
+          open={updateModalOpen}
+          onClose={() => setUpdateModalOpen(false)}
+          runVersion={runVersion}
+          availVersion={availVersion}
+          releaseDate={releaseDate}
+        />
       </div>
     </div>
   );

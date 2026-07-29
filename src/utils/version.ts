@@ -52,34 +52,17 @@ export const getRunningVersion = async (): Promise<string> => {
 };
 
 export const getAvailableVersion = async (): Promise<VersionInfo> => {
-    // try local packaged latest.json first (some builds include this), then remote fallback
     try {
-        // try a local path first
-        let remoteVer = '';
-        let remoteDate = '';
-
-        try {
-            const localResp = await fetch('/release/latest.json');
-            if (localResp.ok) {
-                const localData = await localResp.json();
-                remoteVer = localData.version || '';
-                remoteDate = localData.date || '';
-            }
-        } catch (e) {
-            // ignore local fetch error and try remote
+        const ghResp = await fetch('https://raw.githubusercontent.com/gcclinux/Easyeditor/main/release/latest.json');
+        if (ghResp.ok) {
+            const ghData = await ghResp.json();
+            return {
+                version: ghData.version || 'unknown',
+                date: ghData.date || ''
+            };
         }
-
-        if (!remoteVer) {
-            const ghResp = await fetch('https://raw.githubusercontent.com/gcclinux/EasyEditor/refs/heads/main/release/latest.json');
-            if (ghResp.ok) {
-                const ghData = await ghResp.json();
-                remoteVer = ghData.version || '';
-                remoteDate = ghData.date || '';
-            }
-        }
-
-        return { version: remoteVer || 'unknown', date: remoteDate };
+        return { version: 'unknown', date: '' };
     } catch (e) {
         return { version: 'unknown', date: '' };
     }
-}
+};

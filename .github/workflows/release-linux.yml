@@ -122,6 +122,14 @@ jobs:
             src-tauri/target/release/bundle/appimage/*.AppImage
             src-tauri/target/release/bundle/rpm/*.rpm
           fail_on_unmatched_files: false
-          generate_release_notes: true
+          append_body: true
+          body: |
+            ### Linux Packages (x86_64)
+
+            | Package | Format | Install |
+            | --- | --- | --- |
+            | `.deb` | Debian/Ubuntu (x64) | `sudo dpkg -i easyeditor_*.deb` |
+            | `.rpm` | Fedora/openSUSE (x64) | `sudo rpm -i easyeditor-*.rpm` |
+            | `.AppImage` | Universal (x64) | `chmod +x easyeditor_*.AppImage && ./easyeditor_*.AppImage` |
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

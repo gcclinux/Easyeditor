@@ -1,4 +1,4 @@
-﻿{
+{
   "toasts": {
     "import_success": "Markdown importado correctamente",
     "import_error": "Error al importar",
@@ -408,11 +408,22 @@
   "actions": {
     "close": "Cerrar",
     "cancel": "Cancelar",
+    "continue": "Continuar",
     "delete": "Eliminar",
     "save": "Guardar",
     "browse": "Examinar..."
   },
   "modals": {
+    "update": {
+      "title": "Nueva Versión Disponible",
+      "subtitle": "Una nueva versión de EasyEditor está disponible para descargar.",
+      "running_version": "Versión en Ejecución",
+      "available_version": "Versión Disponible",
+      "release_date": "Fecha de Compilación",
+      "download": "Descargar",
+      "continue": "Continuar",
+      "close": "Cerrar"
+    },
     "theme": {
       "title": "Seleccionar tema",
       "subtitle": "Elige un esquema de colores para EasyEditor",

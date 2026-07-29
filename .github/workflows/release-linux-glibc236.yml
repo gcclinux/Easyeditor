@@ -167,6 +167,14 @@ jobs:
             src-tauri/target/release/bundle/appimage/*.AppImage
             src-tauri/target/release/bundle/rpm/*.rpm
           fail_on_unmatched_files: false
-          generate_release_notes: true
+          append_body: true
+          body: |
+            ### Linux Bookworm / GLIBC 2.36 Packages (${{ matrix.arch }})
+
+            | Package | Format | Install |
+            | --- | --- | --- |
+            | `.deb` | Debian/Ubuntu (${{ matrix.arch }}) | `sudo dpkg -i easyeditor_*-glibc236.deb` |
+            | `.rpm` | Fedora/openSUSE (${{ matrix.arch }}) | `sudo rpm -i easyeditor-*-glibc236.rpm` |
+            | `.AppImage` | Universal (${{ matrix.arch }}) | `chmod +x easyeditor_*.AppImage && ./easyeditor_*-glibc236.AppImage` |
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
