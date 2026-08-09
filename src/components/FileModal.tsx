@@ -1,18 +1,20 @@
 import React from 'react';
 import { FaFileImport, FaSave, FaStar, FaGithub, FaHeart, FaPalette, FaGlobe, FaInfoCircle, FaTimes, FaFileAlt, FaLeaf, FaIdCard, FaCog } from 'react-icons/fa';
+import { GrDocumentText } from 'react-icons/gr';
 import { BsFileEarmarkLockFill } from "react-icons/bs";
 import { useLanguage } from '../i18n/LanguageContext';
 import './fileModal.css';
 
 type Props = {
+    onNewFile: () => void;
     onOpenMarkdown: () => void;
     onOpenTxt: () => void;
     onOpenEncrypted: () => void;
-    onSave: () => void;
-    onSaveAs: () => void;
-    onFeatures: () => void;
+    onSave?: () => void;
+    onSaveAs?: () => void;
+    onFeatures?: () => void;
     onSupport: () => void;
-    onBuyCoffee: () => void;
+    onBuyCoffee?: () => void;
     onSelectTheme: () => void;
     onSelectLanguage: () => void;
     onLicense: () => void;
@@ -22,6 +24,7 @@ type Props = {
 };
 
 export default function FileModal({
+    onNewFile,
     onOpenMarkdown,
     onOpenTxt,
     onOpenEncrypted,
@@ -74,11 +77,10 @@ export default function FileModal({
                 <div className="file-tiles-section">
                     <div className="file-tiles-section-title">{t('menu.open_save')}</div>
                     <div className="file-tiles-grid">
+                        {renderTile(<GrDocumentText />, 'menu.new_file', 'menu.new_file_desc', onNewFile)}
                         {renderTile(<FaFileImport />, 'menu.open_markdown', 'menu.open_markdown_desc', onOpenMarkdown)}
                         {renderTile(<FaFileAlt />, 'menu.open_txt', 'menu.open_txt_desc', onOpenTxt)}
                         {renderTile(<BsFileEarmarkLockFill />, 'menu.open_encrypted', 'menu.open_encrypted_desc', onOpenEncrypted)}
-                        {renderTile(<FaSave />, 'menu.save', 'menu.save_desc', onSave)}
-                        {renderTile(<FaSave />, 'menu.save_as', 'menu.save_as_desc', onSaveAs)}
                     </div>
                 </div>
 
@@ -88,7 +90,6 @@ export default function FileModal({
                     <div className="file-tiles-grid">
                         {renderTile(<FaPalette />, 'menu.select_theme', 'menu.choose_theme', onSelectTheme)}
                         {renderTile(<FaGlobe />, 'menu.select_language', 'menu.choose_language', onSelectLanguage)}
-                        {renderTile(<FaStar />, 'menu.features', 'menu.features_desc', onFeatures)}
                         {renderTile(<FaIdCard />, 'License', 'about.check_license', onLicense)}
                         {renderTile(<FaCog />, 'APIConfig', 'about.api_hosting', onAPI)}
                     </div>
@@ -100,7 +101,6 @@ export default function FileModal({
                     <div className="file-tiles-grid">
                         {renderTile(<FaInfoCircle />, 'menu.about', 'menu.version_info', onAbout)}
                         {renderTile(<FaGithub />, 'menu.support', 'menu.support_desc', onSupport)}
-                        {renderTile(<FaHeart />, 'menu.buy_coffee', 'menu.sponsor', onBuyCoffee)}
                         {renderTile(<FaGlobe />, 'menu.website', 'menu.website_desc', async () => {
                             const url = 'https://easysmartapps.co.uk';
                             const isTauri = typeof window !== 'undefined' &&

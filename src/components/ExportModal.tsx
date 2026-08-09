@@ -1,9 +1,11 @@
 import React from 'react';
-import { FaDownload, FaFilePdf, FaFileAlt, FaLock, FaCloud, FaTimes, FaImage, FaGoogleDrive, FaDropbox } from 'react-icons/fa';
+import { FaDownload, FaFilePdf, FaFileAlt, FaLock, FaCloud, FaTimes, FaImage, FaGoogleDrive, FaDropbox, FaSave } from 'react-icons/fa';
 import { useLanguage } from '../i18n/LanguageContext';
 import './exportModal.css';
 
 type Props = {
+    onSave?: () => void;
+    onSaveAs?: () => void;
     onSaveAsPNG: () => void;
     onSaveAsPDF: () => void;
     onSaveToMarkdown: () => void;
@@ -15,6 +17,8 @@ type Props = {
 };
 
 export default function ExportModal({
+    onSave,
+    onSaveAs,
     onSaveAsPNG,
     onSaveAsPDF,
     onSaveToMarkdown,
@@ -30,8 +34,9 @@ export default function ExportModal({
         icon: React.ReactNode,
         title: string,
         desc: string,
-        onClick: () => void
+        onClick?: () => void
     ) => {
+        if (!onClick) return null;
         return (
             <button
                 className="export-tile"
@@ -68,10 +73,12 @@ export default function ExportModal({
                 <div className="export-tiles-section">
                     <div className="export-tiles-section-title">{t('modals.exports.section_title')}</div>
                     <div className="export-tiles-grid">
-                        {renderTile(<FaImage />, t('exports.png'), t('exports.png_desc'), onSaveAsPNG)}
-                        {renderTile(<FaFilePdf />, t('exports.pdf'), t('exports.pdf_desc'), onSaveAsPDF)}
+                        {renderTile(<FaSave />, t('menu.save'), t('menu.save_desc'), onSave)}
+                        {renderTile(<FaSave />, t('menu.save_as'), t('menu.save_as_desc'), onSaveAs)}
                         {renderTile(<FaFileAlt />, t('exports.markdown'), t('exports.markdown_desc'), onSaveToMarkdown)}
                         {renderTile(<FaFileAlt />, t('exports.txt'), t('exports.txt_desc'), onSaveToTXT)}
+                        {renderTile(<FaImage />, t('exports.png'), t('exports.png_desc'), onSaveAsPNG)}
+                        {renderTile(<FaFilePdf />, t('exports.pdf'), t('exports.pdf_desc'), onSaveAsPDF)}
                         {renderTile(<FaLock />, t('exports.encrypted'), t('exports.encrypted_desc'), onSaveEncrypted)}
                     </div>
                 </div>

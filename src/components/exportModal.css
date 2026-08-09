@@ -1,6 +1,6 @@
 .export-modal {
-    min-width: 45%;
-    max-width: 600px;
+    min-width: 55%;
+    max-width: 720px;
     padding: 16px 20px;
     height: auto;
     max-height: 85vh;
@@ -41,7 +41,7 @@
 
 .export-tiles-grid {
     display: grid;
-    grid-template-columns: repeat(3, 1fr);
+    grid-template-columns: repeat(4, 1fr);
     gap: 10px;
 }
 

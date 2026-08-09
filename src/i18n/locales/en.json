@@ -45,6 +45,7 @@
     "undo": "Undo",
     "redo": "Redo",
     "new_file": "New File",
+    "new_file_desc": "Create a new document",
     "exports": "Exports",
     "tasks": "Tasks",
     "templates": "Templates",

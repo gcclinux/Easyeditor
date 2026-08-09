@@ -2639,35 +2639,12 @@ const App = () => {
         </button>
         <button
           className="menu-item fixed-menubar-btn"
-          onClick={() => {
-            setShowEasyNotesSidebar(false);
-            handleNewFile();
-          }}
-          title={t('menu.new_file')}
-        >
-          <GrDocumentText /> &nbsp; {t('menu.new_file')}
-        </button>
-        <button
-          className="menu-item fixed-menubar-btn"
           onClick={() => handleRedo(historyIndex, documentHistory, setHistoryIndex, setEditorContent, cursorPositionRef)}
           disabled={historyIndex >= documentHistory.length - 1}
           title={t('menu.redo')}
         >
           <FaRedo /> &nbsp; {t('menu.redo')}
         </button>
-        <div className="dropdown-container">
-          <button
-            className="menu-item fixed-menubar-btn compact"
-            onClick={() => {
-              closeAllDropdowns();
-              setShowEasyNotesSidebar(false);
-              setShowTaskModal(true);
-            }}
-            title={t('menu.tasks')}
-          >
-            <GoTasklist /> &nbsp; {t('menu.tasks')}
-          </button>
-        </div>
         <div className="dropdown-container">
           <button
             className="menu-item fixed-menubar-btn compact"
@@ -2712,6 +2689,7 @@ const App = () => {
         {
           showFileModal && (
             <FileModal
+              onNewFile={handleNewFile}
               onOpenMarkdown={handleOpenMarkdown}
               onOpenTxt={() => handleOpenTxtClick(setEditorContent)}
               onOpenEncrypted={handleOpenEncrypted}
@@ -2743,6 +2721,8 @@ const App = () => {
         {
           showExportModal && (
             <ExportModal
+              onSave={handleUniversalSave}
+              onSaveAs={handleSaveToMarkdown}
               onSaveAsPNG={handleSaveAsPNG}
               onSaveAsPDF={handleSaveAsPDF}
               onSaveToMarkdown={handleExportToMarkdown}
@@ -2784,21 +2764,14 @@ const App = () => {
 
         <FeaturesModal open={featuresOpen} onClose={() => setFeaturesOpen(false)} />
         {
-          showHeaderModal && (
-            <HeadersModal
+          showFormattingModal && (
+            <FormattingModal
               onInsertH1={handlerinserth1Syntax}
               onInsertH2={handlerinserth2Syntax}
               onInsertH3={handlerinserth3Syntax}
               onInsertH4={handlerinserth4Syntax}
               onInsertH5={handlerinserth5Syntax}
               onInsertH6={handlerinserth6Syntax}
-              onClose={() => setShowHeaderModal(false)}
-            />
-          )
-        }
-        {
-          showFormattingModal && (
-            <FormattingModal
               onBold={handleBoldSyntax}
               onItalic={handlerItalicSyntax}
               onStrike={handlerStrikethroughSyntax}
@@ -3065,7 +3038,18 @@ const App = () => {
 
         <div className="menubar-bottom">
           <div className="dropdown-container">
-            <button className="button-mermaid" onMouseDown={() => { cacheSelection(); closeAllDropdowns(); setShowHeaderModal(true); }} title={t('toolbar.headers')}><CgFormatHeading />{t('toolbar.headers')}</button>
+            <button
+              className="button-mermaid"
+              onMouseDown={() => {
+                cacheSelection();
+                closeAllDropdowns();
+                setShowEasyNotesSidebar(false);
+                setShowTaskModal(true);
+              }}
+              title={t('menu.tasks')}
+            >
+              <GoTasklist />&nbsp;{t('menu.tasks')}
+            </button>
           </div>
           &#8741;
           <div className="dropdown-container">

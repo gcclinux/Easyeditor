@@ -202,6 +202,7 @@ Remove attribution or license notices
 
 [![Home](https://img.shields.io/badge/🏠_Home-Visit_Site-blue?style=for-the-badge)](https://www.easyeditor.co.uk) 
 [![Docs](https://img.shields.io/badge/📚_Documentation-Read_Docs-green?style=for-the-badge)](https://gcclinux.github.io/EasyEditor/docs) 
+[![Menu Reference](https://img.shields.io/badge/📑_Menu_Reference-View_MENU.md-purple?style=for-the-badge)](docs/MENU.md)
 [![Infographic](https://img.shields.io/badge/📊_Infographic-View_PDF-orange?style=for-the-badge)](docs/Easyeditor-Infographic.pdf) 
 [![Releases](https://img.shields.io/badge/📦_Releases-View_All-blueviolet?style=for-the-badge)](https://github.com/gcclinux/EasyEditor/releases) 
 [![GitHub](https://img.shields.io/badge/💻_Source_Code-GitHub-black?style=for-the-badge&logo=github)](https://github.com/gcclinux/EasyEditor) 
@@ -212,4 +213,3 @@ Remove attribution or license notices
 
 [![Issues](https://img.shields.io/badge/🐛_Report_Issues-GitHub-red?style=for-the-badge)](https://github.com/gcclinux/EasyEditor/issues)
 [![Discussions](https://img.shields.io/badge/💬_Join_Discussions-GitHub-blue?style=for-the-badge)](https://github.com/gcclinux/EasyEditor/discussions)
-[![Buy Me A Coffee](https://img.shields.io/badge/☕_Buy_Me_A_Coffee-Support-yellow?style=for-the-badge)](https://www.buymeacoffee.com/gcclinux)
