@@ -12,6 +12,9 @@ export const FEATURES = {
   // This feature is controlled by the license status.
   EASY_NOTES: true,
 
+  // EasyTeam ephemeral chat feature
+  EASY_TEAM: true,
+
   // Add other feature flags here as needed
   // EXAMPLE_FEATURE: true,
 } as const;

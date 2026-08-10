@@ -45,6 +45,7 @@
     "undo": "Ongedaan maken",
     "redo": "Opnieuw",
     "new_file": "Nieuw Bestand",
+    "new_file_desc": "Een nieuw document aanmaken",
     "exports": "Exporteren",
     "tasks": "Taken",
     "templates": "Sjablonen",
@@ -753,6 +754,40 @@
       "download_button": "Meldingen downloaden",
       "toast_file_warning": "Melding lokaal opgeslagen maar bestandsregistratie mislukt",
       "download_empty_tooltip": "Geen meldingen beschikbaar om te downloaden"
+    }
+  },
+  "easyteam": {
+    "title": "EasyTeam",
+    "lobby": {
+      "create_room": "Team aanmaken",
+      "join_room": "Team betreden",
+      "enter_key": "Voer chatsleutel in...",
+      "key_label": "Jouw chatsleutel:",
+      "copy_key": "Kopiëren",
+      "copied": "Gekopieerd!",
+      "waiting_partner": "Wachten op partner...",
+      "join": "Deelnemen"
+    },
+    "chat": {
+      "type_message": "Typ een bericht...",
+      "send": "Verzenden",
+      "partner_joined": "Partner is toegetreden tot de chat",
+      "partner_left": "Partner heeft de chat verlaten",
+      "session_ended": "Sessie beëindigd",
+      "end_chat": "Chat beëindigen"
+    },
+    "status": {
+      "connected": "Verbonden",
+      "reconnecting": "Opnieuw verbinden...",
+      "disconnected": "Verbroken",
+      "waiting": "Wachtend",
+      "active": "Actief"
+    },
+    "errors": {
+      "room_not_found": "Kamer niet gevonden. Controleer de sleutel en probeer opnieuw.",
+      "room_full": "Deze kamer is al vol (maximaal 2 deelnemers).",
+      "connection_failed": "Verbinding mislukt. Probeer het opnieuw.",
+      "send_failed": "Bericht kon niet worden verzonden."
     }
   }
 }

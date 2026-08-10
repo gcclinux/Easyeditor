@@ -45,6 +45,7 @@
     "undo": "Cofnij",
     "redo": "Ponów",
     "new_file": "Nowy Plik",
+    "new_file_desc": "Utwórz nowy dokument",
     "exports": "Eksport",
     "tasks": "Zadania",
     "templates": "Szablony",
@@ -753,6 +754,40 @@
       "download_button": "Pobierz zgłoszenia",
       "toast_file_warning": "Zgłoszenie zapisane lokalnie, ale zapis do pliku nie powiódł się",
       "download_empty_tooltip": "Brak zgłoszeń do pobrania"
+    }
+  },
+  "easyteam": {
+    "title": "EasyTeam",
+    "lobby": {
+      "create_room": "Utwórz zespół",
+      "join_room": "Dołącz do zespołu",
+      "enter_key": "Wprowadź klucz czatu...",
+      "key_label": "Twój klucz czatu:",
+      "copy_key": "Kopiuj",
+      "copied": "Skopiowano!",
+      "waiting_partner": "Oczekiwanie na partnera...",
+      "join": "Dołącz"
+    },
+    "chat": {
+      "type_message": "Wpisz wiadomość...",
+      "send": "Wyślij",
+      "partner_joined": "Partner dołączył do czatu",
+      "partner_left": "Partner opuścił czat",
+      "session_ended": "Sesja zakończona",
+      "end_chat": "Zakończ czat"
+    },
+    "status": {
+      "connected": "Połączono",
+      "reconnecting": "Ponowne łączenie...",
+      "disconnected": "Rozłączono",
+      "waiting": "Oczekiwanie",
+      "active": "Aktywny"
+    },
+    "errors": {
+      "room_not_found": "Pokój nie został znaleziony. Sprawdź klucz i spróbuj ponownie.",
+      "room_full": "Ten pokój jest już pełny (maks. 2 uczestników).",
+      "connection_failed": "Połączenie nie powiodło się. Spróbuj ponownie.",
+      "send_failed": "Nie udało się wysłać wiadomości."
     }
   }
 }

@@ -45,6 +45,7 @@
     "undo": "Deshacer",
     "redo": "Rehacer",
     "new_file": "Nuevo archivo",
+    "new_file_desc": "Crear un nuevo documento",
     "exports": "Exportar",
     "tasks": "Tareas",
     "templates": "Plantillas",
@@ -753,6 +754,40 @@
       "download_button": "Descargar reportes",
       "toast_file_warning": "Reporte guardado localmente pero el registro en archivo falló",
       "download_empty_tooltip": "No hay reportes disponibles para descargar"
+    }
+  },
+  "easyteam": {
+    "title": "EasyTeam",
+    "lobby": {
+      "create_room": "Crear equipo",
+      "join_room": "Unirse al equipo",
+      "enter_key": "Ingresa la clave del chat...",
+      "key_label": "Tu clave de chat:",
+      "copy_key": "Copiar",
+      "copied": "¡Copiado!",
+      "waiting_partner": "Esperando a que se una el compañero...",
+      "join": "Unirse"
+    },
+    "chat": {
+      "type_message": "Escribe un mensaje...",
+      "send": "Enviar",
+      "partner_joined": "El compañero se unió al chat",
+      "partner_left": "El compañero abandonó el chat",
+      "session_ended": "Sesión finalizada",
+      "end_chat": "Terminar chat"
+    },
+    "status": {
+      "connected": "Conectado",
+      "reconnecting": "Reconectando...",
+      "disconnected": "Desconectado",
+      "waiting": "Esperando",
+      "active": "Activo"
+    },
+    "errors": {
+      "room_not_found": "Sala no encontrada. Verifica la clave e inténtalo de nuevo.",
+      "room_full": "Esta sala ya está llena (máximo 2 participantes).",
+      "connection_failed": "Error de conexión. Por favor, inténtalo de nuevo.",
+      "send_failed": "No se pudo enviar el mensaje."
     }
   }
 }

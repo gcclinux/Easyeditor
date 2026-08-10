@@ -9,7 +9,8 @@ import {
   FaStickyNote,
   FaDownload,
   FaCodeBranch,
-  FaRobot
+  FaRobot,
+  FaUsers
 } from 'react-icons/fa';
 import { VscSymbolKeyword } from "react-icons/vsc";
 import { GoTasklist } from "react-icons/go";
@@ -103,6 +104,7 @@ import UpdateModal from './components/UpdateModal';
 import APIModal from './components/APIModal';
 import EasyNotesSidebar from './components/EasyNotesSidebar';
 import EasyAIPanel from './components/EasyAIPanel';
+import EasyTeamPanel from './components/easyteam/EasyTeamPanel';
 import { buildSystemPrompt, parseFixTarget, extractBlock, extractTable } from './components/easyai/aiPersonas';
 import { queryEasyAI } from './components/easyai/aiService';
 import { scanRepository } from './components/easyai/repoScanner';
@@ -223,6 +225,7 @@ const App = () => {
   const [showGitModal, setShowGitModal] = useState(false);
   const [showEasyNotesSidebar, setShowEasyNotesSidebar] = useState(false);
   const [showEasyAIPanel, setShowEasyAIPanel] = useState(false);
+  const [showEasyTeamPanel, setShowEasyTeamPanel] = useState(false);
   const [lastAIAction, setLastAIAction] = useState<string | null>(null);
   const [lastUserPrompt, setLastUserPrompt] = useState<string | null>(null);
   const [lastAIResponse, setLastAIResponse] = useState<string | null>(null);
@@ -2598,6 +2601,22 @@ const App = () => {
             <FaRobot /> &nbsp; EasyAI
           </button>
         </div>
+        {isFeatureEnabled('EASY_TEAM') && (
+          <div className="dropdown-container">
+            <button
+              className="help-menubar-btn"
+              onClick={(e) => {
+                e.preventDefault();
+                closeAllDropdowns();
+                setShowEasyTeamPanel(!showEasyTeamPanel);
+              }}
+              title="EasyTeam"
+              style={{ backgroundColor: showEasyTeamPanel ? '#4a5568' : undefined, position: 'relative' }}
+            >
+              <FaUsers /> &nbsp; EasyTeam
+            </button>
+          </div>
+        )}
         <div className="dropdown-container">
           <button
             className="help-menubar-btn"
@@ -3565,6 +3584,14 @@ const App = () => {
             }
           }}
         />
+
+        {isFeatureEnabled('EASY_TEAM') && (
+          <EasyTeamPanel
+            showEasyTeamPanel={showEasyTeamPanel}
+            setShowEasyTeamPanel={setShowEasyTeamPanel}
+            showToast={showToast}
+          />
+        )}
 
         <div
           className={getEditorPreviewContainerClass()}

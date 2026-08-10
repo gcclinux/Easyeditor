@@ -755,5 +755,39 @@
       "toast_file_warning": "Report saved locally but file logging failed",
       "download_empty_tooltip": "No reports available to download"
     }
+  },
+  "easyteam": {
+    "title": "EasyTeam",
+    "lobby": {
+      "create_room": "Create Team",
+      "join_room": "Join Team",
+      "enter_key": "Enter chat key...",
+      "key_label": "Your chat key:",
+      "copy_key": "Copy",
+      "copied": "Copied!",
+      "waiting_partner": "Waiting for partner to join...",
+      "join": "Join"
+    },
+    "chat": {
+      "type_message": "Type a message...",
+      "send": "Send",
+      "partner_joined": "Partner joined the chat",
+      "partner_left": "Partner has left the chat",
+      "session_ended": "Session ended",
+      "end_chat": "End Chat"
+    },
+    "status": {
+      "connected": "Connected",
+      "reconnecting": "Reconnecting...",
+      "disconnected": "Disconnected",
+      "waiting": "Waiting",
+      "active": "Active"
+    },
+    "errors": {
+      "room_not_found": "Room not found. Check the key and try again.",
+      "room_full": "This room is already full (2 participants max).",
+      "connection_failed": "Connection failed. Please try again.",
+      "send_failed": "Failed to send message."
+    }
   }
 }

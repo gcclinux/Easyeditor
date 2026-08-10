@@ -45,6 +45,7 @@
     "undo": "Rückgängig",
     "redo": "Wiederholen",
     "new_file": "Neue Datei",
+    "new_file_desc": "Neues Dokument erstellen",
     "exports": "Exporte",
     "tasks": "Aufgaben",
     "templates": "Vorlagen",
@@ -753,6 +754,40 @@
       "download_button": "Meldungen herunterladen",
       "toast_file_warning": "Meldung lokal gespeichert, aber Dateiprotokollierung fehlgeschlagen",
       "download_empty_tooltip": "Keine Meldungen zum Herunterladen verfügbar"
+    }
+  },
+  "easyteam": {
+    "title": "EasyTeam",
+    "lobby": {
+      "create_room": "Team erstellen",
+      "join_room": "Team beitreten",
+      "enter_key": "Chat-Schlüssel eingeben...",
+      "key_label": "Dein Chat-Schlüssel:",
+      "copy_key": "Kopieren",
+      "copied": "Kopiert!",
+      "waiting_partner": "Warte auf Partner...",
+      "join": "Beitreten"
+    },
+    "chat": {
+      "type_message": "Nachricht eingeben...",
+      "send": "Senden",
+      "partner_joined": "Partner ist dem Chat beigetreten",
+      "partner_left": "Partner hat den Chat verlassen",
+      "session_ended": "Sitzung beendet",
+      "end_chat": "Chat beenden"
+    },
+    "status": {
+      "connected": "Verbunden",
+      "reconnecting": "Verbindung wird wiederhergestellt...",
+      "disconnected": "Getrennt",
+      "waiting": "Wartend",
+      "active": "Aktiv"
+    },
+    "errors": {
+      "room_not_found": "Raum nicht gefunden. Überprüfe den Schlüssel und versuche es erneut.",
+      "room_full": "Dieser Raum ist bereits voll (max. 2 Teilnehmer).",
+      "connection_failed": "Verbindung fehlgeschlagen. Bitte erneut versuchen.",
+      "send_failed": "Nachricht konnte nicht gesendet werden."
     }
   }
 }
