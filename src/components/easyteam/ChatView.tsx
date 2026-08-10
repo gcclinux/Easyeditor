@@ -21,6 +21,7 @@ const ChatView: React.FC<ChatViewProps> = ({
   const { t } = useLanguage();
   const [inputText, setInputText] = useState('');
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const textareaRef = useRef<HTMLTextAreaElement>(null);
   const [prevPartnerOnline, setPrevPartnerOnline] = useState<boolean | null>(null);
 
   // Auto-scroll to newest message when messages array changes
@@ -36,6 +37,15 @@ const ChatView: React.FC<ChatViewProps> = ({
     setPrevPartnerOnline(partnerOnline);
   }, [partnerOnline]);
 
+  // Auto-resize textarea based on content
+  useEffect(() => {
+    if (textareaRef.current) {
+      textareaRef.current.style.height = 'auto';
+      const scrollHeight = textareaRef.current.scrollHeight;
+      textareaRef.current.style.height = `${Math.min(scrollHeight, 150)}px`;
+    }
+  }, [inputText]);
+
   const handleSend = () => {
     const trimmed = inputText.trim();
     if (trimmed) {
@@ -44,10 +54,12 @@ const ChatView: React.FC<ChatViewProps> = ({
     }
   };
 
-  const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
-    if (e.key === 'Enter') {
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
+    if (e.key === 'Enter' && !e.shiftKey) {
+      e.preventDefault();
       handleSend();
     }
+    // Shift+Enter will naturally insert a newline in textarea
   };
 
   return (
@@ -84,14 +96,15 @@ const ChatView: React.FC<ChatViewProps> = ({
 
       {/* Input area */}
       <div className="easyteam-chat-input">
-        <input
-          type="text"
+        <textarea
+          ref={textareaRef}
           className="easyteam-chat-input-field"
           placeholder={t('easyteam.chat.type_message')}
           value={inputText}
           onChange={(e) => setInputText(e.target.value)}
           onKeyDown={handleKeyDown}
           disabled={roomStatus === 'ended'}
+          rows={1}
         />
         <button
           className="easyteam-btn easyteam-btn-primary easyteam-chat-send-btn"

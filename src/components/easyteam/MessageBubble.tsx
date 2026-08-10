@@ -1,4 +1,6 @@
 import React from 'react';
+import ReactMarkdown from 'react-markdown';
+import remarkGfm from 'remark-gfm';
 import type { DecryptedMessage } from '../../services/chatService.types';
 
 interface MessageBubbleProps {
@@ -17,7 +19,11 @@ const MessageBubble: React.FC<MessageBubbleProps> = ({ message }) => {
 
   return (
     <div className={className}>
-      <p className="easyteam-message-text">{message.text}</p>
+      <div className="easyteam-message-text">
+        <ReactMarkdown remarkPlugins={[remarkGfm]}>
+          {message.text}
+        </ReactMarkdown>
+      </div>
       <span className="easyteam-message-time">{formattedTime}</span>
     </div>
   );

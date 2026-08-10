@@ -781,7 +781,8 @@
       "reconnecting": "Reconnecting...",
       "disconnected": "Disconnected",
       "waiting": "Waiting",
-      "active": "Active"
+      "active": "Active",
+      "ended": "Ended"
     },
     "errors": {
       "room_not_found": "Room not found. Check the key and try again.",

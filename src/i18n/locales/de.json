@@ -781,7 +781,8 @@
       "reconnecting": "Verbindung wird wiederhergestellt...",
       "disconnected": "Getrennt",
       "waiting": "Wartend",
-      "active": "Aktiv"
+      "active": "Aktiv",
+      "ended": "Beendet"
     },
     "errors": {
       "room_not_found": "Raum nicht gefunden. Überprüfe den Schlüssel und versuche es erneut.",

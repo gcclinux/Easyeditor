@@ -781,7 +781,8 @@
       "reconnecting": "Reconectando...",
       "disconnected": "Desconectado",
       "waiting": "Aguardando",
-      "active": "Ativo"
+      "active": "Ativo",
+      "ended": "Encerrado"
     },
     "errors": {
       "room_not_found": "Sala não encontrada. Verifique a chave e tente novamente.",

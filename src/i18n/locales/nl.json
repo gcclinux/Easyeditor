@@ -781,7 +781,8 @@
       "reconnecting": "Opnieuw verbinden...",
       "disconnected": "Verbroken",
       "waiting": "Wachtend",
-      "active": "Actief"
+      "active": "Actief",
+      "ended": "Beëindigd"
     },
     "errors": {
       "room_not_found": "Kamer niet gevonden. Controleer de sleutel en probeer opnieuw.",

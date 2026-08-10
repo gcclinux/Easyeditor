@@ -260,7 +260,7 @@
 
 .easyteam-chat-input {
   display: flex;
-  align-items: center;
+  align-items: flex-end;
   gap: 8px;
   padding: 12px 16px;
   border-top: 1px solid var(--border-secondary);
@@ -277,6 +277,12 @@
   border-radius: 6px;
   outline: none;
   transition: border-color 0.2s;
+  resize: none;
+  min-height: 40px;
+  max-height: 150px;
+  overflow-y: auto;
+  font-family: inherit;
+  line-height: 1.4;
 }
 
 .easyteam-chat-input-field:focus {
@@ -418,4 +424,99 @@
 @keyframes easyteam-indicator-pulse {
   0%, 100% { box-shadow: 0 0 4px rgba(74, 222, 128, 0.6); }
   50% { box-shadow: 0 0 8px rgba(74, 222, 128, 0.9); }
+}
+
+/* === Markdown in Messages === */
+.easyteam-message-text p {
+  margin: 0;
+}
+
+.easyteam-message-text p + p {
+  margin-top: 8px;
+}
+
+.easyteam-message-text code {
+  font-family: var(--font-mono, monospace);
+  font-size: 0.85em;
+  padding: 2px 4px;
+  border-radius: 3px;
+  background-color: rgba(0, 0, 0, 0.15);
+}
+
+.easyteam-message-sent .easyteam-message-text code {
+  background-color: rgba(255, 255, 255, 0.15);
+}
+
+.easyteam-message-text pre {
+  margin: 4px 0;
+  padding: 8px;
+  border-radius: 4px;
+  background-color: rgba(0, 0, 0, 0.2);
+  overflow-x: auto;
+  font-size: 0.85em;
+}
+
+.easyteam-message-sent .easyteam-message-text pre {
+  background-color: rgba(255, 255, 255, 0.1);
+}
+
+.easyteam-message-text pre code {
+  padding: 0;
+  background: none;
+}
+
+.easyteam-message-text table {
+  border-collapse: collapse;
+  margin: 4px 0;
+  font-size: 0.85em;
+  width: 100%;
+}
+
+.easyteam-message-text th,
+.easyteam-message-text td {
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  padding: 4px 8px;
+  text-align: left;
+}
+
+.easyteam-message-received .easyteam-message-text th,
+.easyteam-message-received .easyteam-message-text td {
+  border-color: var(--border-secondary);
+}
+
+.easyteam-message-text th {
+  font-weight: 600;
+}
+
+.easyteam-message-text ul,
+.easyteam-message-text ol {
+  margin: 4px 0;
+  padding-left: 20px;
+}
+
+.easyteam-message-text blockquote {
+  margin: 4px 0;
+  padding-left: 10px;
+  border-left: 3px solid rgba(255, 255, 255, 0.3);
+  opacity: 0.9;
+}
+
+.easyteam-message-received .easyteam-message-text blockquote {
+  border-left-color: var(--border-secondary);
+}
+
+.easyteam-message-text h1,
+.easyteam-message-text h2,
+.easyteam-message-text h3,
+.easyteam-message-text h4,
+.easyteam-message-text h5,
+.easyteam-message-text h6 {
+  margin: 4px 0;
+  font-size: 1em;
+  font-weight: 600;
+}
+
+.easyteam-message-text img {
+  max-width: 100%;
+  border-radius: 4px;
 }
