@@ -3590,6 +3590,10 @@ const App = () => {
             showEasyTeamPanel={showEasyTeamPanel}
             setShowEasyTeamPanel={setShowEasyTeamPanel}
             showToast={showToast}
+            onInsertToEditor={(text: string) => {
+              setEditorContent(prev => prev ? prev + '\n\n' + text : text);
+              showToast('Inserted into editor', 'success');
+            }}
           />
         )}
 

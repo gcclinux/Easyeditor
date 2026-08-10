@@ -21,6 +21,7 @@ interface EasyTeamPanelProps {
   showEasyTeamPanel: boolean;
   setShowEasyTeamPanel: (show: boolean) => void;
   showToast: (message: string, type?: 'success' | 'error' | 'info' | 'warning') => void;
+  onInsertToEditor?: (text: string) => void;
 }
 
 // ─── Error Boundary ─────────────────────────────────────────────────────────
@@ -75,6 +76,7 @@ const EasyTeamPanel: React.FC<EasyTeamPanelProps> = ({
   showEasyTeamPanel,
   setShowEasyTeamPanel,
   showToast,
+  onInsertToEditor,
 }) => {
   const { t } = useLanguage();
   const panelRef = useRef<HTMLDivElement>(null);
@@ -276,6 +278,7 @@ const EasyTeamPanel: React.FC<EasyTeamPanelProps> = ({
                 partnerOnline={partnerOnline}
                 roomStatus={roomStatus}
                 onEndChat={handleEndChat}
+                onInsertToEditor={onInsertToEditor}
               />
             ) : (
               <LobbyView

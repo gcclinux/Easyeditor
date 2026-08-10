@@ -9,6 +9,7 @@ interface ChatViewProps {
   partnerOnline: boolean;
   roomStatus: 'waiting' | 'active' | 'ended';
   onEndChat: () => void;
+  onInsertToEditor?: (text: string) => void;
 }
 
 const ChatView: React.FC<ChatViewProps> = ({
@@ -17,6 +18,7 @@ const ChatView: React.FC<ChatViewProps> = ({
   partnerOnline,
   roomStatus,
   onEndChat,
+  onInsertToEditor,
 }) => {
   const { t } = useLanguage();
   const [inputText, setInputText] = useState('');
@@ -89,7 +91,7 @@ const ChatView: React.FC<ChatViewProps> = ({
       {/* Message list */}
       <div className="easyteam-chat-messages">
         {messages.map((msg) => (
-          <MessageBubble key={msg.id} message={msg} />
+          <MessageBubble key={msg.id} message={msg} onInsert={onInsertToEditor} />
         ))}
         <div ref={messagesEndRef} />
       </div>

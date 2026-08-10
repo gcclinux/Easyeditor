@@ -5,9 +5,10 @@ import type { DecryptedMessage } from '../../services/chatService.types';
 
 interface MessageBubbleProps {
   message: DecryptedMessage;
+  onInsert?: (text: string) => void;
 }
 
-const MessageBubble: React.FC<MessageBubbleProps> = ({ message }) => {
+const MessageBubble: React.FC<MessageBubbleProps> = ({ message, onInsert }) => {
   const className = message.isMine
     ? 'easyteam-message easyteam-message-sent'
     : 'easyteam-message easyteam-message-received';
@@ -24,7 +25,18 @@ const MessageBubble: React.FC<MessageBubbleProps> = ({ message }) => {
           {message.text}
         </ReactMarkdown>
       </div>
-      <span className="easyteam-message-time">{formattedTime}</span>
+      <div className="easyteam-message-footer">
+        <span className="easyteam-message-time">{formattedTime}</span>
+        {onInsert && (
+          <button
+            className="easyteam-message-insert-btn"
+            onClick={() => onInsert(message.text)}
+            title="Insert into editor"
+          >
+            Insert
+          </button>
+        )}
+      </div>
     </div>
   );
 };

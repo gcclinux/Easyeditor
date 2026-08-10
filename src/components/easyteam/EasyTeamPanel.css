@@ -347,8 +347,40 @@
 .easyteam-message-time {
   font-size: 0.7rem;
   opacity: 0.7;
+}
+
+.easyteam-message-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
   margin-top: 4px;
-  align-self: flex-end;
+  gap: 8px;
+}
+
+.easyteam-message-insert-btn {
+  font-size: 0.7rem;
+  padding: 2px 8px;
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  border-radius: 4px;
+  background: rgba(255, 255, 255, 0.1);
+  color: inherit;
+  cursor: pointer;
+  opacity: 0.7;
+  transition: opacity 0.2s, background-color 0.2s;
+}
+
+.easyteam-message-insert-btn:hover {
+  opacity: 1;
+  background: rgba(255, 255, 255, 0.2);
+}
+
+.easyteam-message-received .easyteam-message-insert-btn {
+  border-color: var(--border-secondary);
+  background: rgba(0, 0, 0, 0.1);
+}
+
+.easyteam-message-received .easyteam-message-insert-btn:hover {
+  background: rgba(0, 0, 0, 0.2);
 }
 
 .easyteam-message-sent .easyteam-message-time {
