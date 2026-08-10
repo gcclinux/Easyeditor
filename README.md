@@ -2,7 +2,7 @@
 
  
 
-[🏠 Home](https://easysmartapps.co.uk/) | [💻 Code](https://github.com/gcclinux/easyeditor.git) | [🌐 WebApp](https://easyedit-cloud.web.app/)
+[🏠 Home](https://easysmartapps.co.uk/) | [💻 Code](https://github.com/gcclinux/easyeditor.git) | [🌐 WebApp](https://easyedit-cloud.web.app/) | [📑 Menu Reference](docs/MENU.md)
 
 **The Ultimate Real-Time Markdown Editor for Professionals, Developers & Writers**
 
@@ -22,6 +22,7 @@ From simple notes to complex technical documentation, Easyeditor has you covered
 *   **EasyAI Personas**: Built-in AI personas for documentation, diagrams, code fixes, and more — with full repo scanning that reads your project file-by-file to generate accurate, context-aware documentation.
 *   **Multi-cloud Storage**: Built-in Multi-cloud Storage to store your documents, GDrive, OneDrive,DropBox, Box.
 
+[![Menu Structure](https://img.shields.io/badge/📑_Menu_Structure-v2.0.1_Guide-purple?style=for-the-badge)](docs/MENU.md)
 [![Infographic](https://img.shields.io/badge/📊_Infographic-View_PDF-orange?style=for-the-badge)](docs/Easyeditor-Infographic.pdf)
 
 ---
@@ -35,9 +36,10 @@ From simple notes to complex technical documentation, Easyeditor has you covered
 ## *Get Started Instantly*
 
 ### 📥 Option 1: Download & Install (Recommended)
-Skip the build process and start writing immediately! Download the latest system-compiled binary for your OS.
+Skip the build process and start writing immediately! Download the latest system-compiled binary for your OS or install directly from the Microsoft Store.
 
-[![Download Latest Release](https://img.shields.io/badge/⬇️_Download_Desktop_App-Get_Latest_Release-blue?style=for-the-badge&logo=windows)](https://github.com/gcclinux/EasyEditor/releases)
+[![Get it from Microsoft Store](https://img.shields.io/badge/Microsoft_Store-Get_App-0078D4?style=for-the-badge&logo=microsoft)](https://apps.microsoft.com/store/detail/XP8K1TWB35PK5M)  
+[![Download Latest Release](https://img.shields.io/badge/⬇️_Download_Desktop_App-Get_Latest_Release-blue?style=for-the-badge&logo=github)](https://github.com/gcclinux/EasyEditor/releases)
 
 ### 🐳 Option 2: Run with Docker
 Prefer a containerized environment? getting up and running is as simple as one command.
@@ -116,7 +118,6 @@ Automated cross-platform releases are built automatically via GitHub Actions whe
 * **Linux AMD64**: `.github/workflows/release-linux.yml` (Generates `.deb`, `.rpm`, `.AppImage`)
 * **Linux ARM64**: `.github/workflows/release-linux-arm64.yml` (Generates ARM64 `.deb`, `.rpm`, `.AppImage`)
 * **macOS**: `.github/workflows/release-macos.yml` (Generates `.dmg` and `.app`)
-* **Windows**: `.github/workflows/release-windows.yml` (Generates `.msi`, installer `.exe`, and portable `.exe`)
 
 ---
 
