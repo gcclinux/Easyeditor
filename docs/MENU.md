@@ -26,6 +26,13 @@ This document outlines the complete menu hierarchy and feature entries available
 ### 🤖 EasyAI
 - **AI Personas & Assistant** (AI documentation, diagram generation, code fixers, and repo scanner)
 
+### 👥 EasyTeam
+- **Create Team** (`Create an ephemeral encrypted team session`)
+- **Join Team** (`Join an existing team session via 6-character key`)
+- **Send Messages** (`Real-time encrypted messaging with markdown support`)
+- **Insert to Editor** (`Insert received message content into the editor`)
+- **End Chat** (`Disconnect and destroy all session data`)
+
 ### 🌿 EasyGit
 - **Git Operations Panel** (Init, Stage, Commit, Push, Pull, Branch Management, History, Credentials)
 
