@@ -53,6 +53,7 @@ export type ErrorCategory =
 interface SessionRecord {
   timestamp: number;
   platform: 'web' | 'tauri';
+  os: string;
   tier: 'free' | 'premium' | 'premiumPlus';
   version: string;
   duration?: number;
@@ -127,6 +128,82 @@ function getTier(): 'free' | 'premium' | 'premiumPlus' {
   return LicenseManager.getType() === 'PremiumPlus' ? 'premiumPlus' : 'premium';
 }
 
+/**
+ * Detect the operating system from navigator.userAgent.
+ * Returns a short string like: "Windows 10", "macOS", "Linux Ubuntu", "Linux", "Android", "iOS", "ChromeOS"
+ */
+function getOS(): string {
+  const ua = navigator.userAgent;
+
+  // Windows
+  if (/Windows/.test(ua)) {
+    const match = ua.match(/Windows NT (\d+\.\d+)/);
+    if (match) {
+      const ntVersion = match[1];
+      const versionMap: Record<string, string> = {
+        '10.0': 'Windows 10+',
+        '6.3': 'Windows 8.1',
+        '6.2': 'Windows 8',
+        '6.1': 'Windows 7',
+      };
+      return versionMap[ntVersion] || `Windows NT ${ntVersion}`;
+    }
+    return 'Windows';
+  }
+
+  // macOS / iOS
+  if (/Macintosh|Mac OS X/.test(ua)) {
+    const match = ua.match(/Mac OS X (\d+[._]\d+[._]?\d*)/);
+    if (match) {
+      return `macOS ${match[1].replace(/_/g, '.')}`;
+    }
+    return 'macOS';
+  }
+  if (/iPhone|iPad|iPod/.test(ua)) {
+    return 'iOS';
+  }
+
+  // Chrome OS
+  if (/CrOS/.test(ua)) {
+    return 'ChromeOS';
+  }
+
+  // Android
+  if (/Android/.test(ua)) {
+    const match = ua.match(/Android ([\d.]+)/);
+    return match ? `Android ${match[1]}` : 'Android';
+  }
+
+  // Linux — try to detect distro from userAgent hints
+  if (/Linux/.test(ua)) {
+    // Some browsers expose distro info in UA
+    if (/Ubuntu/.test(ua)) return 'Linux Ubuntu';
+    if (/Fedora/.test(ua)) return 'Linux Fedora';
+    if (/Debian/.test(ua)) return 'Linux Debian';
+    if (/SUSE/.test(ua)) return 'Linux SUSE';
+    if (/Arch/.test(ua)) return 'Linux Arch';
+    if (/Mint/.test(ua)) return 'Linux Mint';
+
+    // Try navigator.userAgentData for more detail (Chromium 90+)
+    try {
+      const uaData = (navigator as any).userAgentData;
+      if (uaData?.platform) {
+        return `Linux (${uaData.platform})`;
+      }
+    } catch {
+      // ignore
+    }
+
+    return 'Linux';
+  }
+
+  // FreeBSD / OpenBSD
+  if (/FreeBSD/.test(ua)) return 'FreeBSD';
+  if (/OpenBSD/.test(ua)) return 'OpenBSD';
+
+  return 'Unknown';
+}
+
 // ─── Session Tracking ────────────────────────────────────────────────────────
 
 /**
@@ -143,10 +220,12 @@ export async function initAnalytics(): Promise<void> {
   const version = await getRunningVersion();
   const platform = getPlatform();
   const tier = getTier();
+  const os = getOS();
 
   const session: SessionRecord = {
     timestamp: sessionStartTime,
     platform,
+    os,
     tier,
     version,
   };
