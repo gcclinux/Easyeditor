@@ -790,5 +790,12 @@
       "connection_failed": "Verbinding mislukt. Probeer het opnieuw.",
       "send_failed": "Bericht kon niet worden verzonden."
     }
+  },
+  "analytics": {
+    "consent_message": "Help EasyEditor te verbeteren door anonieme gebruiksgegevens te delen. Er worden geen persoonlijke gegevens verzameld — alleen welke functies worden gebruikt en fouttellingen. Je kunt dit op elk moment wijzigen in Over.",
+    "accept": "Accepteren",
+    "decline": "Nee bedankt",
+    "toggle_label": "Anonieme gebruiksanalyse",
+    "toggle_description": "(geen persoonlijke gegevens verzameld)"
   }
 }

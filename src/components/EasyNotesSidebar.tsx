@@ -11,6 +11,7 @@ import type { LocalLibraryConfig } from '../cloud/providers/LocalLibraryProvider
 import { isTauriEnvironment } from '../utils/environment';
 import { useLanguage } from '../i18n/LanguageContext';
 import { createLogger } from '../utils/logger';
+import { trackError, trackFeature } from '../services/analytics';
 
 const logger = createLogger('EasyNotesSidebar');
 
@@ -305,6 +306,7 @@ const EasyNotesSidebar: React.FC<EasyNotesSidebarProps> = ({
     } catch (error) {
       logger.error(`Failed to connect to ${providerName}:`, error);
       const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred';
+      trackError('cloud', `Connect ${providerName}: ${errorMessage}`);
 
       // Show user-friendly error message
       if (errorMessage.includes('not yet configured')) {
@@ -462,13 +464,16 @@ const EasyNotesSidebar: React.FC<EasyNotesSidebarProps> = ({
     try {
       const syncResult = await cloudManager.syncNotes();
       if (syncResult.success) {
+        trackFeature('cloud_sync', 'use');
         showToast(`Synced ${syncResult.filesProcessed} files`, 'success');
       } else {
+        trackError('cloud', `Sync partial: ${syncResult.errors.length} errors`);
         showToast(`Sync completed with ${syncResult.errors.length} errors`, 'warning');
       }
       await loadNotesAndProviders();
     } catch (error) {
       logger.error('Failed to sync notes:', error);
+      trackError('cloud', `Sync failed: ${error instanceof Error ? error.message : 'Unknown'}`);
       showToast('Failed to sync notes', 'error');
     } finally {
       setSyncing(false);

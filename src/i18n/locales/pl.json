@@ -790,5 +790,12 @@
       "connection_failed": "Połączenie nie powiodło się. Spróbuj ponownie.",
       "send_failed": "Nie udało się wysłać wiadomości."
     }
+  },
+  "analytics": {
+    "consent_message": "Pomóż ulepszyć EasyEditor, udostępniając anonimowe dane o użytkowaniu. Żadne dane osobowe nie są zbierane — tylko które funkcje są używane i liczba błędów. Możesz to zmienić w każdej chwili w sekcji O programie.",
+    "accept": "Akceptuj",
+    "decline": "Nie, dziękuję",
+    "toggle_label": "Anonimowa analiza użytkowania",
+    "toggle_description": "(żadne dane osobowe nie są zbierane)"
   }
 }

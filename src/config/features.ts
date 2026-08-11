@@ -15,6 +15,9 @@ export const FEATURES = {
   // EasyTeam ephemeral chat feature
   EASY_TEAM: true,
 
+  // Anonymous usage analytics (requires user opt-in consent via settings)
+  ANALYTICS: true,
+
   // Add other feature flags here as needed
   // EXAMPLE_FEATURE: true,
 } as const;

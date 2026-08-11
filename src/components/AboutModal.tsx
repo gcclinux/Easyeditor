@@ -3,6 +3,7 @@ import './aboutModal.css';
 import { createPortal } from 'react-dom';
 import logo from '../assets/128x128@2x.png';
 import { useLanguage } from '../i18n/LanguageContext';
+import { hasAnalyticsConsent, setAnalyticsConsent } from '../services/analytics';
 
 import { getRunningVersion, getAvailableVersion, compareVersions } from '../utils/version';
 
@@ -16,6 +17,7 @@ export function AboutModal({ open, onClose }: AboutModalProps) {
 
   const [version, setVersion] = React.useState<string>('');
   const [availableVersion, setAvailableVersion] = React.useState<string>('');
+  const [analyticsEnabled, setAnalyticsEnabled] = React.useState<boolean>(hasAnalyticsConsent());
   React.useEffect(() => {
     (async () => {
       const v = await getRunningVersion();
@@ -134,6 +136,24 @@ export function AboutModal({ open, onClose }: AboutModalProps) {
           </div>
         </div>
         <div className="modal-actions">
+          <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginRight: 'auto' }}>
+            <label style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer', fontSize: '0.9em', color: 'var(--text-secondary, #666)' }}>
+              <input
+                type="checkbox"
+                checked={analyticsEnabled}
+                onChange={(e) => {
+                  const enabled = e.target.checked;
+                  setAnalyticsEnabled(enabled);
+                  setAnalyticsConsent(enabled);
+                }}
+                style={{ width: '16px', height: '16px', cursor: 'pointer' }}
+              />
+              {t('analytics.toggle_label')}
+            </label>
+            <span style={{ fontSize: '0.8em', color: 'var(--text-muted, #999)' }}>
+              {t('analytics.toggle_description')}
+            </span>
+          </div>
           <button className="btn primary" onClick={onClose}>{t('about.close')}</button>
         </div>
       </div>

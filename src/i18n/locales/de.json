@@ -790,5 +790,12 @@
       "connection_failed": "Verbindung fehlgeschlagen. Bitte erneut versuchen.",
       "send_failed": "Nachricht konnte nicht gesendet werden."
     }
+  },
+  "analytics": {
+    "consent_message": "Hilf mit, EasyEditor zu verbessern, indem du anonyme Nutzungsdaten teilst. Es werden keine persönlichen Daten erfasst \u2014 nur welche Funktionen genutzt werden und Fehlerzählungen. Du kannst dies jederzeit unter \u201e\u00dcber\u201c ändern.",
+    "accept": "Akzeptieren",
+    "decline": "Nein danke",
+    "toggle_label": "Anonyme Nutzungsanalyse",
+    "toggle_description": "(keine persönlichen Daten werden erfasst)"
   }
 }

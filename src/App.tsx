@@ -134,12 +134,14 @@ import GitStatusIndicator from './components/GitStatusIndicator';
 import { getGitManager } from './gitManagerWrapper';
 import { gitCredentialManager } from './gitCredentialManager';
 import ToastContainer from './components/ToastContainer';
+import AnalyticsConsentBanner from './components/AnalyticsConsentBanner';
 import { isFeatureEnabled } from './config/features';
 import { useLanguage } from './i18n/LanguageContext';
 import LanguageModal from './components/LanguageModal';
 import LicenseManager from './premium/LicenseManager';
 import { getRunningVersion, getAvailableVersion, compareVersions } from './utils/version';
 import { convertPdfToMarkdown, PdfImportError } from './pdfImporter';
+import { initAnalytics, trackFeature, trackError } from './services/analytics';
 
 const App = () => {
   const { t, isLoading } = useLanguage();
@@ -151,6 +153,11 @@ const App = () => {
     return LicenseManager.subscribe(() => {
       setLicenseUpdate(prev => prev + 1);
     });
+  }, []);
+
+  // Initialize anonymous analytics (only fires if feature flag + user consent are active)
+  useEffect(() => {
+    initAnalytics();
   }, []);
 
   // Update Modal state
@@ -1324,6 +1331,7 @@ const App = () => {
       setShowAutoModal(false);
       showToast(t('toasts.pdf_import_success') || 'PDF imported successfully!', 'success');
     } catch (error) {
+      trackError('import', `PDF: ${(error as Error).message}`);
       if (error instanceof PdfImportError) {
         if (error.code === 'PASSWORD_PROTECTED') {
           showToast(t('toasts.pdf_password_protected') || 'This PDF is password-protected and cannot be imported.', 'error');
@@ -1410,6 +1418,7 @@ const App = () => {
         console.error('Error:', error);
 
         const errorMessage = (error as Error).message;
+        trackError('git', `Clone failed: ${errorMessage}`);
 
         // Check if it's an authentication error
         if (errorMessage.includes('401') || errorMessage.includes('authentication') || errorMessage.includes('Authentication failed')) {
@@ -1768,6 +1777,7 @@ const App = () => {
         await updateGitStatus();
       } catch (error) {
         const msg = (error as Error).message;
+        trackError('git', `Push failed: ${msg}`);
         if (msg.includes('not a simple fast-forward') || msg.includes('Push rejected')) {
           showToast('Push rejected: Remote has changes you don\'t have. Please Pull first.', 'error');
         } else {
@@ -1784,6 +1794,7 @@ const App = () => {
         await updateGitStatus();
       } catch (error) {
         const msg = (error as Error).message;
+        trackError('git', `Push failed: ${msg}`);
         if (msg.includes('not a simple fast-forward') || msg.includes('Push rejected')) {
           showToast('Push rejected: Remote has changes you don\'t have. Please Pull first.', 'error');
         } else {
@@ -1842,6 +1853,7 @@ const App = () => {
       }
       await updateGitStatus(); // Refresh status after commit
     } catch (error) {
+      trackError('git', `Commit failed: ${(error as Error).message}`);
       showToast(`Failed to commit: ${(error as Error).message}`, 'error');
       console.error('Commit error:', error);
     }
@@ -2578,6 +2590,7 @@ const App = () => {
               onClick={(e) => {
                 e.preventDefault();
                 closeAllDropdowns();
+                if (!showEasyNotesSidebar) trackFeature('easynotes', 'open');
                 setShowEasyNotesSidebar(!showEasyNotesSidebar);
               }}
               title="EasyNotes"
@@ -2593,6 +2606,7 @@ const App = () => {
             onClick={(e) => {
               e.preventDefault();
               closeAllDropdowns();
+              if (!showEasyAIPanel) trackFeature('easyai', 'open');
               setShowEasyAIPanel(!showEasyAIPanel);
             }}
             title={LicenseManager.hasActiveLicense() ? 'EasyAI — Premium: Gemini & more' : 'EasyAI — Free: Ollama only'}
@@ -2608,6 +2622,7 @@ const App = () => {
               onClick={(e) => {
                 e.preventDefault();
                 closeAllDropdowns();
+                if (!showEasyTeamPanel) trackFeature('easyteam', 'open');
                 setShowEasyTeamPanel(!showEasyTeamPanel);
               }}
               title="EasyTeam"
@@ -2623,6 +2638,7 @@ const App = () => {
             onClick={() => {
               closeAllDropdowns();
               setShowEasyNotesSidebar(false);
+              trackFeature('git', 'open');
               setShowGitModal(true);
             }}
             title="Git Operations"
@@ -2672,6 +2688,7 @@ const App = () => {
               closeAllDropdowns();
               setShowEasyNotesSidebar(false);
               updateConnectedProviders();
+              trackFeature('export', 'open');
               setShowExportModal(true);
             }}
             title={t('menu.exports')}
@@ -2992,6 +3009,7 @@ const App = () => {
           toasts={toasts}
           onRemove={removeToast}
         />
+        <AnalyticsConsentBanner />
         <PasswordModal
           open={passwordModalConfig.open}
           onClose={handleClosePasswordModal}
@@ -3098,6 +3116,7 @@ const App = () => {
                 e.preventDefault();
                 cacheSelection();
                 closeAllDropdowns();
+                trackFeature('table', 'open');
                 setShowAutoModal(true);
               }}
               title={t('toolbar.auto')}
@@ -3113,6 +3132,7 @@ const App = () => {
                 e.preventDefault();
                 cacheSelection();
                 closeAllDropdowns();
+                trackFeature('template', 'open');
                 setShowTemplatesModal(true);
               }}
               title={t('menu.templates')}
@@ -3128,6 +3148,7 @@ const App = () => {
                 e.preventDefault();
                 cacheSelection();
                 closeAllDropdowns();
+                trackFeature('diagram', 'open', { type: 'mermaid' });
                 setShowMermaidModal(true);
               }}
               title="Mermaid Options"
@@ -3143,6 +3164,7 @@ const App = () => {
                 e.preventDefault();
                 cacheSelection();
                 closeAllDropdowns();
+                trackFeature('diagram', 'open', { type: 'uml' });
                 setShowUMLModal(true);
               }}
               title="UML Diagram Options"
@@ -3506,6 +3528,7 @@ const App = () => {
               } catch (err: any) {
                 const msg = err.message || 'Scan failed';
                 console.error('[EasyAI-Doc] Scan error:', msg, err);
+                trackError('ai', `Doc scan: ${msg}`);
                 showToast(msg, 'error');
               } finally {
                 setScanProgress({ isScanning: false, currentFile: '', filesProcessed: 0, totalFiles: 0 });
@@ -3533,6 +3556,7 @@ const App = () => {
 
             try {
               const aiResponse = await queryEasyAI(systemPrompt, promptText, forcePremiumDefault ?? false);
+              trackFeature('easyai', 'use', { action: actionId });
               setLastAIResponse(aiResponse);
               if (aiResponse.trim()) {
                 if (actionId === 'rewrite') {
@@ -3580,6 +3604,7 @@ const App = () => {
               }
             } catch (err: any) {
               console.error('[EasyAI] Backend error:', err);
+              trackError('ai', err.message || 'Connection failed');
               showToast(`EasyAI error: ${err.message || 'Connection failed'}`, 'error');
             }
           }}

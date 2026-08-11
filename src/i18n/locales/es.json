@@ -790,5 +790,12 @@
       "connection_failed": "Error de conexión. Por favor, inténtalo de nuevo.",
       "send_failed": "No se pudo enviar el mensaje."
     }
+  },
+  "analytics": {
+    "consent_message": "Ayuda a mejorar EasyEditor compartiendo datos de uso anónimos. No se recopila información personal — solo qué funciones se utilizan y recuentos de errores. Puedes cambiar esto en cualquier momento en Acerca de.",
+    "accept": "Aceptar",
+    "decline": "No gracias",
+    "toggle_label": "Análisis de uso anónimo",
+    "toggle_description": "(no se recopilan datos personales)"
   }
 }
