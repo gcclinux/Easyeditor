@@ -446,14 +446,16 @@ export class CloudManager {
    */
   async uploadFile(providerName: string, fileName: string, content: string | Uint8Array): Promise<NoteMetadata | null> {
     await this.ensureProvidersReady();
-    const provider = this.providers.get(providerName);
+    const isLocalLib = providerName === 'locallibrary' || providerName.startsWith('locallibrary:');
+    const baseKey = isLocalLib ? 'locallibrary' : providerName;
+    const provider = this.providers.get(baseKey);
     if (!provider) throw new Error(`Provider ${providerName} not found`);
 
     const operationId = `upload_file_${Date.now()}`;
     cloudToastService.showLoading(operationId, `Uploading "${fileName}"...`, { showProgress: true });
 
     try {
-      const providerMetadata = await this.metadataManager.getProviderMetadata(providerName);
+      const providerMetadata = await this.getProviderMetadata(providerName);
       if (!providerMetadata?.connected || !providerMetadata.applicationFolderId) {
         throw new Error(`Provider ${providerName} is not connected`);
       }
@@ -813,21 +815,18 @@ export class CloudManager {
                     );
                     if (matchingCloudFile) {
                       const extFile = matchingCloudFile as import('../providers/LocalLibraryProvider').ExtendedCloudFile;
-                      let updated = false;
+                      const updates: Partial<NoteMetadata> = {};
                       if (existingNote.cloudFileId !== matchingCloudFile.id) {
-                        existingNote.cloudFileId = matchingCloudFile.id;
-                        updated = true;
+                        updates.cloudFileId = matchingCloudFile.id;
                       }
                       if (extFile.libraryId && existingNote.libraryId !== extFile.libraryId) {
-                        existingNote.libraryId = extFile.libraryId;
-                        updated = true;
+                        updates.libraryId = extFile.libraryId;
                       }
                       if (extFile.libraryName && existingNote.libraryName !== extFile.libraryName) {
-                        existingNote.libraryName = extFile.libraryName;
-                        updated = true;
+                        updates.libraryName = extFile.libraryName;
                       }
-                      if (updated) {
-                        await this.metadataManager.updateNote(existingNote);
+                      if (Object.keys(updates).length > 0) {
+                        await this.metadataManager.updateNote(existingNote.id, updates);
                       }
                     }
                   }
@@ -995,8 +994,12 @@ export class CloudManager {
    * Get provider metadata for UI display
    */
   async getProviderMetadata(providerName: string): Promise<ProviderMetadata | null> {
-    let meta = await this.metadataManager.getProviderMetadata(providerName);
-    if ((!meta || !meta.connected) && providerName === 'locallibrary') {
+    const isLocalLib = providerName === 'locallibrary' || providerName.startsWith('locallibrary:');
+    const baseKey = isLocalLib ? 'locallibrary' : providerName;
+    const libId = providerName.startsWith('locallibrary:') ? providerName.split(':')[1] : null;
+
+    let meta = await this.metadataManager.getProviderMetadata(baseKey);
+    if ((!meta || !meta.connected) && isLocalLib) {
       const provider = this.providers.get('locallibrary');
       if (provider && await provider.isAuthenticated()) {
         const path = (provider as any).getStoredPath?.() || localStorage.getItem('easynotes_locallibrary_path') || 'locallibrary';
@@ -1010,6 +1013,17 @@ export class CloudManager {
         await this.metadataManager.updateProviderMetadata('locallibrary', meta);
       }
     }
+
+    if (meta && libId) {
+      const localLibs = this.getLocalLibraries();
+      const targetLib = localLibs.find(l => l.id === libId);
+      return {
+        ...meta,
+        applicationFolderId: targetLib ? targetLib.id : meta.applicationFolderId,
+        displayName: targetLib ? targetLib.name : meta.displayName
+      };
+    }
+
     return meta;
   }
 

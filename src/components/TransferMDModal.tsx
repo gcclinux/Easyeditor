@@ -180,7 +180,8 @@ export default function TransferMDModal({ isOpen, onClose }: Props) {
             }
         } else {
             const available = await cloudManager!.getAvailableProviders();
-            const sourceProvider = available.find(p => p.name === source);
+            const sourceProviderKey = source.startsWith('locallibrary:') ? 'locallibrary' : source;
+            const sourceProvider = available.find(p => p.name === sourceProviderKey);
             const sourceMeta = await cloudManager!.getProviderMetadata(source);
             if (!sourceProvider || !sourceMeta?.applicationFolderId) throw new Error('Source cloud provider not ready');
 
@@ -257,7 +258,8 @@ export default function TransferMDModal({ isOpen, onClose }: Props) {
 
         const targetMeta = await cloudManager!.getProviderMetadata(target);
         const available = await cloudManager!.getAvailableProviders();
-        const targetProvider = available.find(p => p.name === target);
+        const targetProviderKey = target.startsWith('locallibrary:') ? 'locallibrary' : target;
+        const targetProvider = available.find(p => p.name === targetProviderKey);
 
         if (!targetProvider || !targetMeta?.applicationFolderId) {
             throw new Error('Target cloud provider not ready or folder missing');
@@ -313,7 +315,8 @@ export default function TransferMDModal({ isOpen, onClose }: Props) {
 
     const transferFromCloud = async () => {
         const available = await cloudManager!.getAvailableProviders();
-        const sourceProvider = available.find(p => p.name === source);
+        const sourceProviderKey = source.startsWith('locallibrary:') ? 'locallibrary' : source;
+        const sourceProvider = available.find(p => p.name === sourceProviderKey);
         const sourceMeta = await cloudManager!.getProviderMetadata(source);
 
         if (!sourceProvider || !sourceMeta?.applicationFolderId) {
@@ -329,7 +332,8 @@ export default function TransferMDModal({ isOpen, onClose }: Props) {
 
         setProgress({ current: 0, total: sourceFiles.length, message: t('transfer_md.processing') || 'Processing...' });
 
-        const targetProvider = available.find(p => p.name === target);
+        const targetProviderKey = target.startsWith('locallibrary:') ? 'locallibrary' : target;
+        const targetProvider = available.find(p => p.name === targetProviderKey);
         const targetMeta = await cloudManager!.getProviderMetadata(target);
 
         if (!targetProvider || !targetMeta?.applicationFolderId) {
