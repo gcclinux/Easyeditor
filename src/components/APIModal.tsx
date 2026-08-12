@@ -192,6 +192,11 @@ export function APIModal({ open, onClose, showToast }: APIModalProps) {
           {/* Block 1: EasyAI API Hosting Config */}
           <div className="about-card">
             <h3>{t('about.api_hosting')}</h3>
+            <p style={{ fontSize: '0.82em', color: 'var(--text-secondary, #666)', margin: '4px 0 8px 0' }}>
+              {licenseTier === 'Free'
+                ? 'Free users can use local Ollama. Upgrade to Premium to bring your own API key (BYOK) for Gemini, Claude, or Bedrock.'
+                : 'Premium unlocks Bring-Your-Own-Key (BYOK) for Gemini, Claude, Bedrock, or custom Ollama endpoints.'}
+            </p>
             <div style={{ display: 'flex', flexDirection: 'column', gap: '3px', marginTop: '10px' }}>
               <div>
                 <label style={{ display: 'block', fontSize: '0.9em', marginBottom: '4px' }}>{t('about.api_agent')}</label>
