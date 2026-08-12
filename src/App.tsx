@@ -2574,6 +2574,7 @@ const App = () => {
             onClick={() => {
               closeAllDropdowns();
               setShowEasyNotesSidebar(false);
+              trackFeature('file', 'open');
               setShowFileModal(true);
             }}
             title={t('menu.file')}
@@ -2666,7 +2667,10 @@ const App = () => {
         </button>
         <button
           className="menu-item fixed-menubar-btn"
-          onClick={() => handleUndo(historyIndex, documentHistory, setHistoryIndex, setEditorContent, cursorPositionRef)}
+          onClick={() => {
+            trackFeature('undo', 'use');
+            handleUndo(historyIndex, documentHistory, setHistoryIndex, setEditorContent, cursorPositionRef);
+          }}
           disabled={historyIndex <= 0}
           title={t('menu.undo')}
         >
@@ -2674,7 +2678,10 @@ const App = () => {
         </button>
         <button
           className="menu-item fixed-menubar-btn"
-          onClick={() => handleRedo(historyIndex, documentHistory, setHistoryIndex, setEditorContent, cursorPositionRef)}
+          onClick={() => {
+            trackFeature('redo', 'use');
+            handleRedo(historyIndex, documentHistory, setHistoryIndex, setEditorContent, cursorPositionRef);
+          }}
           disabled={historyIndex >= documentHistory.length - 1}
           title={t('menu.redo')}
         >
@@ -3081,6 +3088,7 @@ const App = () => {
                 cacheSelection();
                 closeAllDropdowns();
                 setShowEasyNotesSidebar(false);
+                trackFeature('task', 'open');
                 setShowTaskModal(true);
               }}
               title={t('menu.tasks')}
@@ -3090,23 +3098,23 @@ const App = () => {
           </div>
           &#8741;
           <div className="dropdown-container">
-            <button className="button-mermaid" onMouseDown={() => { cacheSelection(); closeAllDropdowns(); setShowFormattingModal(true); }} title={t('toolbar.formatting')}><CgFormatText />&nbsp;{t('toolbar.formatting')}</button>
+            <button className="button-mermaid" onMouseDown={() => { cacheSelection(); closeAllDropdowns(); trackFeature('formatting', 'open'); setShowFormattingModal(true); }} title={t('toolbar.formatting')}><CgFormatText />&nbsp;{t('toolbar.formatting')}</button>
           </div>
           &#8741;
           <div className="dropdown-container">
-            <button className="button-mermaid" onMouseDown={() => { cacheSelection(); closeAllDropdowns(); setShowInsertModal(true); }} title={t('toolbar.insert')}><MdOutlineInsertChartOutlined />&nbsp;{t('toolbar.insert')}</button>
+            <button className="button-mermaid" onMouseDown={() => { cacheSelection(); closeAllDropdowns(); trackFeature('insert', 'open'); setShowInsertModal(true); }} title={t('toolbar.insert')}><MdOutlineInsertChartOutlined />&nbsp;{t('toolbar.insert')}</button>
           </div>
           &#8741;
           <div className="dropdown-container">
-            <button className="button-mermaid" onMouseDown={() => { cacheSelection(); closeAllDropdowns(); setShowImagesModal(true); }} title={t('toolbar.images')}><FaImage />&nbsp;{t('toolbar.images')}</button>
+            <button className="button-mermaid" onMouseDown={() => { cacheSelection(); closeAllDropdowns(); trackFeature('image', 'open'); setShowImagesModal(true); }} title={t('toolbar.images')}><FaImage />&nbsp;{t('toolbar.images')}</button>
           </div>
           &#8741;
           <div className="dropdown-container">
-            <button className="button-mermaid" onMouseDown={() => { cacheSelection(); closeAllDropdowns(); setShowTablesModal(true); }} title={t('toolbar.tables')}><FaTable />&nbsp;{t('toolbar.tables')}</button>
+            <button className="button-mermaid" onMouseDown={() => { cacheSelection(); closeAllDropdowns(); trackFeature('table', 'open'); setShowTablesModal(true); }} title={t('toolbar.tables')}><FaTable />&nbsp;{t('toolbar.tables')}</button>
           </div>
           &#8741;
           <div className="dropdown-container">
-            <button className="button-mermaid" onMouseDown={() => { cacheSelection(); closeAllDropdowns(); setShowFootnoteModal(true); }} title={t('toolbar.footnotes')}><FaStickyNote />&nbsp;{t('toolbar.footnotes')}</button>
+            <button className="button-mermaid" onMouseDown={() => { cacheSelection(); closeAllDropdowns(); trackFeature('footnote', 'open'); setShowFootnoteModal(true); }} title={t('toolbar.footnotes')}><FaStickyNote />&nbsp;{t('toolbar.footnotes')}</button>
           </div>
           &#8741;
           <div className="dropdown-container">
@@ -3116,7 +3124,7 @@ const App = () => {
                 e.preventDefault();
                 cacheSelection();
                 closeAllDropdowns();
-                trackFeature('table', 'open');
+                trackFeature('extra', 'open');
                 setShowAutoModal(true);
               }}
               title={t('toolbar.auto')}
@@ -3180,6 +3188,7 @@ const App = () => {
                 e.preventDefault();
                 cacheSelection();
                 closeAllDropdowns();
+                trackFeature('symbol', 'open');
                 setShowSymbolsModal(true);
               }}
               title="Symbol Options"
@@ -3195,6 +3204,7 @@ const App = () => {
                 e.preventDefault();
                 cacheSelection();
                 closeAllDropdowns();
+                trackFeature('icon', 'open');
                 setShowIconsModal(true);
               }}
               title="Icons"

@@ -5,6 +5,7 @@ import { cloudManager } from '../cloud/managers/CloudManager';
 import { openDirectoryDialog, readDirectory, readFileContent, writeTauriFile } from '../tauriFileHandler';
 import { exists as tauriExists } from '@tauri-apps/plugin-fs';
 import { cloudToastService } from '../cloud/utils/CloudToastService';
+import { trackError } from '../services/analytics';
 import * as CryptoJS from 'crypto-js';
 import './transferMDModal.css';
 
@@ -241,6 +242,7 @@ export default function TransferMDModal({ isOpen, onClose }: Props) {
                 await writeTauriFile(finalTargetPath, contentToWrite);
             } catch (err) {
                 console.error(`Failed to write ${file.name}:`, err);
+                trackError('cloud', `Transfer failed writing ${file.name}: ${err instanceof Error ? err.message : 'Unknown'}`);
                 setResults(prev => ({ ...prev, errors: prev.errors + 1 }));
             }
         }
@@ -308,6 +310,7 @@ export default function TransferMDModal({ isOpen, onClose }: Props) {
                 await cloudManager!.uploadFile(target, finalFileName, content);
             } catch (err) {
                 console.error(`Failed to transfer ${fileName}:`, err);
+                trackError('cloud', `Transfer failed for ${fileName}: ${err instanceof Error ? err.message : 'Unknown'}`);
                 setResults(prev => ({ ...prev, errors: prev.errors + 1 }));
             }
         }
@@ -377,6 +380,7 @@ export default function TransferMDModal({ isOpen, onClose }: Props) {
                 await cloudManager!.uploadFile(target, finalFileName, content);
             } catch (err) {
                 console.error(`Failed to transfer ${sFile.name}:`, err);
+                trackError('cloud', `Transfer failed for ${sFile.name}: ${err instanceof Error ? err.message : 'Unknown'}`);
                 setResults(prev => ({ ...prev, errors: prev.errors + 1 }));
             }
         }
