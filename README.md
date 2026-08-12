@@ -8,7 +8,7 @@
 
 Easyeditor is not just another Markdown editor—it's a **powerhouse** for your documentation needs. Write Markdown (MD), create stunning diagrams with **Mermaid** & **UML**, render mathematical equations with **KaTeX**, and preview it all in **real-time**! 
 
-From simple notes to complex technical documentation, Easyeditor has you covered with over **130+ features**.
+From simple notes to complex technical documentation, Easyeditor has you covered **features rich**.
 
 ### ✨ Why You'll Love It
 *   **Real-time Preview**: See your changes instantly.
@@ -21,6 +21,7 @@ From simple notes to complex technical documentation, Easyeditor has you covered
 *   **SSTP Encryption**: SSTP (Simple Security Text Protocol) protection using modern AES-256-CBC encryption!
 *   **EasyAI Personas**: Built-in AI personas for documentation, diagrams, code fixes, and more — with full repo scanning that reads your project file-by-file to generate accurate, context-aware documentation.
 *   **Multi-cloud Storage**: Built-in Multi-cloud Storage to store your documents, GDrive, OneDrive,DropBox, Box.
+*   **EasyTeam**: EasyTeam is a privacy-first, ephemeral team communication feature.
 
 [![Menu Structure](https://img.shields.io/badge/📑_Menu_Structure-v2.0.1_Guide-purple?style=for-the-badge)](docs/MENU.md)
 [![Infographic](https://img.shields.io/badge/📊_Infographic-View_PDF-orange?style=for-the-badge)](docs/Easyeditor-Infographic.pdf)
@@ -38,6 +39,7 @@ From simple notes to complex technical documentation, Easyeditor has you covered
 ### 📥 Option 1: Download & Install (Recommended)
 Skip the build process and start writing immediately! Download the latest system-compiled binary for your OS or install directly from the Microsoft Store.
 
+[![Get it from Snap Store](https://img.shields.io/badge/Snap_Store-Get_App-E95420?style=for-the-badge&logo=snapcraft)](https://snapcraft.io/easyeditor)  
 [![Get it from Microsoft Store](https://img.shields.io/badge/Microsoft_Store-Get_App-0078D4?style=for-the-badge&logo=microsoft)](https://apps.microsoft.com/store/detail/XP8K1TWB35PK5M)  
 [![Download Latest Release](https://img.shields.io/badge/⬇️_Download_Desktop_App-Get_Latest_Release-blue?style=for-the-badge&logo=github)](https://github.com/gcclinux/EasyEditor/releases)
 
@@ -48,9 +50,6 @@ Prefer a containerized environment? getting up and running is as simple as one c
 # Pull and run the latest version
 docker pull ghcr.io/gcclinux/easyeditor:latest
 docker run -d --name EASYEDITOR -p 3024:3024 --env-file .env.local ghcr.io/gcclinux/easyeditor:latest
-
-docker pull gcclinux/easyeditor:1.7.2-aarch64
-docker run -d --name EASYEDITOR -p 3024:3024 --env-file .env.local gcclinux/easyeditor:1.7.2-aarch64
 ```
 *Access it at: `http://localhost:3024`*
 
@@ -113,49 +112,45 @@ scripts/build-snap.sh # Snap package build
 scripts/build-docker.sh # Docker build
 ```
 
-### 4. Automated CI/CD Release Workflows
-Automated cross-platform releases are built automatically via GitHub Actions whenever a version tag (e.g. `v1.8.0`) is pushed or manually via `workflow_dispatch`:
-* **Linux AMD64**: `.github/workflows/release-linux.yml` (Generates `.deb`, `.rpm`, `.AppImage`)
-* **Linux ARM64**: `.github/workflows/release-linux-arm64.yml` (Generates ARM64 `.deb`, `.rpm`, `.AppImage`)
-* **macOS**: `.github/workflows/release-macos.yml` (Generates `.dmg` and `.app`)
-
----
-
 ## *Feature Showcase*
 
-### 🎨 Stunning Themes
-Select from a variety of themes or create your own to match your style.
+### 🎨 Various Imports and Export formats
 
-<a><img src="screenshots/Themes_2025-10-24.png" alt="Themes" width="720" height="400"></a>
+<a><img src="screenshots/Menu - Exports.png" alt="Exports" width="720" height="400"></a>
 
-### 📊 Powerful Diagrams & Math
-Visualize your ideas with **Mermaid** charts and **KaTeX** equations.
+<a><img src="screenshots/Menu - Extra - Imports.png" alt="Imports" width="720" height="400"></a>
 
-**KaTeX Example:**
+### 📊 Powerful Diagrams & Math with templates
 
-<a><img src="screenshots\KaTeX-example.png" alt="KaTeX Example" width="720" height="400"></a>
+*Template System: Jumpstart your docs with built-in templates*
 
-**Template Online Gallery:**
+<a><img src="screenshots/Menu - Templates.png" alt="KaTeX Example" width="720" height="400"></a>
 
-<a><img src="screenshots\KaTeX-example-online.png" alt="Online Templates" width="720" height="400"></a>
+### 📝 Template Online Gallery
+
+<a><img src="screenshots/Online - Templates.png" alt="Online Templates" width="720" height="400"></a>
 
 ### 🐙 EasyGit Integration
-Seamlessly manage your version control without leaving the editor.
+*Seamlessly manage your version control without leaving the editor.*
 
-<a><img src="screenshots/git_feature.png" alt="Git Feature" width="720" height="400"></a>
+<a><img src="screenshots/Menu - EasyGit.png" alt="Git Feature" width="720" height="400"></a>
 
 ### 🤖 EasyAI Personas
-Multiple AI personas for documentation, diagrams, code fixes, user stories, and more. The Documentation persona scans your entire Git repository file-by-file to produce accurate, project-specific documentation.
+*Multiple AI personas for documentation, diagrams, code fixes, user stories, and more. The Documentation persona scans your entire Git repository file-by-file to produce accurate, project-specific documentation.*
 
-<a><img src="screenshots/easyai-new-feature-many-personas.png" alt="EasyAI Personas" width="720" height="400"></a>
+<a><img src="screenshots/Menu - EasyAI.png" alt="EasyAI Personas" width="720" height="400"></a>
 
-**Repo Scanning for Documentation:**
+### 🗣️ EasyTeam
+*EasyTeam privacy-first, ephemeral team communication feature*
 
-<a><img src="screenshots/easyai-scanning-repo-ofr-documentation.png" alt="EasyAI Repo Scanning" width="720" height="400"></a>
+<a><img src="screenshots/Menu - EasyTeam.png" alt="EasyTeam" width="720" height="400"></a>
 
 **Transfer Markdown Documentation**
 
-<a><img src="screenshots/file-transfer.png" alt="Transfer Markdown Documentation" width="720" height="400"></a>
+<a><img src="screenshots/Menu - Extra - Transfer.png" alt="Transfer Markdown Documentation" width="720" height="400"></a>
+
+### 📋 Menu Layout Support
+*Explore standard layout formats and templates:* [easyeditor-menu.md](https://easyeditor-premium.web.app/templates/easyeditor-menu.md)
 
 ### 📝 Table Support
 Clean and responsive table rendering.
@@ -166,6 +161,9 @@ Clean and responsive table rendering.
 | **Mermaid** | ✅ |
 | **KaTeX** | ✅ |
 | **SSTP Encryption** | ✅ |
+| **Multi-cloud Storage** | ✅ |
+| **Collaboration** | ✅ |
+| **Git Integration** | ✅ |
 
 ---
 
@@ -201,12 +199,11 @@ Remove attribution or license notices
 
 ## *Quick Links*
 
-[![Home](https://img.shields.io/badge/🏠_Home-Visit_Site-blue?style=for-the-badge)](https://www.easyeditor.co.uk) 
-[![Docs](https://img.shields.io/badge/📚_Documentation-Read_Docs-green?style=for-the-badge)](https://gcclinux.github.io/EasyEditor/docs) 
+[![Home](https://img.shields.io/badge/🏠_Home-Visit_Site-blue?style=for-the-badge)](https://easysmartapps.co.uk/) 
+[![Docs](https://img.shields.io/badge/📚_Documentation-Read_Docs-green?style=for-the-badge)](https://easysmartapps.co.uk/easyeditor-manual) 
 [![Menu Reference](https://img.shields.io/badge/📑_Menu_Reference-View_MENU.md-purple?style=for-the-badge)](docs/MENU.md)
 [![Infographic](https://img.shields.io/badge/📊_Infographic-View_PDF-orange?style=for-the-badge)](docs/Easyeditor-Infographic.pdf) 
 [![Releases](https://img.shields.io/badge/📦_Releases-View_All-blueviolet?style=for-the-badge)](https://github.com/gcclinux/EasyEditor/releases) 
-[![GitHub](https://img.shields.io/badge/💻_Source_Code-GitHub-black?style=for-the-badge&logo=github)](https://github.com/gcclinux/EasyEditor) 
 [![Stars](https://img.shields.io/github/stars/gcclinux/EasyEditor?style=for-the-badge&logo=github)](https://github.com/gcclinux/EasyEditor/stargazers) 
 [![License](https://img.shields.io/github/license/gcclinux/EasyEditor?style=for-the-badge)](LICENSE) 
 
