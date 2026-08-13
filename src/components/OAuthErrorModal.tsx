@@ -4,7 +4,8 @@
  * Requirements: 6.5
  */
 
-import React from 'react';
+import React, { useEffect } from 'react';
+import { trackError } from '../services/analytics';
 import { 
   FaExclamationTriangle, 
   FaTimesCircle, 
@@ -50,6 +51,12 @@ const OAuthErrorModal: React.FC<OAuthErrorModalProps> = ({
   onClose,
   onOpenSettings
 }) => {
+  useEffect(() => {
+    if (isOpen) {
+      trackError('cloud', `OAuth ${providerName} (${errorType}): ${errorMessage}`);
+    }
+  }, [isOpen, errorType, errorMessage, providerName]);
+
   if (!isOpen) return null;
 
   const getErrorConfig = () => {

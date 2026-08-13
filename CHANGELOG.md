@@ -8,6 +8,8 @@ EasyEditor is an easy markdown editor that allows you to write Markdown (MD) and
 
 ## Latest CODE version
 - 2.1.0 - Bump version to 2.1.0
+- 2.1.1 - Bump version to 2.1.1
+- 2.1.0 - Bump version to 2.1.0
 - 2.0.1 - Bump version to 2.0.1
 - 2.0.0 - New EasyNotes local Library selecting between cloud & local is now optional, auto update notification
 - 1.8.1 - Bump version to 1.8.1 and fixed dark & light teheme fixed issue with Preview Panel and UI 

@@ -5,6 +5,7 @@ import { cloudManager } from '../cloud/managers/CloudManager';
 import { openDirectoryDialog, readDirectory, readFileContent, writeTauriFile } from '../tauriFileHandler';
 import { exists as tauriExists } from '@tauri-apps/plugin-fs';
 import { cloudToastService } from '../cloud/utils/CloudToastService';
+import { trackError } from '../services/analytics';
 import * as CryptoJS from 'crypto-js';
 import './transferMDModal.css';
 
@@ -180,7 +181,8 @@ export default function TransferMDModal({ isOpen, onClose }: Props) {
             }
         } else {
             const available = await cloudManager!.getAvailableProviders();
-            const sourceProvider = available.find(p => p.name === source);
+            const sourceProviderKey = source.startsWith('locallibrary:') ? 'locallibrary' : source;
+            const sourceProvider = available.find(p => p.name === sourceProviderKey);
             const sourceMeta = await cloudManager!.getProviderMetadata(source);
             if (!sourceProvider || !sourceMeta?.applicationFolderId) throw new Error('Source cloud provider not ready');
 
@@ -240,6 +242,7 @@ export default function TransferMDModal({ isOpen, onClose }: Props) {
                 await writeTauriFile(finalTargetPath, contentToWrite);
             } catch (err) {
                 console.error(`Failed to write ${file.name}:`, err);
+                trackError('cloud', `Transfer failed writing ${file.name}: ${err instanceof Error ? err.message : 'Unknown'}`);
                 setResults(prev => ({ ...prev, errors: prev.errors + 1 }));
             }
         }
@@ -257,7 +260,8 @@ export default function TransferMDModal({ isOpen, onClose }: Props) {
 
         const targetMeta = await cloudManager!.getProviderMetadata(target);
         const available = await cloudManager!.getAvailableProviders();
-        const targetProvider = available.find(p => p.name === target);
+        const targetProviderKey = target.startsWith('locallibrary:') ? 'locallibrary' : target;
+        const targetProvider = available.find(p => p.name === targetProviderKey);
 
         if (!targetProvider || !targetMeta?.applicationFolderId) {
             throw new Error('Target cloud provider not ready or folder missing');
@@ -306,6 +310,7 @@ export default function TransferMDModal({ isOpen, onClose }: Props) {
                 await cloudManager!.uploadFile(target, finalFileName, content);
             } catch (err) {
                 console.error(`Failed to transfer ${fileName}:`, err);
+                trackError('cloud', `Transfer failed for ${fileName}: ${err instanceof Error ? err.message : 'Unknown'}`);
                 setResults(prev => ({ ...prev, errors: prev.errors + 1 }));
             }
         }
@@ -313,7 +318,8 @@ export default function TransferMDModal({ isOpen, onClose }: Props) {
 
     const transferFromCloud = async () => {
         const available = await cloudManager!.getAvailableProviders();
-        const sourceProvider = available.find(p => p.name === source);
+        const sourceProviderKey = source.startsWith('locallibrary:') ? 'locallibrary' : source;
+        const sourceProvider = available.find(p => p.name === sourceProviderKey);
         const sourceMeta = await cloudManager!.getProviderMetadata(source);
 
         if (!sourceProvider || !sourceMeta?.applicationFolderId) {
@@ -329,7 +335,8 @@ export default function TransferMDModal({ isOpen, onClose }: Props) {
 
         setProgress({ current: 0, total: sourceFiles.length, message: t('transfer_md.processing') || 'Processing...' });
 
-        const targetProvider = available.find(p => p.name === target);
+        const targetProviderKey = target.startsWith('locallibrary:') ? 'locallibrary' : target;
+        const targetProvider = available.find(p => p.name === targetProviderKey);
         const targetMeta = await cloudManager!.getProviderMetadata(target);
 
         if (!targetProvider || !targetMeta?.applicationFolderId) {
@@ -373,6 +380,7 @@ export default function TransferMDModal({ isOpen, onClose }: Props) {
                 await cloudManager!.uploadFile(target, finalFileName, content);
             } catch (err) {
                 console.error(`Failed to transfer ${sFile.name}:`, err);
+                trackError('cloud', `Transfer failed for ${sFile.name}: ${err instanceof Error ? err.message : 'Unknown'}`);
                 setResults(prev => ({ ...prev, errors: prev.errors + 1 }));
             }
         }

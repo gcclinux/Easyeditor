@@ -31,10 +31,6 @@ const EasyAIPanel: React.FC<EasyAIPanelProps> = ({
   const [aiConfig, setAiConfig] = useState<EasyAIConfig | null>(null);
   const [showReportModal, setShowReportModal] = useState<boolean>(false);
   const [isPremium, setIsPremium] = useState<boolean>(false);
-  /** True = use saved custom config; False = use pre-configured premium default */
-  const [useCustomConfig, setUseCustomConfig] = useState<boolean>(false);
-  /** True when the user has a non-Ollama/non-default config saved */
-  const [hasCustomCfg, setHasCustomCfg] = useState<boolean>(false);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const panelRef = useRef<HTMLDivElement>(null);
 
@@ -47,23 +43,10 @@ const EasyAIPanel: React.FC<EasyAIPanelProps> = ({
     return unsub;
   }, []);
 
-  // Check whether user has a saved custom config whenever panel opens or premium changes
-  useEffect(() => {
-    if (showEasyAIPanel) {
-      hasCustomConfig().then(has => {
-        setHasCustomCfg(has);
-        // If they have no custom config saved, always use premium default
-        if (!has) setUseCustomConfig(false);
-      });
-    }
-  }, [showEasyAIPanel, isPremium]);
-
-  // Reload the displayed config whenever the toggle or panel visibility changes
+  // Reload the displayed config whenever panel visibility or license changes
   const reloadConfig = useCallback(() => {
-    // forcePremiumDefault = true when toggle is OFF (use premium default)
-    const forceDefault = isPremium && !useCustomConfig;
-    loadEasyAIConfig(forceDefault).then(setAiConfig).catch(() => setAiConfig(null));
-  }, [isPremium, useCustomConfig]);
+    loadEasyAIConfig().then(setAiConfig).catch(() => setAiConfig(null));
+  }, []);
 
   useEffect(() => {
     if (showEasyAIPanel) reloadConfig();
@@ -109,7 +92,11 @@ const EasyAIPanel: React.FC<EasyAIPanelProps> = ({
 
   const handleActionClick = (actionId: string) => {
     if (!isPremium && aiConfig?.agent !== 'Ollama') {
-      showToast('EasyAI with external models requires a Premium license. Free users can use Ollama.', 'warning');
+      showToast('EasyAI with cloud models requires a Premium license (BYOK). Free users can use local Ollama.', 'warning');
+      return;
+    }
+    if (isPremium && aiConfig?.agent !== 'Ollama' && !aiConfig?.apiKey) {
+      showToast(`API Key required for ${aiConfig?.agent || 'cloud model'}. Configure your API key in Settings > About > EasyAI API Hosting.`, 'error');
       return;
     }
     if (!prompt.trim()) {
@@ -117,34 +104,38 @@ const EasyAIPanel: React.FC<EasyAIPanelProps> = ({
       return;
     }
 
-    // Pass whether we're forcing the premium default so queryEasyAI uses the right config
-    const forcePremiumDefault = isPremium && hasCustomCfg && !useCustomConfig;
-
     if (onActionSelect) {
-      onActionSelect(actionId, prompt, forcePremiumDefault);
+      onActionSelect(actionId, prompt, false);
     } else {
       showToast(t('easyai.toast_action_not_bound').replace('{{action}}', actionId), 'info');
     }
   };
 
-  // ── Toggle: only shown for Premium users who have a custom config saved ──
-  const showToggle = isPremium && hasCustomCfg;
-  const premiumDefaults = getPremiumDefaults();
-
-  // Badge text & colour
+  // Badge text & colour (BYOK)
   const buildBadge = () => {
-    if (!aiConfig) return null;
-    const isUsingCustom = !aiConfig.isPremiumDefault;
-    const color = isUsingCustom ? '#63b3ed' : '#48bb78';
-    let text: string;
-    if (aiConfig.agent === 'Ollama') {
-      text = `✓ Ollama (host: ${aiConfig.host.replace(/^https?:\/\//, '')}, model: ${aiConfig.model})`;
-    } else if (isUsingCustom) {
-      text = `✓ ${aiConfig.agent} (model: ${aiConfig.model}) — your config`;
-    } else {
-      text = `✓ ${aiConfig.agent} (model: ${aiConfig.model}) — Default`;
+    if (!isPremium) {
+      return {
+        text: `🔒 Free — Local Ollama only (http://localhost:11434)`,
+        color: '#f6ad55'
+      };
     }
-    return { text, color };
+    if (!aiConfig) return null;
+    if (aiConfig.agent === 'Ollama') {
+      return {
+        text: `✓ Ollama (host: ${aiConfig.host.replace(/^https?:\/\//, '')}, model: ${aiConfig.model})`,
+        color: '#63b3ed'
+      };
+    }
+    if (!aiConfig.apiKey) {
+      return {
+        text: `⚠️ ${aiConfig.agent} — API Key required (BYOK). Set in Settings > About > EasyAI API Hosting.`,
+        color: '#fc8181'
+      };
+    }
+    return {
+      text: `✓ ${aiConfig.agent} (model: ${aiConfig.model}) — BYOK (Your API Key)`,
+      color: '#48bb78'
+    };
   };
 
   const badge = buildBadge();
@@ -185,8 +176,7 @@ const EasyAIPanel: React.FC<EasyAIPanelProps> = ({
               EasyAI (Beta)
             </h2>
 
-            {/* Combined: badge + optional toggle on one line */}
-            {(badge || !isPremium) && (
+            {badge && (
               <div style={{
                 display: 'flex',
                 alignItems: 'center',
@@ -194,56 +184,9 @@ const EasyAIPanel: React.FC<EasyAIPanelProps> = ({
                 gap: '6px',
                 marginTop: '5px',
               }}>
-                {/* Toggle pill — front of line (Premium with custom config only) */}
-                {showToggle && (
-                  <button
-                    id="easyai-source-toggle"
-                    role="switch"
-                    aria-checked={useCustomConfig}
-                    title={useCustomConfig ? 'Switch to Premium Default' : 'Switch to My Config'}
-                    onClick={() => setUseCustomConfig(prev => !prev)}
-                    style={{
-                      position: 'relative',
-                      width: '34px',
-                      height: '19px',
-                      borderRadius: '10px',
-                      border: 'none',
-                      cursor: 'pointer',
-                      flexShrink: 0,
-                      backgroundColor: useCustomConfig ? '#63b3ed' : '#48bb78',
-                      transition: 'background-color 0.25s',
-                      padding: 0,
-                      outline: 'none',
-                    }}
-                  >
-                    <span style={{
-                      position: 'absolute',
-                      top: '2.5px',
-                      left: useCustomConfig ? '17px' : '2.5px',
-                      width: '14px',
-                      height: '14px',
-                      borderRadius: '50%',
-                      backgroundColor: '#ffffff',
-                      transition: 'left 0.25s',
-                      boxShadow: '0 1px 3px rgba(0,0,0,0.3)',
-                    }} />
-                  </button>
-                )}
-
-                {/* AI source badge */}
-                {badge && (
-                  <span style={{ fontSize: '0.75rem', color: badge.color, whiteSpace: 'nowrap' }}>
-                    {badge.text}
-                  </span>
-                )}
-
-                {/* Free user notice */}
-                {!isPremium && (
-                  <span style={{ fontSize: '0.72rem', color: '#f6ad55', display: 'flex', alignItems: 'center', gap: '4px' }}>
-                    <FaLock style={{ fontSize: '0.65rem' }} />
-                    Free — Ollama only.
-                  </span>
-                )}
+                <span style={{ fontSize: '0.75rem', color: badge.color, whiteSpace: 'nowrap' }}>
+                  {badge.text}
+                </span>
               </div>
             )}
           </div>

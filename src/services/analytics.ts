@@ -37,6 +37,16 @@ export type FeatureCategory =
   | 'theme'
   | 'formatting'
   | 'table'
+  | 'extra'
+  | 'file'
+  | 'undo'
+  | 'redo'
+  | 'task'
+  | 'insert'
+  | 'image'
+  | 'footnote'
+  | 'symbol'
+  | 'icon'
   | 'settings';
 
 export type FeatureAction = 'open' | 'use' | 'close' | 'error';

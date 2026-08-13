@@ -30,6 +30,9 @@ export default function LocalLibraryConfigModal({ isOpen, onClose, onSelectFolde
     try {
       await onSelectFolder(libraryName.trim() || undefined);
       onClose();
+    } catch (err) {
+      const { trackError } = await import('../services/analytics');
+      trackError('cloud', `Local library config error: ${err instanceof Error ? err.message : 'Unknown'}`);
     } finally {
       setIsProcessing(false);
     }

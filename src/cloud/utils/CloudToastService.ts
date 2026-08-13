@@ -5,6 +5,7 @@
 
 import { ErrorHandler, CloudError } from './ErrorHandler';
 import { createLogger } from '../../utils/logger';
+import { trackError } from '../../services/analytics';
 
 const logger = createLogger('CloudToastService');
 
@@ -75,6 +76,7 @@ export class CloudToastService {
     }
 
     this.showToast(message, 'error', enhancedOptions);
+    trackError('cloud', message);
   }
 
   /**
