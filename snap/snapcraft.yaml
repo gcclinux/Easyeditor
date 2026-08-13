@@ -1,4 +1,5 @@
 name: easyeditor
+base: core24
 version: '2.1.0'
 summary: Easy Markdown Editor
 description: |
@@ -6,7 +7,7 @@ description: |
   It mimics a full Integrated Development Environment (IDE) experience for
   Markdown projects, featuring real-time preview, HTML/PDF export, and
   deep integration with version control systems.
-  
+
   Key features include:
   - Real-time Markdown preview (EasyEditor)
   - Integration with Cloud Storage Services (EasyNotes)
@@ -16,16 +17,12 @@ description: |
   - SSTP Encryption support (EasyEditor)
   - Save and load .md files (EasyEditor)
   - Load Git repo and stage, commit, push and export to HTML, TXT, PDF & SSTP Encryption
-  
-  This application uses classic confinement because it's a Tauri-based application 
-  requiring WebKitGTK 4.1 with full system access for file operations.
 
 grade: stable
-confinement: classic
+confinement: strict
 icon: snap/gui/easyeditor.png
-base: core24
 
-title: Easyedit
+title: Easyeditor
 license: AGPL-3.0
 contact: https://github.com/gcclinux/easyeditor/discussions
 website: https://easysmartapps.co.uk
@@ -35,22 +32,79 @@ donation: https://github.com/sponsors/gcclinux
 
 platforms:
   amd64:
-  arm64:
-  armhf:
+
+# NOTE: The gnome extension automatically provides a layout for webkit2gtk-4.1
+# binding $SNAP/gnome-platform/usr/lib/$CRAFT_ARCH_TRIPLET_BUILD_FOR/webkit2gtk-4.1
+# to /usr/lib/$CRAFT_ARCH_TRIPLET_BUILD_FOR/webkit2gtk-4.1
+# No additional layout needed here.
 
 apps:
   easyeditor:
-    command: bin/easyeditor
-    desktop: snap/gui/easyeditor.desktop
+    command: usr/bin/easyeditor
+    desktop: usr/share/applications/easyeditor.desktop
+    extensions: [gnome]
+    plugs:
+      - network
+      - network-status
+      - home
+      - removable-media
+      - ssh-keys
+      - gpg-keys
+      - browser-support
+      - password-manager-service
+
+package-repositories:
+  - type: apt
+    components: [main]
+    suites: [noble]
+    key-id: 78E1918602959B9C59103100F1831DDAFC42E99D
+    url: http://ppa.launchpad.net/snappy-dev/snapcraft-daily/ubuntu
 
 parts:
-  easyeditor:
+  build-app:
     plugin: nil
+    build-packages:
+      - libwebkit2gtk-4.1-dev
+      - build-essential
+      - curl
+      - wget
+      - file
+      - libxdo-dev
+      - libssl-dev
+      - libayatana-appindicator3-dev
+      - librsvg2-dev
+      - dpkg
+      - nodejs
+      - npm
+    stage-packages:
+      - libwebkit2gtk-4.1-0
+      - libayatana-appindicator3-1
     source: .
     override-build: |
-      mkdir -p $SNAPCRAFT_PART_INSTALL/bin
-      cp src-tauri/target/release/easyeditor $SNAPCRAFT_PART_INSTALL/bin/
-      chmod +x $SNAPCRAFT_PART_INSTALL/bin/easyeditor
-      mkdir -p $SNAPCRAFT_PART_INSTALL/snap/gui
-      cp snap/gui/easyeditor.desktop $SNAPCRAFT_PART_INSTALL/snap/gui/
-      cp snap/gui/easyeditor.png $SNAPCRAFT_PART_INSTALL/snap/gui/
+      set -eu
+
+      # The gnome extension injects LD_LIBRARY_PATH pointing to the gnome-sdk
+      # which conflicts with build tools. Unset it for the build phase.
+      unset LD_LIBRARY_PATH
+
+      # Install Rust via rustup (not as a build-snap to avoid glibc conflicts)
+      if [ ! -f "$HOME/.cargo/bin/rustup" ]; then
+        curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y --default-toolchain stable
+      fi
+      export PATH="$HOME/.cargo/bin:$PATH"
+
+      # Verify tools
+      rustc --version
+      node --version
+      npm --version
+
+      # Install dependencies and build
+      npm install
+      npm run tauri build -- --bundles deb
+
+      # Extract the deb into the snap install directory
+      DEB_FILE="src-tauri/target/release/bundle/deb/easyeditor_${SNAPCRAFT_PROJECT_VERSION}_amd64.deb"
+      dpkg -x "$DEB_FILE" $SNAPCRAFT_PART_INSTALL/
+
+      # Fix the desktop file icon path for snap
+      sed -i -e "s|Icon=easyeditor|Icon=/usr/share/icons/hicolor/32x32/apps/easyeditor.png|g" $SNAPCRAFT_PART_INSTALL/usr/share/applications/easyeditor.desktop
