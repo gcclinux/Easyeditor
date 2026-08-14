@@ -1,6 +1,6 @@
 {
   "productName": "easyeditor",
-  "version": "2.1.0",
+  "version": "2.1.1",
   "identifier": "RicardoWagemaker.Easyeditor",
   "build": {
     "beforeBuildCommand": "npm run build",

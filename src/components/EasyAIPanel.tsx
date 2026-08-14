@@ -1,11 +1,17 @@
 import React, { useState, useRef, useEffect, useCallback } from 'react';
-import { FaRobot, FaTimes, FaFlag, FaDownload, FaLock } from 'react-icons/fa';
+import { FaRobot, FaTimes, FaFlag, FaDownload, FaSpinner, FaCheckCircle, FaExclamationTriangle, FaInfoCircle, FaTrash } from 'react-icons/fa';
 import { useLanguage } from '../i18n/LanguageContext';
 import { getPersonaDescription } from './easyai/aiPersonas';
-import { loadEasyAIConfig, EasyAIConfig, hasPremiumAccess, hasCustomConfig, getPremiumDefaults } from './easyai/aiService';
+import { loadEasyAIConfig, EasyAIConfig, hasPremiumAccess } from './easyai/aiService';
 import ReportContentModal from './ReportContentModal';
 import { downloadReportsAsFile, getReports, isTauriEnv } from './easyai/reportService';
 import LicenseManager from '../premium/LicenseManager';
+
+export interface ToastItem {
+  id: number;
+  message: string;
+  type: 'success' | 'error' | 'info' | 'warning';
+}
 
 interface EasyAIPanelProps {
   showEasyAIPanel: boolean;
@@ -15,6 +21,15 @@ interface EasyAIPanelProps {
   lastAIAction?: string | null;
   lastUserPrompt?: string | null;
   lastAIResponse?: string | null;
+  isWorking?: boolean;
+  workingAction?: string | null;
+  workingMessage?: string | null;
+  sessionResult?: { status: 'success' | 'error' | 'info' | 'warning' | 'cancelled'; message: string } | null;
+  scanProgress?: { isScanning: boolean; currentFile: string; filesProcessed: number; totalFiles: number };
+  onCancelScan?: () => void;
+  onClearSession?: () => void;
+  toasts?: ToastItem[];
+  onClearToasts?: () => void;
 }
 
 const EasyAIPanel: React.FC<EasyAIPanelProps> = ({
@@ -24,7 +39,16 @@ const EasyAIPanel: React.FC<EasyAIPanelProps> = ({
   onActionSelect,
   lastAIAction,
   lastUserPrompt,
-  lastAIResponse
+  lastAIResponse,
+  isWorking = false,
+  workingAction = null,
+  workingMessage = null,
+  sessionResult = null,
+  scanProgress,
+  onCancelScan,
+  onClearSession,
+  toasts = [],
+  onClearToasts
 }) => {
   const { t } = useLanguage();
   const [prompt, setPrompt] = useState('');
@@ -91,6 +115,10 @@ const EasyAIPanel: React.FC<EasyAIPanelProps> = ({
   ];
 
   const handleActionClick = (actionId: string) => {
+    if (isWorking || scanProgress?.isScanning) {
+      showToast('EasyAI is currently working on an action. Please wait or cancel.', 'warning');
+      return;
+    }
     if (!isPremium && aiConfig?.agent !== 'Ollama') {
       showToast('EasyAI with cloud models requires a Premium license (BYOK). Free users can use local Ollama.', 'warning');
       return;
@@ -161,12 +189,22 @@ const EasyAIPanel: React.FC<EasyAIPanelProps> = ({
         overflow: 'hidden'
       }}
     >
+      <style>{`
+        @keyframes easyai-spin {
+          0% { transform: rotate(0deg); }
+          100% { transform: rotate(360deg); }
+        }
+        .easyai-spin-icon {
+          animation: easyai-spin 1s linear infinite;
+        }
+      `}</style>
       <div style={{
         padding: '20px',
         display: 'flex',
         flexDirection: 'column',
         height: '100%',
-        boxSizing: 'border-box'
+        boxSizing: 'border-box',
+        overflowY: 'auto'
       }}>
         {/* Header */}
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '16px' }}>
@@ -235,6 +273,7 @@ const EasyAIPanel: React.FC<EasyAIPanelProps> = ({
             value={prompt}
             onChange={(e) => setPrompt(e.target.value)}
             placeholder={t('easyai.prompt_placeholder')}
+            disabled={isWorking || scanProgress?.isScanning}
             style={{
               width: '100%',
               backgroundColor: 'var(--bg-primary-light)',
@@ -249,7 +288,8 @@ const EasyAIPanel: React.FC<EasyAIPanelProps> = ({
               minHeight: '180px',
               maxHeight: '350px',
               overflowY: 'auto',
-              fontFamily: 'inherit'
+              fontFamily: 'inherit',
+              opacity: (isWorking || scanProgress?.isScanning) ? 0.7 : 1
             }}
           />
         </div>
@@ -261,35 +301,245 @@ const EasyAIPanel: React.FC<EasyAIPanelProps> = ({
           gap: '10px',
           marginTop: '10px'
         }}>
-          {actionButtons.map((action) => (
-            <button
-              key={action.id}
-              onClick={() => handleActionClick(action.id)}
-              title={getPersonaDescription(action.id) || action.label}
-              style={{
-                padding: '12px',
-                backgroundColor: 'var(--bg-dropdown-hover)',
-                color: '#ffffff',
-                border: '1px solid var(--border-secondary)',
-                borderRadius: '6px',
-                cursor: 'pointer',
-                fontSize: '14px',
-                fontWeight: '500',
-                transition: 'background-color 0.2s',
-                textAlign: 'center'
-              }}
-              onMouseEnter={(e) => {
-                e.currentTarget.style.backgroundColor = 'var(--bg-primary-light)';
-                e.currentTarget.style.borderColor = 'var(--border-focus)';
-              }}
-              onMouseLeave={(e) => {
-                e.currentTarget.style.backgroundColor = 'var(--bg-dropdown-hover)';
-                e.currentTarget.style.borderColor = 'var(--border-secondary)';
-              }}
-            >
-              {action.label}
-            </button>
-          ))}
+          {actionButtons.map((action) => {
+            const isThisWorking = isWorking && workingAction === action.id;
+            return (
+              <button
+                key={action.id}
+                onClick={() => handleActionClick(action.id)}
+                disabled={isWorking || scanProgress?.isScanning}
+                title={getPersonaDescription(action.id) || action.label}
+                style={{
+                  padding: '12px',
+                  backgroundColor: isThisWorking ? '#2b6cb0' : 'var(--bg-dropdown-hover)',
+                  color: '#ffffff',
+                  border: isThisWorking ? '1px solid #63b3ed' : '1px solid var(--border-secondary)',
+                  borderRadius: '6px',
+                  cursor: (isWorking || scanProgress?.isScanning) ? 'not-allowed' : 'pointer',
+                  fontSize: '14px',
+                  fontWeight: '500',
+                  transition: 'all 0.2s',
+                  textAlign: 'center',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  gap: '8px',
+                  opacity: (isWorking || scanProgress?.isScanning) && !isThisWorking ? 0.5 : 1
+                }}
+                onMouseEnter={(e) => {
+                  if (!isWorking && !scanProgress?.isScanning) {
+                    e.currentTarget.style.backgroundColor = 'var(--bg-primary-light)';
+                    e.currentTarget.style.borderColor = 'var(--border-focus)';
+                  }
+                }}
+                onMouseLeave={(e) => {
+                  if (!isWorking && !scanProgress?.isScanning) {
+                    e.currentTarget.style.backgroundColor = 'var(--bg-dropdown-hover)';
+                    e.currentTarget.style.borderColor = 'var(--border-secondary)';
+                  }
+                }}
+              >
+                {isThisWorking && <FaSpinner className="easyai-spin-icon" />}
+                {action.label}
+              </button>
+            );
+          })}
+        </div>
+
+        {/* Working Status / Progress Box under Personas */}
+        {(isWorking || sessionResult || scanProgress?.isScanning) && (
+          <div style={{
+            marginTop: '16px',
+            padding: '14px 16px',
+            borderRadius: '8px',
+            backgroundColor: 'var(--bg-primary-light, #252526)',
+            border: `1px solid ${
+              (isWorking || scanProgress?.isScanning)
+                ? '#007acc'
+                : sessionResult?.status === 'error'
+                ? '#f56565'
+                : sessionResult?.status === 'warning'
+                ? '#ed8936'
+                : sessionResult?.status === 'success'
+                ? '#48bb78'
+                : 'var(--border-secondary, #3c3c3c)'
+            }`,
+            boxShadow: '0 2px 8px rgba(0,0,0,0.2)',
+            transition: 'all 0.3s ease'
+          }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontWeight: '600', fontSize: '0.9rem' }}>
+                {(isWorking || scanProgress?.isScanning) ? (
+                  <FaSpinner className="easyai-spin-icon" style={{ color: '#63b3ed' }} />
+                ) : sessionResult?.status === 'success' ? (
+                  <FaCheckCircle style={{ color: '#48bb78' }} />
+                ) : sessionResult?.status === 'error' ? (
+                  <FaExclamationTriangle style={{ color: '#f56565' }} />
+                ) : sessionResult?.status === 'warning' ? (
+                  <FaExclamationTriangle style={{ color: '#ed8936' }} />
+                ) : (
+                  <FaInfoCircle style={{ color: '#63b3ed' }} />
+                )}
+                <span>
+                  {workingAction
+                    ? `Persona (${actionButtons.find(b => b.id === workingAction)?.label || workingAction})`
+                    : (isWorking || scanProgress?.isScanning) ? 'AI Agent Working...' : 'Session Status'}
+                </span>
+              </div>
+
+              {!isWorking && !scanProgress?.isScanning && (sessionResult || onClearSession) && (
+                <button
+                  onClick={onClearSession}
+                  style={{
+                    background: 'none',
+                    border: 'none',
+                    color: 'var(--color-text-muted, #a0aec0)',
+                    cursor: 'pointer',
+                    fontSize: '0.85rem',
+                    padding: '2px 6px',
+                    borderRadius: '4px',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '4px'
+                  }}
+                  title="Clear Session Status"
+                >
+                  <FaTimes /> Clear
+                </button>
+              )}
+            </div>
+
+            {/* Status Detail Message */}
+            <div style={{ fontSize: '0.85rem', color: 'var(--color-text-dropdown, #e2e8f0)', wordBreak: 'break-word' }}>
+              {workingMessage || sessionResult?.message || (scanProgress?.isScanning ? 'Scanning repository files...' : '')}
+            </div>
+
+            {/* Repository Scan Progress Bar */}
+            {scanProgress?.isScanning && (
+              <div style={{ marginTop: '12px' }}>
+                <div style={{
+                  width: '100%',
+                  backgroundColor: 'rgba(255, 255, 255, 0.1)',
+                  borderRadius: '4px',
+                  height: '8px',
+                  overflow: 'hidden',
+                  marginBottom: '8px'
+                }}>
+                  <div style={{
+                    height: '100%',
+                    backgroundColor: '#007acc',
+                    width: `${scanProgress.totalFiles > 0 ? (scanProgress.filesProcessed / scanProgress.totalFiles) * 100 : 0}%`,
+                    transition: 'width 0.3s ease'
+                  }} />
+                </div>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: '0.75rem', color: '#a0aec0' }}>
+                  <span>{scanProgress.filesProcessed} / {scanProgress.totalFiles} files</span>
+                  {onCancelScan && (
+                    <button
+                      onClick={onCancelScan}
+                      style={{
+                        backgroundColor: '#e53e3e',
+                        color: '#fff',
+                        border: 'none',
+                        borderRadius: '4px',
+                        padding: '3px 10px',
+                        fontSize: '0.75rem',
+                        cursor: 'pointer',
+                        fontWeight: '500'
+                      }}
+                    >
+                      Cancel Scan
+                    </button>
+                  )}
+                </div>
+                {scanProgress.currentFile && (
+                  <div style={{
+                    fontSize: '0.75rem',
+                    color: '#718096',
+                    marginTop: '4px',
+                    overflow: 'hidden',
+                    textOverflow: 'ellipsis',
+                    whiteSpace: 'nowrap'
+                  }}>
+                    {scanProgress.currentFile}
+                  </div>
+                )}
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* Toaster Messages Feed Section */}
+        <div style={{ marginTop: '20px', flex: 1, display: 'flex', flexDirection: 'column' }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
+            <span style={{ fontSize: '0.8rem', fontWeight: 600, color: 'var(--color-text-muted, #a0aec0)', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
+              Activity & Notification Toasts
+            </span>
+            {toasts && toasts.length > 0 && onClearToasts && (
+              <button
+                onClick={onClearToasts}
+                style={{
+                  background: 'none',
+                  border: 'none',
+                  color: 'var(--color-text-muted, #a0aec0)',
+                  cursor: 'pointer',
+                  fontSize: '0.75rem',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '4px'
+                }}
+                title="Clear Notification History"
+              >
+                <FaTrash size={10} /> Clear Toasts
+              </button>
+            )}
+          </div>
+
+          <div style={{
+            display: 'flex',
+            flexDirection: 'column',
+            gap: '8px',
+            paddingRight: '4px',
+            maxHeight: '260px',
+            overflowY: 'auto'
+          }}>
+            {(!toasts || toasts.length === 0) ? (
+              <div style={{ fontSize: '0.8rem', color: '#718096', fontStyle: 'italic', padding: '8px 0' }}>
+                No recent activity. Select a persona above to start.
+              </div>
+            ) : (
+              toasts.slice().reverse().map((tItem) => (
+                <div
+                  key={tItem.id}
+                  style={{
+                    padding: '8px 12px',
+                    borderRadius: '6px',
+                    fontSize: '0.8rem',
+                    display: 'flex',
+                    alignItems: 'flex-start',
+                    gap: '8px',
+                    backgroundColor: 'var(--bg-primary-light, #2d3748)',
+                    borderLeft: `4px solid ${
+                      tItem.type === 'success' ? '#48bb78' :
+                      tItem.type === 'error' ? '#f56565' :
+                      tItem.type === 'warning' ? '#ed8936' : '#4299e1'
+                    }`,
+                    color: 'var(--color-text-dropdown, #edf2f7)'
+                  }}
+                >
+                  <span style={{ marginTop: '2px' }}>
+                    {tItem.type === 'success' && <FaCheckCircle style={{ color: '#48bb78' }} />}
+                    {tItem.type === 'error' && <FaExclamationTriangle style={{ color: '#f56565' }} />}
+                    {tItem.type === 'warning' && <FaExclamationTriangle style={{ color: '#ed8936' }} />}
+                    {tItem.type === 'info' && <FaInfoCircle style={{ color: '#4299e1' }} />}
+                  </span>
+                  <span style={{ flex: 1, wordBreak: 'break-word', lineHeight: 1.4 }}>
+                    {tItem.message}
+                  </span>
+                </div>
+              ))
+            )}
+          </div>
         </div>
 
         {/* Download Reports button (web only) */}

@@ -288,6 +288,12 @@ const App = () => {
   }>({ isScanning: false, currentFile: '', filesProcessed: 0, totalFiles: 0 });
   const scanAbortControllerRef = useRef<AbortController | null>(null);
 
+  // EasyAI panel working & session state
+  const [easyAIWorking, setEasyAIWorking] = useState<boolean>(false);
+  const [easyAIWorkingAction, setEasyAIWorkingAction] = useState<string | null>(null);
+  const [easyAIWorkingMessage, setEasyAIWorkingMessage] = useState<string | null>(null);
+  const [easyAISessionResult, setEasyAISessionResult] = useState<{ status: 'success' | 'error' | 'info' | 'warning' | 'cancelled'; message: string } | null>(null);
+
   const [confirmModalConfig, setConfirmModalConfig] = useState<{
     open: boolean;
     title: string;
@@ -3451,10 +3457,24 @@ const App = () => {
           lastAIAction={lastAIAction}
           lastUserPrompt={lastUserPrompt}
           lastAIResponse={lastAIResponse}
+          isWorking={easyAIWorking}
+          workingAction={easyAIWorkingAction}
+          workingMessage={easyAIWorkingMessage}
+          sessionResult={easyAISessionResult}
+          scanProgress={scanProgress}
+          onCancelScan={() => scanAbortControllerRef.current?.abort()}
+          onClearSession={() => setEasyAISessionResult(null)}
+          toasts={toasts}
+          onClearToasts={() => setToasts([])}
           onActionSelect={async (actionId, promptText, forcePremiumDefault) => {
             setLastAIAction(actionId);
             setLastUserPrompt(promptText);
             setLastAIResponse(null);
+            setEasyAIWorking(true);
+            setEasyAIWorkingAction(actionId);
+            setEasyAIWorkingMessage('Preparing request...');
+            setEasyAISessionResult(null);
+
             // ── Documentation persona with repo scanning ──
             if (actionId === 'documentation') {
               const isTauri = !!(window as any).__TAURI_INTERNALS__;
@@ -3471,6 +3491,10 @@ const App = () => {
               if (!hasTauriRepo && !hasWebRepo) {
                 console.warn('[EasyAI-Doc] No repository available — aborting');
                 showToast('No Git repository loaded. Please open a repository first via EasyGit.', 'warning');
+                setEasyAIWorking(false);
+                setEasyAIWorkingAction(null);
+                setEasyAIWorkingMessage(null);
+                setEasyAISessionResult({ status: 'warning', message: 'No Git repository loaded.' });
                 return;
               }
 
@@ -3478,7 +3502,7 @@ const App = () => {
               scanAbortControllerRef.current = controller;
 
               setScanProgress({ isScanning: true, currentFile: '', filesProcessed: 0, totalFiles: 0 });
-              setShowEasyAIPanel(false);
+              setEasyAIWorkingMessage('Scanning repository files...');
 
               try {
                 let scanResult;
@@ -3491,6 +3515,7 @@ const App = () => {
                     userPrompt: promptText,
                     onProgress: (current, total, filePath) => {
                       setScanProgress({ isScanning: true, currentFile: filePath, filesProcessed: current, totalFiles: total });
+                      setEasyAIWorkingMessage(`Scanning repository files (${current}/${total})...`);
                     },
                     signal: controller.signal,
                   });
@@ -3501,6 +3526,7 @@ const App = () => {
                     userPrompt: promptText,
                     onProgress: (current, total, filePath) => {
                       setScanProgress({ isScanning: true, currentFile: filePath, filesProcessed: current, totalFiles: total });
+                      setEasyAIWorkingMessage(`Scanning repository files (${current}/${total})...`);
                     },
                     signal: controller.signal,
                   });
@@ -3509,12 +3535,20 @@ const App = () => {
                 if (scanResult.cancelled) {
                   showToast('Scan cancelled.', 'info');
                   setScanProgress({ isScanning: false, currentFile: '', filesProcessed: 0, totalFiles: 0 });
+                  setEasyAIWorking(false);
+                  setEasyAIWorkingAction(null);
+                  setEasyAIWorkingMessage(null);
+                  setEasyAISessionResult({ status: 'info', message: 'Scan cancelled.' });
                   return;
                 }
 
                 if (scanResult.cache.size <= 1) {
                   showToast('No scannable files found in the repository.', 'warning');
                   setScanProgress({ isScanning: false, currentFile: '', filesProcessed: 0, totalFiles: 0 });
+                  setEasyAIWorking(false);
+                  setEasyAIWorkingAction(null);
+                  setEasyAIWorkingMessage(null);
+                  setEasyAISessionResult({ status: 'warning', message: 'No scannable files found in repository.' });
                   return;
                 }
 
@@ -3522,6 +3556,7 @@ const App = () => {
                 console.log(`[RepoScanner] Cache contains ${scanResult.cache.size - 1} file summaries`);
 
                 setScanProgress(prev => ({ ...prev, currentFile: 'Generating documentation…' }));
+                setEasyAIWorkingMessage('Generating documentation with AI backend...');
                 const doc = await generateDocumentation({
                   cache: scanResult.cache,
                   userPrompt: promptText,
@@ -3532,14 +3567,26 @@ const App = () => {
                   setEditorContent(doc + '\n');
                   setLastAIResponse(doc);
                   showToast('EasyAI (documentation) — documentation generated.', 'success');
+                  setEasyAIWorking(false);
+                  setEasyAIWorkingAction(null);
+                  setEasyAIWorkingMessage(null);
+                  setEasyAISessionResult({ status: 'success', message: 'Documentation generated and inserted into editor.' });
                 } else {
                   showToast('EasyAI (documentation) — empty response.', 'warning');
+                  setEasyAIWorking(false);
+                  setEasyAIWorkingAction(null);
+                  setEasyAIWorkingMessage(null);
+                  setEasyAISessionResult({ status: 'warning', message: 'Empty response returned.' });
                 }
               } catch (err: any) {
                 const msg = err.message || 'Scan failed';
                 console.error('[EasyAI-Doc] Scan error:', msg, err);
                 trackError('ai', `Doc scan: ${msg}`);
                 showToast(msg, 'error');
+                setEasyAIWorking(false);
+                setEasyAIWorkingAction(null);
+                setEasyAIWorkingMessage(null);
+                setEasyAISessionResult({ status: 'error', message: msg });
               } finally {
                 setScanProgress({ isScanning: false, currentFile: '', filesProcessed: 0, totalFiles: 0 });
                 scanAbortControllerRef.current = null;
@@ -3550,6 +3597,10 @@ const App = () => {
             const systemPrompt = buildSystemPrompt(actionId, editorContent, promptText);
             if (!systemPrompt) {
               showToast(`Unknown EasyAI action: ${actionId}`, 'error');
+              setEasyAIWorking(false);
+              setEasyAIWorkingAction(null);
+              setEasyAIWorkingMessage(null);
+              setEasyAISessionResult({ status: 'error', message: `Unknown action: ${actionId}` });
               return;
             }
 
@@ -3562,7 +3613,7 @@ const App = () => {
             const stubContent = `\n\n<!-- EasyAI Action: ${actionId} -->\n<!-- User Prompt: ${promptText} -->\n<!-- System prompt built (${systemPrompt.length} chars) -->\n\n`;
             setEditorContent(prev => prev + stubContent);
             showToast(`EasyAI (${actionId}) — sending to AI backend...`, 'info');
-            setShowEasyAIPanel(false);
+            setEasyAIWorkingMessage(`Sending request to AI backend...`);
 
             try {
               const aiResponse = await queryEasyAI(systemPrompt, promptText, forcePremiumDefault ?? false);
@@ -3609,13 +3660,25 @@ const App = () => {
                   setEditorContent(prev => prev + aiResponse + '\n');
                 }
                 showToast(`EasyAI (${actionId}) — response received.`, 'success');
+                setEasyAIWorking(false);
+                setEasyAIWorkingAction(null);
+                setEasyAIWorkingMessage(null);
+                setEasyAISessionResult({ status: 'success', message: `Response received and applied to document (${actionId}).` });
               } else {
                 showToast(`EasyAI (${actionId}) — empty response from AI.`, 'warning');
+                setEasyAIWorking(false);
+                setEasyAIWorkingAction(null);
+                setEasyAIWorkingMessage(null);
+                setEasyAISessionResult({ status: 'warning', message: `Empty response received from AI (${actionId}).` });
               }
             } catch (err: any) {
               console.error('[EasyAI] Backend error:', err);
               trackError('ai', err.message || 'Connection failed');
               showToast(`EasyAI error: ${err.message || 'Connection failed'}`, 'error');
+              setEasyAIWorking(false);
+              setEasyAIWorkingAction(null);
+              setEasyAIWorkingMessage(null);
+              setEasyAISessionResult({ status: 'error', message: `Error: ${err.message || 'Connection failed'}` });
             }
           }}
         />

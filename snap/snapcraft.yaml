@@ -1,6 +1,6 @@
 name: easyeditor
 base: core24
-version: '2.1.0'
+version: '2.1.1'
 summary: Easy Markdown Editor
 description: |
   Easyeditor is a robust Markdown editor designed for developers and writers.
