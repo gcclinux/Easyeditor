@@ -103,7 +103,8 @@ parts:
       npm run tauri build -- --bundles deb
 
       # Extract the deb into the snap install directory
-      DEB_FILE="src-tauri/target/release/bundle/deb/easyeditor_${SNAPCRAFT_PROJECT_VERSION}_amd64.deb"
+      DEB_ARCH=$(dpkg --print-architecture)
+      DEB_FILE="src-tauri/target/release/bundle/deb/easyeditor_${SNAPCRAFT_PROJECT_VERSION}_${DEB_ARCH}.deb"
       dpkg -x "$DEB_FILE" $SNAPCRAFT_PART_INSTALL/
 
       # Fix the desktop file icon path for snap
