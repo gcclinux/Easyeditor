@@ -14,13 +14,22 @@
     "shell:allow-open",
     "dialog:default",
     "fs:default",
-    "fs:allow-read-dir",
-    "fs:allow-read-text-file",
-    "fs:allow-write-text-file",
-    "fs:allow-exists",
-    "fs:read-all",
-    "fs:write-all",
-    "fs:scope-home-recursive",
+    {
+      "identifier": "fs:read-all",
+      "allow": [
+        {
+          "path": "**"
+        }
+      ]
+    },
+    {
+      "identifier": "fs:write-all",
+      "allow": [
+        {
+          "path": "**"
+        }
+      ]
+    },
     {
       "identifier": "http:default",
       "allow": [
