@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
-import { FaStickyNote, FaCloud, FaSync, FaPlus, FaTrash, FaKey, FaFolder, FaFolderPlus } from 'react-icons/fa';
+import { FaStickyNote, FaCloud, FaSync, FaPlus, FaTrash, FaKey, FaFolder, FaFolderPlus, FaSearch, FaTimes } from 'react-icons/fa';
 import ConfirmationModal from './ConfirmationModal';
 import LocalLibraryConfigModal from './LocalLibraryConfigModal';
 import { cloudManager } from '../cloud/managers/CloudManager';
@@ -89,6 +89,15 @@ const EasyNotesSidebar: React.FC<EasyNotesSidebarProps> = ({
     authenticating: {},
     deletingNote: {}
   });
+
+  // ── Search state ────────────────────────────────────────────────────────────
+  const [searchQuery, setSearchQuery] = useState('');
+  const [searchMode, setSearchMode] = useState<'title' | 'content'>('title');
+  const [contentSearchResults, setContentSearchResults] = useState<Map<string, string>>(new Map());
+  const [isContentSearching, setIsContentSearching] = useState(false);
+  const [contentSearchProgress, setContentSearchProgress] = useState({ done: 0, total: 0 });
+  const searchAbortRef = useRef<AbortController | null>(null);
+  // ────────────────────────────────────────────────────────────────────────────
 
   // Initialize CloudToastService with the showToast callback
 
@@ -555,8 +564,11 @@ const EasyNotesSidebar: React.FC<EasyNotesSidebarProps> = ({
   };
 
   const filteredNotes = notes.filter(n => {
+    // Section filter (cloud / local / all)
     if (sectionFilter === 'cloud' && n.provider === 'locallibrary') return false;
     if (sectionFilter === 'local' && n.provider !== 'locallibrary') return false;
+
+    // Provider pill filter
     if (activeProviderFilter !== 'all') {
       if (activeProviderFilter.startsWith('locallibrary:')) {
         const targetLibId = activeProviderFilter.split(':')[1];
@@ -567,21 +579,47 @@ const EasyNotesSidebar: React.FC<EasyNotesSidebarProps> = ({
         if (n.provider !== activeProviderFilter) return false;
       }
     }
+
+    // Search filter
+    if (searchQuery.trim()) {
+      const q = searchQuery.trim().toLowerCase();
+      const titleMatch = n.title.toLowerCase().includes(q);
+      if (searchMode === 'title') return titleMatch;
+      // content mode: keep if title OR content matched
+      return titleMatch || contentSearchResults.has(n.id);
+    }
+
     return true;
   });
 
 
-  // Calculate notes per column for overflow columns (which only have a small heading)
+  // ── Column layout ────────────────────────────────────────────────────────────
+  // Column 1 is a pure control panel (no note cards).
+  // All notes live in note columns starting at column 2.
+  const CONTROL_COL_WIDTH = 360;
+  const NOTE_COL_WIDTH = 340;
+
   const getNotesPerColumn = () => {
-    const overflowHeaderHeight = 75; // heading (~16px font + 15px margin) + padding (40px top+bottom) + border offset
-    const noteItemHeight = 75;
-    const availableHeight = window.innerHeight - 120 - overflowHeaderHeight;
+    const headerHeight = 60; // note-column heading + padding
+    const noteItemHeight = 83; // note card height including margin
+    const availableHeight = window.innerHeight - 120 - headerHeight;
     return Math.max(1, Math.floor(availableHeight / noteItemHeight));
   };
 
-  const [columnCount, setColumnCount] = useState(1);
-  const [firstColumnCapacity, setFirstColumnCapacity] = useState<number | null>(null);
-  const firstColumnNotesRef = useRef<HTMLDivElement>(null);
+  // noteColumnIndex is 0-based among note columns (note column 0 = sidebar column 2)
+  const getNotesForColumn = (noteColumnIndex: number) => {
+    const perCol = getNotesPerColumn();
+    return filteredNotes.slice(noteColumnIndex * perCol, (noteColumnIndex + 1) * perCol);
+  };
+
+  const noteColumnCount = filteredNotes.length === 0 ? 0 : Math.ceil(filteredNotes.length / getNotesPerColumn());
+  const sidebarWidth = Math.min(
+    CONTROL_COL_WIDTH + noteColumnCount * NOTE_COL_WIDTH,
+    Math.floor(window.innerWidth * 0.95)
+  );
+  const sidebarInnerWidth = CONTROL_COL_WIDTH + noteColumnCount * NOTE_COL_WIDTH;
+  // ────────────────────────────────────────────────────────────────────────────
+
   const sidebarRef = useRef<HTMLDivElement>(null);
 
   // Close sidebar when clicking outside of it
@@ -600,75 +638,84 @@ const EasyNotesSidebar: React.FC<EasyNotesSidebarProps> = ({
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, [showEasyNotesSidebar, setShowEasyNotesSidebar]);
 
-  // Measure the actual available height in the first column's notes container
-  const measureFirstColumnCapacity = useCallback(() => {
-    if (firstColumnNotesRef.current && showEasyNotesSidebar) {
-      const containerHeight = firstColumnNotesRef.current.clientHeight;
-      // Subtract space used by the "Notes (N)" heading (~19px font + 15px margin = 34px)
-      // and the container's paddingTop (20px)
-      const headerAndPadding = 54;
-      const usableHeight = containerHeight - headerAndPadding;
-      const noteItemHeight = 75; // Height per note item including margin
-      // Use floor so we only count notes that FULLY fit (no clipping)
-      const capacity = Math.max(1, Math.floor(usableHeight / noteItemHeight));
-      setFirstColumnCapacity(capacity);
-      return capacity;
-    }
-    return null;
-  }, [showEasyNotesSidebar]);
+  // ── Content search ───────────────────────────────────────────────────────────
+  const runContentSearch = useCallback(async (query: string) => {
+    if (!cloudManager || !query.trim()) return;
 
-  // Update column count when notes change or window resizes
-  useEffect(() => {
-    const updateColumns = () => {
-      if (showEasyNotesSidebar) {
-        // Measure first column capacity from the actual DOM
-        const measuredCapacity = measureFirstColumnCapacity();
-        const col1Capacity = measuredCapacity ?? getNotesPerColumn();
-        const otherColCapacity = getNotesPerColumn();
+    // Cancel any in-flight search
+    if (searchAbortRef.current) searchAbortRef.current.abort();
+    searchAbortRef.current = new AbortController();
+    const signal = searchAbortRef.current.signal;
 
-        // Calculate how many notes overflow from the first column
-        const overflowNotes = Math.max(0, filteredNotes.length - col1Capacity);
-        const extraColumnsNeeded = overflowNotes > 0 ? Math.ceil(overflowNotes / otherColCapacity) : 0;
-        const totalColumns = 1 + extraColumnsNeeded;
+    setIsContentSearching(true);
+    setContentSearchResults(new Map());
+    setContentSearchProgress({ done: 0, total: notes.length });
 
-        // Cap at 4 columns max (horizontal scroll handles overflow)
-        const MAX_COLUMNS = 30;
-        const newColumnCount = Math.min(totalColumns, MAX_COLUMNS);
+    const results = new Map<string, string>();
 
-        setColumnCount(newColumnCount);
+    for (let i = 0; i < notes.length; i++) {
+      if (signal.aborted) break;
+      const note = notes[i];
+      try {
+        const raw = await cloudManager.openNote(note.id);
+        const text = typeof raw === 'string' ? raw : new TextDecoder().decode(raw as Uint8Array);
+        const lowerText = text.toLowerCase();
+        const idx = lowerText.indexOf(query.toLowerCase());
+        if (idx !== -1) {
+          const start = Math.max(0, idx - 30);
+          const snippet = text.slice(start, start + 100).replace(/\n/g, ' ').trim();
+          results.set(note.id, snippet);
+        }
+      } catch {
+        // skip unreadable / encrypted notes silently
       }
-    };
-
-    // Small delay to allow the DOM to render before measuring
-    const timeoutId = setTimeout(updateColumns, 50);
-    window.addEventListener('resize', updateColumns);
-    return () => {
-      clearTimeout(timeoutId);
-      window.removeEventListener('resize', updateColumns);
-    };
-  }, [filteredNotes.length, showEasyNotesSidebar, measureFirstColumnCapacity]);
-
-  // Split notes into columns, using measured first-column capacity
-  const getNotesForColumn = (columnIndex: number) => {
-    const col1Capacity = firstColumnCapacity ?? getNotesPerColumn();
-    const otherColCapacity = getNotesPerColumn();
-
-    if (columnIndex === 0) {
-      return filteredNotes.slice(0, col1Capacity);
+      setContentSearchProgress({ done: i + 1, total: notes.length });
     }
 
-    // For subsequent columns, offset by first column capacity then use standard capacity
-    const startIndex = col1Capacity + (columnIndex - 1) * otherColCapacity;
-    const endIndex = startIndex + otherColCapacity;
-    return filteredNotes.slice(startIndex, endIndex);
-  };
+    if (!signal.aborted) {
+      setContentSearchResults(new Map(results));
+    }
+    setIsContentSearching(false);
+  }, [cloudManager, notes]);
 
-  const sidebarWidth = Math.min(columnCount * 400, Math.floor(window.innerWidth * 0.95));
-  const sidebarInnerWidth = columnCount * 400;
+  // Debounce content search trigger
+  useEffect(() => {
+    if (searchMode !== 'content' || !searchQuery.trim()) {
+      setContentSearchResults(new Map());
+      setIsContentSearching(false);
+      if (searchAbortRef.current) searchAbortRef.current.abort();
+      return;
+    }
+    const timer = setTimeout(() => runContentSearch(searchQuery), 300);
+    return () => clearTimeout(timer);
+  }, [searchQuery, searchMode, runContentSearch]);
+
+  // ── Title highlight helper ───────────────────────────────────────────────────
+  const highlightMatch = (text: string, query: string): React.ReactNode => {
+    if (!query.trim()) return text;
+    const idx = text.toLowerCase().indexOf(query.toLowerCase());
+    if (idx === -1) return text;
+    return (
+      <>
+        {text.slice(0, idx)}
+        <mark style={{
+          backgroundColor: 'var(--bg-warning-light, #fef08a)',
+          color: 'inherit',
+          borderRadius: '2px',
+          padding: '0 1px'
+        }}>
+          {text.slice(idx, idx + query.length)}
+        </mark>
+        {text.slice(idx + query.length)}
+      </>
+    );
+  };
+  // ────────────────────────────────────────────────────────────────────────────
 
   // Helper function to render a note item
   const renderNoteItem = (note: NoteMetadata) => {
     const providerMetadata = providers[note.provider];
+    const snippet = searchMode === 'content' ? contentSearchResults.get(note.id) : undefined;
     return (
       <div
         key={note.id}
@@ -703,7 +750,9 @@ const EasyNotesSidebar: React.FC<EasyNotesSidebarProps> = ({
             {(note.fileName?.endsWith('.sstp') || note.title.endsWith('.sstp')) && (
               <FaKey style={{ fontSize: '12px', color: 'var(--color-text-light)', flexShrink: 0 }} title="Backups encrypted" />
             )}
-            <span style={{ fontSize: '13px', fontWeight: '500', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{note.title}</span>
+            <span style={{ fontSize: '13px', fontWeight: '500', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+              {highlightMatch(note.title, searchQuery)}
+            </span>
             {currentCloudNote?.noteId === note.id && (
               <span style={{ fontSize: '14px', flexShrink: 0 }} title="Currently open">🔥</span>
             )}
@@ -759,6 +808,21 @@ const EasyNotesSidebar: React.FC<EasyNotesSidebarProps> = ({
             ? (note.libraryName || localLibraries.find(l => l.id === note.libraryId || note.cloudFileId?.startsWith(`${l.id}::`))?.name || 'Local Library')
             : (providerMetadata?.displayName || note.provider))} • {Math.round(note.size / 1024)}KB
         </div>
+        {/* Content search snippet */}
+        {snippet && (
+          <div style={{
+            fontSize: '11px',
+            color: 'var(--color-text-light)',
+            marginTop: '4px',
+            fontStyle: 'italic',
+            overflow: 'hidden',
+            textOverflow: 'ellipsis',
+            whiteSpace: 'nowrap',
+            opacity: 0.85
+          }}>
+            …{snippet}…
+          </div>
+        )}
       </div>
     );
   };
@@ -794,11 +858,11 @@ const EasyNotesSidebar: React.FC<EasyNotesSidebarProps> = ({
         height: '100%',
         overflowY: 'hidden'
       }}>
-        {/* First Column - Header, Providers, Actions, and first set of notes */}
+        {/* ── COLUMN 1: Control panel — no note cards ── */}
         <div style={{
-          width: '400px',
-          minWidth: '400px',
-          maxWidth: '400px',
+          width: `${CONTROL_COL_WIDTH}px`,
+          minWidth: `${CONTROL_COL_WIDTH}px`,
+          maxWidth: `${CONTROL_COL_WIDTH}px`,
           padding: '20px',
           overflowY: 'auto',
           display: 'flex',
@@ -1088,7 +1152,7 @@ const EasyNotesSidebar: React.FC<EasyNotesSidebarProps> = ({
           )}
 
           {/* Actions Section */}
-          <div style={{ marginBottom: '20px' }}>
+          <div style={{ marginBottom: '12px' }}>
             <div style={{ display: 'flex', gap: '8px', marginBottom: '10px', width: '100%' }}>
               <button
                 onClick={() => {
@@ -1188,10 +1252,94 @@ const EasyNotesSidebar: React.FC<EasyNotesSidebarProps> = ({
             </div>
           </div>
 
-          {/* Notes List - First Column */}
-          <div ref={firstColumnNotesRef} style={{ borderTop: '1px solid var(--border-secondary)', paddingTop: '20px', flex: 1, overflow: 'hidden' }}>
-            <h3 style={{ fontSize: '1.2rem', marginBottom: '10px', color: 'var(--color-text-dropdown)' }}>
-              Notes ({filteredNotes.length})
+          {/* ── Search Bar ─────────────────────────────────────────────────────── */}
+          <div style={{ marginBottom: '12px' }}>
+            <div style={{ display: 'flex', gap: '6px', alignItems: 'center' }}>
+              {/* Search input */}
+              <div style={{ position: 'relative', flex: 1 }}>
+                <FaSearch style={{
+                  position: 'absolute', left: '9px', top: '50%',
+                  transform: 'translateY(-50%)',
+                  color: 'var(--color-text-light)', fontSize: '11px',
+                  pointerEvents: 'none'
+                }} />
+                <input
+                  type="text"
+                  value={searchQuery}
+                  onChange={e => setSearchQuery(e.target.value)}
+                  onKeyDown={e => { if (e.key === 'Escape') setSearchQuery(''); }}
+                  placeholder={searchMode === 'content' ? 'Search contents…' : 'Search notes…'}
+                  style={{
+                    width: '100%',
+                    padding: '8px 28px 8px 28px',
+                    border: `1px solid ${searchQuery ? 'var(--bg-primary, #3b82f6)' : 'var(--border-secondary)'}`,
+                    borderRadius: '6px',
+                    backgroundColor: 'var(--bg-input, var(--bg-dropdown-hover))',
+                    color: 'var(--color-text)',
+                    fontSize: '13px',
+                    boxSizing: 'border-box',
+                    outline: 'none',
+                    transition: 'border-color 0.15s'
+                  }}
+                />
+                {searchQuery && (
+                  <button
+                    onClick={() => setSearchQuery('')}
+                    style={{
+                      position: 'absolute', right: '6px', top: '50%',
+                      transform: 'translateY(-50%)',
+                      background: 'none', border: 'none', cursor: 'pointer',
+                      color: 'var(--color-text-light)', fontSize: '11px', padding: '2px',
+                      display: 'flex', alignItems: 'center'
+                    }}
+                    title="Clear search"
+                  >
+                    <FaTimes />
+                  </button>
+                )}
+              </div>
+              {/* Title / Content toggle */}
+              <button
+                onClick={() => setSearchMode(m => m === 'title' ? 'content' : 'title')}
+                title={searchMode === 'title' ? 'Switch to full-text content search' : 'Switch to title search'}
+                style={{
+                  padding: '7px 9px',
+                  border: '1px solid var(--border-secondary)',
+                  borderRadius: '6px',
+                  cursor: 'pointer',
+                  fontSize: '11px',
+                  whiteSpace: 'nowrap',
+                  backgroundColor: searchMode === 'content' ? 'var(--bg-primary, #3b82f6)' : 'var(--bg-dropdown-hover)',
+                  color: searchMode === 'content' ? 'white' : 'var(--color-text-light)',
+                  transition: 'background-color 0.15s, color 0.15s',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '3px'
+                }}
+              >
+                ⚡
+              </button>
+            </div>
+
+            {/* Content search progress */}
+            {isContentSearching && (
+              <div style={{
+                fontSize: '11px', color: 'var(--color-text-light)',
+                marginTop: '5px', display: 'flex', alignItems: 'center', gap: '5px'
+              }}>
+                <FaSync className="fa-spin" style={{ fontSize: '9px' }} />
+                Searching {contentSearchProgress.done}/{contentSearchProgress.total} notes…
+              </div>
+            )}
+          </div>
+          {/* ─────────────────────────────────────────────────────────────────── */}
+
+          {/* Notes summary — count + provider filter pills (no note cards) */}
+          <div style={{ borderTop: '1px solid var(--border-secondary)', paddingTop: '16px', flex: 1, overflow: 'hidden' }}>
+            <h3 style={{ fontSize: '1rem', marginBottom: '10px', color: 'var(--color-text-dropdown)' }}>
+              {searchQuery.trim()
+                ? `Notes (${filteredNotes.length} of ${notes.length})`
+                : `Notes (${notes.length})`}
             </h3>
 
             {/* Provider & Local Library filter tabs - show when 2+ options exist */}
@@ -1252,49 +1400,49 @@ const EasyNotesSidebar: React.FC<EasyNotesSidebarProps> = ({
               </div>
             )}
 
-            {!loading && filteredNotes.length === 0 && (
-              <p style={{ color: 'var(--color-text-light)', fontSize: '14px', textAlign: 'center', padding: '20px' }}>
+            {!loading && notes.length === 0 && (
+              <p style={{ color: 'var(--color-text-light)', fontSize: '13px', textAlign: 'center', padding: '16px 0' }}>
                 {getConnectedProviders().length === 0
                   ? t('easynotes.connect_cloud_provider')
-                  : activeProviderFilter !== 'all'
-                    ? `No notes in ${providers[activeProviderFilter]?.displayName || activeProviderFilter}`
-                    : 'No notes yet. Create your first note!'
-                }
+                  : 'No notes yet. Create your first note!'}
               </p>
             )}
 
-            {!loading && filteredNotes.length > 0 && (
-              <div>
-                {getNotesForColumn(0).map((note) => renderNoteItem(note))}
-              </div>
+            {!loading && notes.length > 0 && filteredNotes.length === 0 && (
+              <p style={{ color: 'var(--color-text-light)', fontSize: '13px', textAlign: 'center', padding: '16px 0' }}>
+                {searchQuery.trim()
+                  ? `No notes matching "${searchQuery}"`
+                  : `No notes in ${providers[activeProviderFilter]?.displayName || activeProviderFilter}`}
+              </p>
             )}
           </div>
         </div>
+        {/* ── END COLUMN 1 ── */}
 
-        {/* Additional Columns for overflow notes */}
-        {columnCount > 1 && Array.from({ length: columnCount - 1 }, (_, i) => i + 1).map((colIndex) => {
-          const columnNotes = getNotesForColumn(colIndex);
+        {/* ── NOTE COLUMNS (2, 3, 4…) — all note cards live here ── */}
+        {filteredNotes.length > 0 && Array.from({ length: noteColumnCount }, (_, noteColIdx) => {
+          const columnNotes = getNotesForColumn(noteColIdx);
           if (columnNotes.length === 0) return null;
 
           return (
             <div
-              key={`column-${colIndex}`}
+              key={`note-col-${noteColIdx}`}
               style={{
-                width: '400px',
-                minWidth: '400px',
-                maxWidth: '400px',
+                width: `${NOTE_COL_WIDTH}px`,
+                minWidth: `${NOTE_COL_WIDTH}px`,
+                maxWidth: `${NOTE_COL_WIDTH}px`,
                 padding: '20px',
                 borderLeft: '1px solid var(--border-secondary)',
-                overflow: 'hidden',
+                overflowY: 'auto',
                 display: 'flex',
                 flexDirection: 'column',
                 boxSizing: 'border-box'
               }}
             >
-              <h3 style={{ fontSize: '1rem', marginBottom: '15px', color: 'var(--color-text-dropdown)' }}>
-                EasyNotes ({t('easynotes.continued')})
+              <h3 style={{ fontSize: '1rem', marginBottom: '15px', color: 'var(--color-text-dropdown)', flexShrink: 0 }}>
+                {noteColIdx === 0 ? 'EasyNotes' : `EasyNotes (${t('easynotes.continued') || 'continued'})`}
               </h3>
-              <div style={{ flex: 1, overflow: 'hidden' }}>
+              <div style={{ flex: 1 }}>
                 {columnNotes.map((note) => renderNoteItem(note))}
               </div>
             </div>
