@@ -20,7 +20,7 @@ import { database } from './firebase';
 import { isFeatureEnabled } from '../config/features';
 import { isTauriEnvironment } from '../utils/environment';
 import { getRunningVersion } from '../utils/version';
-import LicenseManager from '../premium/LicenseManager';
+
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 
@@ -134,8 +134,7 @@ function getPlatform(): 'web' | 'tauri' {
 }
 
 function getTier(): 'free' | 'premium' | 'premiumPlus' {
-  if (!LicenseManager.hasActiveLicense()) return 'free';
-  return LicenseManager.getType() === 'PremiumPlus' ? 'premiumPlus' : 'premium';
+  return 'free';
 }
 
 /**

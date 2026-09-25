@@ -1,5 +1,5 @@
 import React from 'react';
-import { FaFileImport, FaSave, FaStar, FaGithub, FaHeart, FaPalette, FaGlobe, FaInfoCircle, FaTimes, FaFileAlt, FaLeaf, FaIdCard, FaCog } from 'react-icons/fa';
+import { FaFileImport, FaSave, FaStar, FaGithub, FaHeart, FaPalette, FaGlobe, FaInfoCircle, FaTimes, FaFileAlt, FaLeaf, FaCog } from 'react-icons/fa';
 import { GrDocumentText } from 'react-icons/gr';
 import { BsFileEarmarkLockFill } from "react-icons/bs";
 import { useLanguage } from '../i18n/LanguageContext';
@@ -17,7 +17,6 @@ type Props = {
     onBuyCoffee?: () => void;
     onSelectTheme: () => void;
     onSelectLanguage: () => void;
-    onLicense: () => void;
     onAPI: () => void;
     onAbout: () => void;
     onClose: () => void;
@@ -35,7 +34,6 @@ export default function FileModal({
     onBuyCoffee,
     onSelectTheme,
     onSelectLanguage,
-    onLicense,
     onAPI,
     onAbout,
     onClose
@@ -90,7 +88,6 @@ export default function FileModal({
                     <div className="file-tiles-grid">
                         {renderTile(<FaPalette />, 'menu.select_theme', 'menu.choose_theme', onSelectTheme)}
                         {renderTile(<FaGlobe />, 'menu.select_language', 'menu.choose_language', onSelectLanguage)}
-                        {renderTile(<FaIdCard />, 'License', 'about.check_license', onLicense)}
                         {renderTile(<FaCog />, 'APIConfig', 'about.api_hosting', onAPI)}
                     </div>
                 </div>

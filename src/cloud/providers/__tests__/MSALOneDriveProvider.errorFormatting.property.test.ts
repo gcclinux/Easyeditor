@@ -28,13 +28,6 @@ jest.mock('../../managers/CloudCredentialManager', () => ({
   }
 }));
 
-// Mock LicenseManager
-jest.mock('../../../premium/LicenseManager', () => ({
-  __esModule: true,
-  default: {
-    hasActiveLicense: jest.fn().mockReturnValue(true),
-  }
-}));
 
 // Mock onedrive-credentials
 jest.mock('../../config/onedrive-credentials', () => ({

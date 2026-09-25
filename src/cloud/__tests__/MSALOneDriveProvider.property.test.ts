@@ -28,13 +28,6 @@ jest.mock('../managers/CloudCredentialManager', () => ({
   }
 }));
 
-// Mock LicenseManager
-jest.mock('../../premium/LicenseManager', () => ({
-  __esModule: true,
-  default: {
-    hasActiveLicense: jest.fn().mockReturnValue(true),
-  }
-}));
 
 // Mock @azure/msal-browser
 jest.mock('@azure/msal-browser', () => ({

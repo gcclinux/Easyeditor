@@ -3,11 +3,7 @@ import ReactDOM from 'react-dom/client';
 import App from './App';
 import { loadTheme, getCurrentTheme, isCurrentThemeCustom } from './themeLoader';
 import { Buffer } from 'buffer';
-import LicenseManager from './premium/LicenseManager';
 import { LanguageProvider } from './i18n/LanguageContext';
-
-// Initialize the LicenseManager
-LicenseManager.initialize();
 
 // Environment Variables Check
 // console.log('=== Environment Variables Check ===');

@@ -5,7 +5,7 @@
  *   1. Free users: Local Ollama (http://localhost:11434)
  *   2. Premium users: Bring Your Own API Key (configured in Settings > About > EasyAI API Hosting)
  */
-import LicenseManager from '../../premium/LicenseManager';
+
 
 export interface EasyAIConfig {
   agent: string;   // Ollama | Gemini | Bedrock | Claude
@@ -16,17 +16,17 @@ export interface EasyAIConfig {
 }
 
 /**
- * Returns true if the user has Premium or PremiumPlus license.
+ * Returns true — all users have full BYOK access (app is free).
  */
 export function hasPremiumAccess(): boolean {
-  return LicenseManager.hasActiveLicense();
+  return true;
 }
 
 /**
- * Returns true if the user has PremiumPlus license.
+ * Returns false — PremiumPlus tier is retired in the free edition.
  */
 export function hasPremiumPlusAccess(): boolean {
-  return LicenseManager.hasActiveLicense() && LicenseManager.getType() === 'PremiumPlus';
+  return false;
 }
 
 /**

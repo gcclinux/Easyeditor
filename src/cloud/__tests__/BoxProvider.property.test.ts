@@ -29,13 +29,6 @@ jest.mock('../managers/CloudCredentialManager', () => ({
   }
 }));
 
-// Mock LicenseManager
-jest.mock('../../premium/LicenseManager', () => ({
-  __esModule: true,
-  default: {
-    hasActiveLicense: jest.fn().mockReturnValue(true),
-  }
-}));
 
 // Mock box-credentials with a mutable config for Property 5
 const mockBoxConfig = {

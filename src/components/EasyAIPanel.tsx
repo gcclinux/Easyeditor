@@ -2,10 +2,9 @@ import React, { useState, useRef, useEffect, useCallback } from 'react';
 import { FaRobot, FaTimes, FaFlag, FaDownload, FaSpinner, FaCheckCircle, FaExclamationTriangle, FaInfoCircle, FaTrash } from 'react-icons/fa';
 import { useLanguage } from '../i18n/LanguageContext';
 import { getPersonaDescription } from './easyai/aiPersonas';
-import { loadEasyAIConfig, EasyAIConfig, hasPremiumAccess } from './easyai/aiService';
+import { loadEasyAIConfig, EasyAIConfig } from './easyai/aiService';
 import ReportContentModal from './ReportContentModal';
 import { downloadReportsAsFile, getReports, isTauriEnv } from './easyai/reportService';
-import LicenseManager from '../premium/LicenseManager';
 
 export interface ToastItem {
   id: number;
@@ -54,18 +53,8 @@ const EasyAIPanel: React.FC<EasyAIPanelProps> = ({
   const [prompt, setPrompt] = useState('');
   const [aiConfig, setAiConfig] = useState<EasyAIConfig | null>(null);
   const [showReportModal, setShowReportModal] = useState<boolean>(false);
-  const [isPremium, setIsPremium] = useState<boolean>(false);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const panelRef = useRef<HTMLDivElement>(null);
-
-  // Track license status
-  useEffect(() => {
-    setIsPremium(hasPremiumAccess());
-    const unsub = LicenseManager.subscribe(() => {
-      setIsPremium(hasPremiumAccess());
-    });
-    return unsub;
-  }, []);
 
   // Reload the displayed config whenever panel visibility or license changes
   const reloadConfig = useCallback(() => {
@@ -119,14 +108,6 @@ const EasyAIPanel: React.FC<EasyAIPanelProps> = ({
       showToast('EasyAI is currently working on an action. Please wait or cancel.', 'warning');
       return;
     }
-    if (!isPremium && aiConfig?.agent !== 'Ollama') {
-      showToast('EasyAI with cloud models requires a Premium license (BYOK). Free users can use local Ollama.', 'warning');
-      return;
-    }
-    if (isPremium && aiConfig?.agent !== 'Ollama' && !aiConfig?.apiKey) {
-      showToast(`API Key required for ${aiConfig?.agent || 'cloud model'}. Configure your API key in Settings > About > EasyAI API Hosting.`, 'error');
-      return;
-    }
     if (!prompt.trim()) {
       showToast(t('easyai.toast_empty_prompt'), 'warning');
       return;
@@ -141,12 +122,6 @@ const EasyAIPanel: React.FC<EasyAIPanelProps> = ({
 
   // Badge text & colour (BYOK)
   const buildBadge = () => {
-    if (!isPremium) {
-      return {
-        text: `🔒 Free — Local Ollama only (http://localhost:11434)`,
-        color: '#f6ad55'
-      };
-    }
     if (!aiConfig) return null;
     if (aiConfig.agent === 'Ollama') {
       return {

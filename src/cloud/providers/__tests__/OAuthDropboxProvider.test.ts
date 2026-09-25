@@ -6,13 +6,6 @@
 import { OAuthDropboxProvider } from '../OAuthDropboxProvider';
 import type { CloudProvider } from '../../interfaces/CloudProvider';
 
-// Mock LicenseManager
-jest.mock('../../../premium/LicenseManager', () => ({
-  __esModule: true,
-  default: {
-    hasActiveLicense: jest.fn(() => true)
-  }
-}));
 
 // Mock the OAuth manager and related modules
 jest.mock('../../../services/oauth/core/OAuthManager');

@@ -99,7 +99,7 @@ import AutoModal from './components/AutoModal';
 import GitModal from './components/GitModal';
 import TemplatesModal from './components/TemplatesModal';
 import AboutModal from './components/AboutModal';
-import LicenseModal from './components/LicenseModal';
+
 import UpdateModal from './components/UpdateModal';
 import APIModal from './components/APIModal';
 import EasyNotesSidebar from './components/EasyNotesSidebar';
@@ -138,7 +138,7 @@ import AnalyticsConsentBanner from './components/AnalyticsConsentBanner';
 import { isFeatureEnabled } from './config/features';
 import { useLanguage } from './i18n/LanguageContext';
 import LanguageModal from './components/LanguageModal';
-import LicenseManager from './premium/LicenseManager';
+
 import { getRunningVersion, getAvailableVersion, compareVersions } from './utils/version';
 import { convertPdfToMarkdown, PdfImportError } from './pdfImporter';
 import { initAnalytics, trackFeature, trackError } from './services/analytics';
@@ -147,13 +147,6 @@ const App = () => {
   const { t, isLoading } = useLanguage();
   const [documentHistory, setDocumentHistory] = useState<HistoryState[]>([]);
 
-  // Listen for license updates to enable premium features dynamically
-  const [, setLicenseUpdate] = useState(0);
-  useEffect(() => {
-    return LicenseManager.subscribe(() => {
-      setLicenseUpdate(prev => prev + 1);
-    });
-  }, []);
 
   // Initialize anonymous analytics (only fires if feature flag + user consent are active)
   useEffect(() => {
@@ -214,7 +207,6 @@ const App = () => {
   const [showTransferMDModal, setShowTransferMDModal] = useState(false);
   const [showFileModal, setShowFileModal] = useState(false);
   const [aboutOpen, setAboutOpen] = useState(false);
-  const [licenseOpen, setLicenseOpen] = useState(false);
   const [apiOpen, setApiOpen] = useState(false);
   const [featuresOpen, setFeaturesOpen] = useState(false);
   const [themeOpen, setThemeOpen] = useState(false);
@@ -2616,7 +2608,7 @@ const App = () => {
               if (!showEasyAIPanel) trackFeature('easyai', 'open');
               setShowEasyAIPanel(!showEasyAIPanel);
             }}
-            title={LicenseManager.hasActiveLicense() ? 'EasyAI — Premium: Gemini & more' : 'EasyAI — Free: Ollama only'}
+            title="EasyAI — Bring Your Own Key (Gemini, Claude, Bedrock, Ollama)"
             style={{ backgroundColor: showEasyAIPanel ? '#4a5568' : undefined }}
           >
             <FaRobot /> &nbsp; EasyAI
@@ -2749,7 +2741,6 @@ const App = () => {
               onBuyCoffee={handleBuyCoffee}
               onSelectTheme={() => setThemeOpen(true)}
               onSelectLanguage={() => setLanguageOpen(true)}
-              onLicense={() => setLicenseOpen(true)}
               onAPI={() => setApiOpen(true)}
               onAbout={() => setAboutOpen(true)}
               onClose={() => setShowFileModal(false)}
@@ -2795,11 +2786,7 @@ const App = () => {
           open={aboutOpen}
           onClose={() => setAboutOpen(false)}
         />
-        <LicenseModal
-          open={licenseOpen}
-          onClose={() => setLicenseOpen(false)}
-          showToast={showToast}
-        />
+
         <APIModal
           open={apiOpen}
           onClose={() => setApiOpen(false)}
@@ -3372,10 +3359,6 @@ const App = () => {
                 }
 
                 await processContent(rawContent as string);
-              }}
-              onUpgradeClick={() => {
-                setShowEasyNotesSidebar(false);
-                setLicenseOpen(true);
               }}
             />
           )

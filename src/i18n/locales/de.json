@@ -304,7 +304,53 @@
     "trademark_li2": "Die Projektlogos oder ähnliches Branding verwenden",
     "trademark_li3": "Unterstützung oder Zugehörigkeit implizieren",
     "trademark_li4": "Unter einem anderen Namen weiterverbreiten",
-    "trademark_li5": "Diese Projekte oder Ableitungen verkaufen"
+    "trademark_li5": "Diese Projekte oder Ableitungen verkaufen",
+    "installed": "installiert",
+    "available": "verfügbar",
+    "update_available": "↓ Aktualisierung verfügbar",
+    "everything_you_need": "Alles, was Sie brauchen",
+    "everything_you_need_sub": "Von einfachen Notizen bis hin zu komplexer technischer Dokumentation – EasyEditor bietet die Werkzeuge zur Unterstützung Ihres Arbeitsablaufs.",
+    "feat_editing_title": "Erweiterte Bearbeitung",
+    "feat_editing_desc": "Echtzeit-Vorschau mit über 130+ integrierten Funktionen. Automatische Generatoren für Tabellen, Gantt-Diagramme und Zeitleisten.",
+    "feat_diagrams_title": "Diagramm-Unterstützung",
+    "feat_diagrams_desc": "Integrierte Unterstützung für Mermaid, PlantUML und Nomnoml. Visualisieren Sie Ideen mit Flussdiagrammen, Sequenzdiagrammen und mehr.",
+    "feat_git_title": "Git-Integration",
+    "feat_git_desc": "Verwalten Sie Repositories direkt im Editor. Bereitstellen, committen, pushen und Branches verwalten, ohne die App zu verlassen.",
+    "feat_cloud_title": "Cloud-Synchronisierung",
+    "feat_cloud_desc": "Nahtlose Synchronisierung mit Google Drive, OneDrive, Dropbox und Box. Halten Sie Ihre Dokumente auf allen Geräten griffbereit.",
+    "feat_easyteam_title": "EasyTeam",
+    "feat_easyteam_desc": "Flüchtiger, Ende-zu-Ende verschlüsselter Team-Chat. Teilen Sie einen 6-stelligen Schlüssel und kommunizieren Sie in Echtzeit mit Markdown-Unterstützung. Alle Daten werden nach Sitzungsende gelöscht.",
+    "feat_templates_title": "Vorlagenbibliothek",
+    "feat_templates_desc": "Starten Sie Ihre Dokumentation mit professionellen Vorlagen für Fehlerberichte, Besprechungsnotizen, Projektpläne und Forschungsarbeiten.",
+    "feat_exports_title": "Vielfältige Exporte",
+    "feat_exports_desc": "Exportieren Sie Dokumente als HTML, PDF, PNG oder reinen Text. Teilen Sie Ihre Arbeit mühelos im gewünschten Format.",
+    "feat_secure_title": "Sicher & Lokal",
+    "feat_secure_desc": "Local-First-Architektur gewährleistet Ihren Datenschutz. Optionale SSTP-Verschlüsselung für sichere Dateispeicherung.",
+    "feat_multiplatform_title": "Multi-Plattform",
+    "feat_multiplatform_desc": "Verfügbar für Web, Windows, macOS und Linux. Einheitliche Benutzererfahrung auf all Ihren Plattformen.",
+    "feat_themes_title": "Benutzerdefinierte Designs",
+    "feat_themes_desc": "Wählen Sie aus integrierten Designs oder importieren Sie eigene. Vollständige CSS-Variablen-Kontrolle für ein personalisiertes Erlebnis.",
+    "easyai_title_suffix": "— 8 Intelligente Personas",
+    "easyai_personas_desc": "EasyAI bringt 8 einzigartige Personas in EasyEditor und EasyGit und verändert, wie Sie dokumentieren, innovieren und Inhalte präzise verbessern.",
+    "persona_architect_name": "Architekt",
+    "persona_architect_desc": "System- & Softwaredesign",
+    "persona_developer_name": "Entwickler",
+    "persona_developer_desc": "Code-Generierung & Fehlerbehebungen",
+    "persona_writer_name": "Autor",
+    "persona_writer_desc": "Dokumentation & Prosa",
+    "persona_analyst_name": "Analyst",
+    "persona_analyst_desc": "Daten- & Geschäftsanalyse",
+    "persona_tester_name": "Tester",
+    "persona_tester_desc": "QA- & Teststrategien",
+    "persona_scrum_master_name": "Scrum Master",
+    "persona_scrum_master_desc": "Agile & Sprintplanung",
+    "persona_ux_designer_name": "UX-Designer",
+    "persona_ux_designer_desc": "Benutzererfahrung & Abläufe",
+    "persona_security_name": "Sicherheit",
+    "persona_security_desc": "Sicherheits- & Bedrohungsmodelle",
+    "powered_by_label": "Unterstützt durch",
+    "license_label": "Lizenz",
+    "license_text": "GNU AGPLv3 mit Commons Clause"
   },
   "images": {
     "image": "Bild",
@@ -416,13 +462,11 @@
   },
   "modals": {
     "update": {
-      "title": "Neue Version Verfügbar",
-      "subtitle": "Eine neue Version von EasyEditor ist zum Download verfügbar.",
-      "running_version": "Aktuelle Version",
+      "title": "Update verfügbar",
+      "subtitle": "Eine neue Version von EasyEditor ist verfügbar!",
+      "running_version": "Laufende Version",
       "available_version": "Verfügbare Version",
-      "release_date": "Erstellungsdatum",
-      "download": "Herunterladen",
-      "continue": "Fortfahren",
+      "download": "Neueste herunterladen",
       "close": "Schließen"
     },
     "theme": {
@@ -498,14 +542,6 @@
     "tasks": {
       "subtitle": "Vordefinierte Aufgabenlisten und Tracker einfügen",
       "section_title": "Aufgabenvorlagen"
-    },
-    "update": {
-      "title": "Update verfügbar",
-      "subtitle": "Eine neue Version von EasyEditor ist verfügbar!",
-      "running_version": "Laufende Version",
-      "available_version": "Verfügbare Version",
-      "download": "Neueste herunterladen",
-      "close": "Schließen"
     },
     "exports": {
       "subtitle": "Wählen Sie ein Format zum Exportieren",
@@ -681,7 +717,7 @@
     "syncing": "Synchronisiert...",
     "local_libraries": "Lokale Bibliotheken",
     "add_library": "Bibliothek hinzufügen",
-    "add": "Hinzuf\u00fcgen",
+    "add": "Hinzufügen",
     "library_removed": "Bibliothek entfernt"
   },
   "features_modal": {
@@ -792,7 +828,7 @@
     }
   },
   "analytics": {
-    "consent_message": "Hilf mit, EasyEditor zu verbessern, indem du anonyme Nutzungsdaten teilst. Es werden keine persönlichen Daten erfasst \u2014 nur welche Funktionen genutzt werden und Fehlerzählungen. Du kannst dies jederzeit unter \u201e\u00dcber\u201c ändern.",
+    "consent_message": "Hilf mit, EasyEditor zu verbessern, indem du anonyme Nutzungsdaten teilst. Es werden keine persönlichen Daten erfasst — nur welche Funktionen genutzt werden und Fehlerzählungen. Du kannst dies jederzeit unter „Über“ ändern.",
     "accept": "Akzeptieren",
     "decline": "Nein danke",
     "toggle_label": "Anonyme Nutzungsanalyse",

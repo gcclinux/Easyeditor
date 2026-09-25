@@ -38,13 +38,6 @@ jest.mock('../../../services/oauth/providers/OneDriveOAuthProvider', () => ({
   })),
 }));
 
-// Mock LicenseManager
-jest.mock('../../../premium/LicenseManager', () => ({
-  __esModule: true,
-  default: {
-    hasActiveLicense: jest.fn().mockReturnValue(true),
-  },
-}));
 
 // Mock onedrive-credentials
 jest.mock('../../config/onedrive-credentials', () => ({

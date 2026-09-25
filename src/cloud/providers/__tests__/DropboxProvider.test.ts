@@ -5,13 +5,6 @@
 import { DropboxProvider } from '../DropboxProvider';
 import { cloudCredentialManager } from '../../managers/CloudCredentialManager';
 
-// Mock LicenseManager
-jest.mock('../../../premium/LicenseManager', () => ({
-  __esModule: true,
-  default: {
-    hasActiveLicense: jest.fn(() => true)
-  }
-}));
 
 // Mock the credential manager
 jest.mock('../../managers/CloudCredentialManager', () => ({

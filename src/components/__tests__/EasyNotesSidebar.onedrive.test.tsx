@@ -69,18 +69,6 @@ jest.mock('../../cloud/utils/CloudToastService', () => ({
   },
 }));
 
-// Mock LicenseManager
-const mockHasActiveLicense = jest.fn().mockReturnValue(true);
-const mockSubscribe = jest.fn().mockReturnValue(jest.fn());
-jest.mock('../../premium/LicenseManager', () => ({
-  __esModule: true,
-  default: {
-    hasActiveLicense: () => mockHasActiveLicense(),
-    subscribe: (listener: () => void) => mockSubscribe(listener),
-    getStoredEmail: jest.fn().mockReturnValue(null),
-  },
-}));
-
 // Mock cloudManager
 const mockGetAvailableProviders = jest.fn();
 const mockGetProviderMetadata = jest.fn();
@@ -174,7 +162,6 @@ describe('EasyNotesSidebar - OneDrive Integration', () => {
 
   beforeEach(() => {
     jest.clearAllMocks();
-    mockHasActiveLicense.mockReturnValue(true);
     mockListNotes.mockResolvedValue([]);
     mockGetAvailableProviders.mockResolvedValue([
       mockGoogleDriveProvider,
@@ -535,8 +522,7 @@ describe('EasyNotesSidebar - OneDrive Integration', () => {
     });
 
     test('shows providers including OneDrive when license is active', async () => {
-      mockHasActiveLicense.mockReturnValue(true);
-
+  
       await act(async () => {
         render(<EasyNotesSidebar {...defaultProps} />);
       });

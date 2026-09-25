@@ -3,7 +3,6 @@ import './aboutModal.css';
 import { createPortal } from 'react-dom';
 import logo from '../assets/128x128@2x.png';
 import { useLanguage } from '../i18n/LanguageContext';
-import LicenseManager from '../premium/LicenseManager';
 
 interface APIModalProps {
   open: boolean;
@@ -11,46 +10,57 @@ interface APIModalProps {
   showToast?: (message: string, type: 'success' | 'error' | 'info' | 'warning') => void;
 }
 
+const AGENTS = [
+  {
+    id: 'Ollama',
+    label: 'Ollama',
+    icon: '🦙',
+    desc: 'Local · No API key needed',
+    color: '#4a90d9',
+    link: 'https://ollama.com/download',
+  },
+  {
+    id: 'Gemini',
+    label: 'Gemini',
+    icon: '✦',
+    desc: 'Google AI · BYOK',
+    color: '#4285f4',
+    link: 'https://aistudio.google.com/api-keys',
+  },
+  {
+    id: 'Claude',
+    label: 'Claude',
+    icon: '◆',
+    desc: 'Anthropic · BYOK',
+    color: '#d97757',
+    link: 'https://console.anthropic.com/settings/keys',
+  },
+  {
+    id: 'Bedrock',
+    label: 'Bedrock',
+    icon: '⬡',
+    desc: 'AWS · BYOK',
+    color: '#ff9900',
+    link: 'https://console.aws.amazon.com/bedrock/',
+  },
+];
+
+const AGENT_DEFAULTS: Record<string, { model: string; host: string }> = {
+  Ollama:  { model: 'ministral-3:3b',      host: 'http://localhost:11434' },
+  Gemini:  { model: 'gemini-2.0-flash',    host: '' },
+  Claude:  { model: 'claude-sonnet-4-6',   host: '' },
+  Bedrock: { model: 'amazon.nova-pro-v1:0', host: '' },
+};
+
 export function APIModal({ open, onClose, showToast }: APIModalProps) {
   const { t } = useLanguage();
 
-  const [, setEmail] = React.useState('');
-  const [licenseKey, setLicenseKey] = React.useState('');
-  const [type, setType] = React.useState('');
-  const [isLicenseValid, setIsLicenseValid] = React.useState(false);
-  const [licenseChecked, setLicenseChecked] = React.useState(false);
-  const [, setMonthlyCredits] = React.useState(0);
-  const [, setTopUpCredits] = React.useState(0);
-  const [, setUsedCredits] = React.useState(0);
-  const [, setBalanceCredits] = React.useState(0);
   const [agent, setAgent] = React.useState('Ollama');
-  const [host, setHost] = React.useState('http://localhost:11434');
+  const [host, setHost]   = React.useState('http://localhost:11434');
   const [model, setModel] = React.useState('ministral-3:3b');
   const [apiKey, setApiKey] = React.useState('');
-  const [configLoaded, setConfigLoaded] = React.useState(false);
-
-  const agentDefaults: Record<string, { model: string; host: string }> = {
-    Ollama: { model: 'ministral-3:3b', host: 'http://localhost:11434' },
-    Gemini: { model: 'gemini-3.1-pro-preview', host: '' },
-    Bedrock: { model: 'amazon.nova-pro-v1:0', host: '' },
-    Claude: { model: 'claude-sonnet-4-6', host: '' },
-  };
-
-  const agentApiKeyLinks: Record<string, string> = {
-    Ollama: 'https://ollama.com/download',
-    Gemini: 'https://aistudio.google.com/api-keys',
-    Bedrock: 'https://console.aws.amazon.com/bedrock/',
-    Claude: 'https://console.anthropic.com/settings/keys',
-  };
 
   React.useEffect(() => {
-    const storedEmail = LicenseManager.getStoredEmail();
-    if (storedEmail) setEmail(storedEmail);
-    const storedLicenseKey = LicenseManager.getStoredLicenseKey();
-    if (storedLicenseKey) setLicenseKey(storedLicenseKey);
-    const storedType = LicenseManager.getStoredType();
-    if (storedType) setType(storedType);
-
     const loadApiConfig = async () => {
       const isTauri = !!(window as any).__TAURI__;
       try {
@@ -59,76 +69,45 @@ export function APIModal({ open, onClose, showToast }: APIModalProps) {
           const { readTextFile, exists } = await import('@tauri-apps/plugin-fs');
           const homePath = await homeDir();
           const configPath = await join(homePath, '.easyeditor', 'easyai-config.env');
-
           if (await exists(configPath)) {
             const content = await readTextFile(configPath);
-            const getEnv = (key: string, defaultVal: string) => {
-              const match = content.match(new RegExp(`${key}=(.*)`));
-              return match ? match[1].trim() : defaultVal;
+            const get = (key: string, fb: string) => {
+              const m = content.match(new RegExp(`${key}=(.*)`));
+              return m ? m[1].trim() : fb;
             };
-            setAgent(getEnv('EASYAI_AGENT', 'Ollama'));
-            setHost(getEnv('EASYAI_HOST', 'http://localhost:11434'));
-            setModel(getEnv('EASYAI_MODEL', 'ministral-3:3b'));
-            setApiKey(getEnv('EASYAI_API_KEY', ''));
-            setConfigLoaded(true);
+            setAgent(get('EASYAI_AGENT', 'Ollama'));
+            setHost(get('EASYAI_HOST', 'http://localhost:11434'));
+            setModel(get('EASYAI_MODEL', 'ministral-3:3b'));
+            setApiKey(get('EASYAI_API_KEY', ''));
           }
         } else {
-          const webConfigStr = localStorage.getItem('easyai-config');
-          if (webConfigStr) {
-            const webConfig = JSON.parse(webConfigStr);
-            if (webConfig.agent) setAgent(webConfig.agent);
-            if (webConfig.host) setHost(webConfig.host);
-            if (webConfig.model) setModel(webConfig.model);
-            if (webConfig.apiKey != null) setApiKey(webConfig.apiKey);
-            setConfigLoaded(true);
+          const raw = localStorage.getItem('easyai-config');
+          if (raw) {
+            const cfg = JSON.parse(raw);
+            if (cfg.agent)         setAgent(cfg.agent);
+            if (cfg.host)          setHost(cfg.host);
+            if (cfg.model)         setModel(cfg.model);
+            if (cfg.apiKey != null) setApiKey(cfg.apiKey);
           }
         }
       } catch (err) {
-        console.warn('Could not load API config init:', err);
+        console.warn('Could not load API config:', err);
       }
     };
     loadApiConfig();
-
-    LicenseManager.restoreFromCache();
-    if (LicenseManager.hasActiveLicense()) {
-      setIsLicenseValid(true);
-      setType(LicenseManager.getType());
-      setLicenseChecked(true);
-    }
-
-    const unsubscribe = LicenseManager.subscribe(() => {
-      setIsLicenseValid(LicenseManager.hasActiveLicense());
-      const updatedType = LicenseManager.getType();
-      setType(updatedType);
-      setLicenseChecked(true);
-    });
-
-    return () => unsubscribe();
   }, []);
 
-
-  const licenseTier: 'Free' | 'Premium' | 'PremiumPlus' = isLicenseValid
-    ? (type === 'PremiumPlus' ? 'PremiumPlus' : 'Premium')
-    : 'Free';
-
-  React.useEffect(() => {
-    if (licenseChecked && licenseTier === 'Free' && agent !== 'Ollama') {
-      setAgent('Ollama');
-    }
-  }, [licenseChecked, licenseTier, agent]);
-
-  const handleAgentChange = (newAgent: string) => {
+  const handleAgentSelect = (newAgent: string) => {
     setAgent(newAgent);
-    if (!configLoaded || agent !== newAgent) {
-      const defaults = agentDefaults[newAgent];
-      if (defaults) {
-        setModel(defaults.model);
-        setHost(defaults.host || 'http://localhost:11434');
-      }
+    const defaults = AGENT_DEFAULTS[newAgent];
+    if (defaults) {
+      setModel(defaults.model);
+      setHost(defaults.host || 'http://localhost:11434');
+      setApiKey('');
     }
   };
 
-  const handleSaveApiConfig = async () => {
+  const handleSave = async () => {
     try {
       const isTauri = !!(window as any).__TAURI__;
       const content = `EASYAI_AGENT=${agent}\nEASYAI_HOST=${host}\nEASYAI_MODEL=${model}\nEASYAI_API_KEY=${apiKey}\n`;
@@ -137,188 +116,197 @@ export function APIModal({ open, onClose, showToast }: APIModalProps) {
         const { homeDir, join } = await import('@tauri-apps/api/path');
         const { writeTextFile, mkdir, exists } = await import('@tauri-apps/plugin-fs');
         const homePath = await homeDir();
-        const easyEditorDir = await join(homePath, '.easyeditor');
-        const configPath = await join(easyEditorDir, 'easyai-config.env');
-
-        if (!(await exists(easyEditorDir))) {
-          await mkdir(easyEditorDir, { recursive: true });
-        }
-
+        const dir = await join(homePath, '.easyeditor');
+        const configPath = await join(dir, 'easyai-config.env');
+        if (!(await exists(dir))) await mkdir(dir, { recursive: true });
         await writeTextFile(configPath, content);
-
-        if (showToast) {
-          showToast(`API Config natively saved to ${configPath}`, 'success');
-        } else {
-          alert('API Configuration saved successfully!');
-        }
+        showToast?.(`Config saved to ${configPath}`, 'success');
       } else {
         localStorage.setItem('easyai-config', JSON.stringify({ agent, host, model, apiKey }));
-        if (showToast) {
-          showToast('API Config secured to browser local storage!', 'success');
-        } else {
-          alert('API Configuration saved securely to browser!');
-        }
+        showToast?.('Config saved to browser storage', 'success');
       }
     } catch (err) {
       console.error('Failed to save API config:', err);
-      if (showToast) {
-        showToast('Failed to save configuration', 'error');
-      } else {
-        alert('Failed to save configuration');
-      }
+      showToast?.('Failed to save configuration', 'error');
     }
   };
+
+  const activeAgent = AGENTS.find(a => a.id === agent)!;
 
   if (!open) return null;
 
   const modalContent = (
     <div className="modal-overlay" role="dialog" aria-modal="true" aria-labelledby="api-title">
-      <div className="modal-content about-modal">
-        <div className="about-hero">
-          <div className="about-hero-logo">
-            <a href="https://www.easyeditor.co.uk/" target="_blank" rel="noopener noreferrer">
-              <img src={logo} alt="EasyEditor" />
-            </a>
-          </div>
-          <div className="about-hero-text">
-            <h2 id="api-title" className="about-title">{t('about.api_hosting')}</h2>
-            <div className="about-subtitle">{t('about.subtitle')}</div>
-            <div className="about-badges">
-              <span className="badge">{t('about.badge_easyai')}</span>
-            </div>
-          </div>
-        </div>
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gridTemplateRows: '1fr 1fr', gap: '16px' }}>
-          {/* Block 1: EasyAI API Hosting Config */}
-          <div className="about-card">
-            <h3>{t('about.api_hosting')}</h3>
-            <p style={{ fontSize: '0.82em', color: 'var(--text-secondary, #666)', margin: '4px 0 8px 0' }}>
-              {licenseTier === 'Free'
-                ? 'Free users can use local Ollama. Upgrade to Premium to bring your own API key (BYOK) for Gemini, Claude, or Bedrock.'
-                : 'Premium unlocks Bring-Your-Own-Key (BYOK) for Gemini, Claude, Bedrock, or custom Ollama endpoints.'}
+      <div className="modal-content" style={{
+        maxWidth: '480px',
+        width: '100%',
+        borderRadius: '12px',
+        overflow: 'hidden',
+        background: 'var(--bg-modal, #1e2130)',
+        boxShadow: '0 24px 64px rgba(0,0,0,0.5)',
+        display: 'flex',
+        flexDirection: 'column',
+      }}>
+
+        {/* Header */}
+        <div style={{
+          display: 'flex',
+          alignItems: 'center',
+          gap: '12px',
+          padding: '18px 20px 14px',
+          borderBottom: '1px solid var(--border-color, rgba(255,255,255,0.08))',
+        }}>
+          <a href="https://www.easyeditor.co.uk/" target="_blank" rel="noopener noreferrer">
+            <img src={logo} alt="EasyEditor" style={{ width: '36px', height: '36px', borderRadius: '8px' }} />
+          </a>
+          <div>
+            <h2 id="api-title" style={{ margin: 0, fontSize: '1.05rem', fontWeight: 700 }}>
+              EasyAI — API Config
+            </h2>
+            <p style={{ margin: 0, fontSize: '0.78rem', opacity: 0.55 }}>
+              Bring Your Own Key (BYOK) · select a provider below
             </p>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '3px', marginTop: '10px' }}>
-              <div>
-                <label style={{ display: 'block', fontSize: '0.9em', marginBottom: '4px' }}>{t('about.api_agent')}</label>
-                <select
-                  className="license-name-input"
-                  style={{ width: '95%', boxSizing: 'border-box', padding: '4px', borderRadius: '4px', border: '1px solid var(--border-color, #ccc)' }}
-                  value={agent}
-                  disabled={licenseTier === 'Free'}
-                  onChange={(e) => handleAgentChange(e.target.value)}
-                >
-                  <option value="Ollama">Ollama</option>
-                  {licenseTier !== 'Free' && (
-                    <>
-                      <option value="Gemini">Gemini</option>
-                      <option value="Bedrock">Bedrock</option>
-                      <option value="Claude">Claude</option>
-                    </>
-                  )}
-                  {licenseTier === 'PremiumPlus' && (
-                    <option value="PremiumPlus">PremiumPlus</option>
-                  )}
-                </select>
-              </div>
-              {agent === 'Ollama' && (
-                <div>
-                  <label style={{ display: 'block', fontSize: '0.9em', marginBottom: '4px' }}>{t('about.api_host')}</label>
-                  <input
-                    type="text"
-                    className="license-name-input"
-                    style={{ width: '95%', boxSizing: 'border-box', padding: '4px', borderRadius: '4px', border: '1px solid var(--border-color, #ccc)' }}
-                    placeholder={t('about.api_host_placeholder')}
-                    value={host}
-                    onChange={(e) => setHost(e.target.value)}
-                  />
-                </div>
-              )}
-              <div>
-                <label style={{ display: 'block', fontSize: '0.9em', marginBottom: '4px' }}>{t('about.api_model')}</label>
-                {agent === 'PremiumPlus' ? (
-                  <input
-                    type="text"
-                    className="license-name-input"
-                    style={{ width: '95%', boxSizing: 'border-box', padding: '4px', borderRadius: '4px', border: '1px solid var(--border-color, #ccc)', opacity: 0.6, cursor: 'not-allowed' }}
-                    readOnly
-                    value="Coming soon"
-                  />
-                ) : (
-                  <input
-                    type="text"
-                    className="license-name-input"
-                    style={{ width: '95%', boxSizing: 'border-box', padding: '4px', borderRadius: '4px', border: '1px solid var(--border-color, #ccc)' }}
-                    placeholder={t('about.api_model_placeholder')}
-                    value={model}
-                    onChange={(e) => setModel(e.target.value)}
-                  />
-                )}
-              </div>
-              <div>
-                <label style={{ display: 'block', fontSize: '0.9em', marginBottom: '4px' }}>{t('about.api_key')}</label>
-                {licenseTier === 'Free' ? (
-                  <input
-                    type="text"
-                    className="license-name-input"
-                    style={{ width: '95%', boxSizing: 'border-box', padding: '4px', borderRadius: '4px', border: '1px solid var(--border-color, #ccc)', opacity: 0.6, cursor: 'not-allowed', fontStyle: 'italic' }}
-                    readOnly
-                    value="Available with Premium subscription"
-                  />
-                ) : agent === 'PremiumPlus' ? (
-                  <input
-                    type="text"
-                    className="license-name-input"
-                    style={{ width: '95%', boxSizing: 'border-box', padding: '4px', borderRadius: '4px', border: '1px solid var(--border-color, #ccc)', opacity: 0.6, cursor: 'not-allowed' }}
-                    readOnly
-                    value="Coming soon"
-                  />
-                ) : (
-                  <input
-                    type="password"
-                    className="license-name-input"
-                    style={{ width: '95%', boxSizing: 'border-box', padding: '4px', borderRadius: '4px', border: '1px solid var(--border-color, #ccc)' }}
-                    placeholder={t('about.api_key_placeholder')}
-                    value={apiKey}
-                    onChange={(e) => setApiKey(e.target.value)}
-                  />
-                )}
-              </div>
-              <div style={{ display: 'flex', gap: '8px', marginTop: '10px', alignItems: 'center' }}>
-                <button
-                  onClick={handleSaveApiConfig}
-                  className="btn secondary"
-                  style={{ padding: '6px 12px' }}
-                >
-                  {t('about.save_config')}
-                </button>
-                {agentApiKeyLinks[agent] && (
-                  <a
-                    href={agentApiKeyLinks[agent]}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="btn secondary"
-                    style={{ padding: '6px 12px', textDecoration: 'none', textAlign: 'center' }}
-                  >
-                    {t('about.get_api_key')}
-                  </a>
-                )}
-              </div>
-            </div>
-          </div>
-
-          {/* Block 2: Empty */}
-          <div className="about-card">
-          </div>
-
-          {/* Block 3: Empty */}
-          <div className="about-card">
-          </div>
-
-          {/* Block 4: Empty */}
-          <div className="about-card">
           </div>
         </div>
-        <div className="modal-actions">
+
+        {/* Body */}
+        <div style={{ padding: '18px 20px', display: 'flex', flexDirection: 'column', gap: '16px' }}>
+
+          {/* Agent selector tiles */}
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '8px' }}>
+            {AGENTS.map(a => {
+              const selected = agent === a.id;
+              return (
+                <button
+                  key={a.id}
+                  onClick={() => handleAgentSelect(a.id)}
+                  style={{
+                    display: 'flex',
+                    flexDirection: 'column',
+                    alignItems: 'center',
+                    gap: '4px',
+                    padding: '10px 6px 8px',
+                    borderRadius: '8px',
+                    border: selected
+                      ? `2px solid ${a.color}`
+                      : '2px solid transparent',
+                    background: selected
+                      ? `${a.color}18`
+                      : 'var(--bg-dropdown, rgba(255,255,255,0.04))',
+                    cursor: 'pointer',
+                    transition: 'all 0.15s ease',
+                    outline: 'none',
+                  }}
+                >
+                  <span style={{ fontSize: '1.4rem', lineHeight: 1, color: selected ? a.color : 'var(--color-text-dropdown, #ccc)' }}>
+                    {a.icon}
+                  </span>
+                  <span style={{ fontSize: '0.78rem', fontWeight: selected ? 700 : 500, color: selected ? a.color : 'var(--color-text-dropdown, #ccc)' }}>
+                    {a.label}
+                  </span>
+                  <span style={{ fontSize: '0.65rem', opacity: 0.55, textAlign: 'center', lineHeight: 1.2 }}>
+                    {a.desc}
+                  </span>
+                </button>
+              );
+            })}
+          </div>
+
+          {/* Fields */}
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+
+            {/* Host — only for Ollama */}
+            {agent === 'Ollama' && (
+              <div>
+                <label style={{ display: 'block', fontSize: '0.8rem', opacity: 0.65, marginBottom: '4px' }}>
+                  Host URL
+                </label>
+                <input
+                  type="text"
+                  value={host}
+                  onChange={e => setHost(e.target.value)}
+                  placeholder="http://localhost:11434"
+                  style={inputStyle}
+                />
+              </div>
+            )}
+
+            {/* Model */}
+            <div>
+              <label style={{ display: 'block', fontSize: '0.8rem', opacity: 0.65, marginBottom: '4px' }}>
+                Model
+              </label>
+              <input
+                type="text"
+                value={model}
+                onChange={e => setModel(e.target.value)}
+                placeholder={AGENT_DEFAULTS[agent]?.model}
+                style={inputStyle}
+              />
+            </div>
+
+            {/* API Key — all except Ollama */}
+            {agent !== 'Ollama' && (
+              <div>
+                <label style={{ display: 'block', fontSize: '0.8rem', opacity: 0.65, marginBottom: '4px' }}>
+                  API Key
+                </label>
+                <input
+                  type="password"
+                  value={apiKey}
+                  onChange={e => setApiKey(e.target.value)}
+                  placeholder="Paste your API key here"
+                  style={inputStyle}
+                />
+              </div>
+            )}
+          </div>
+
+          {/* Actions */}
+          <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+            <button
+              onClick={handleSave}
+              style={{
+                padding: '7px 16px',
+                borderRadius: '6px',
+                border: 'none',
+                background: activeAgent.color,
+                color: '#fff',
+                fontWeight: 600,
+                fontSize: '0.85rem',
+                cursor: 'pointer',
+              }}
+            >
+              Save Config
+            </button>
+            {agent !== 'Ollama' && (
+              <a
+                href={activeAgent.link}
+                target="_blank"
+                rel="noopener noreferrer"
+                style={{
+                  padding: '7px 14px',
+                  borderRadius: '6px',
+                  border: '1px solid var(--border-color, rgba(255,255,255,0.15))',
+                  color: 'var(--color-text-dropdown, #ccc)',
+                  fontSize: '0.82rem',
+                  textDecoration: 'none',
+                  display: 'inline-block',
+                }}
+              >
+                Get API Key ↗
+              </a>
+            )}
+          </div>
+        </div>
+
+        {/* Footer */}
+        <div style={{
+          display: 'flex',
+          justifyContent: 'flex-end',
+          padding: '10px 20px 14px',
+          borderTop: '1px solid var(--border-color, rgba(255,255,255,0.08))',
+        }}>
           <button className="btn primary" onClick={onClose}>{t('about.close')}</button>
         </div>
       </div>
@@ -327,5 +315,17 @@ export function APIModal({ open, onClose, showToast }: APIModalProps) {
 
   return createPortal(modalContent, document.body);
 }
+
+const inputStyle: React.CSSProperties = {
+  width: '100%',
+  boxSizing: 'border-box',
+  padding: '7px 10px',
+  borderRadius: '6px',
+  border: '1px solid var(--border-color, rgba(255,255,255,0.15))',
+  background: 'var(--bg-input, rgba(255,255,255,0.05))',
+  color: 'var(--color-text-dropdown, #e0e0e0)',
+  fontSize: '0.85rem',
+  outline: 'none',
+};
 
 export default APIModal;
