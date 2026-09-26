@@ -1,5 +1,6 @@
 import { createPortal } from 'react-dom';
 import { useLanguage } from '../i18n/LanguageContext';
+import useEscapeKey from '../utils/useEscapeKey';
 import './aboutModal.css';
 
 interface UpdateModalProps {
@@ -12,6 +13,7 @@ interface UpdateModalProps {
 
 export function UpdateModal({ open, onClose, runVersion, availVersion, releaseDate }: UpdateModalProps) {
     const { t } = useLanguage();
+    useEscapeKey(onClose, open);
 
     if (!open) return null;
 

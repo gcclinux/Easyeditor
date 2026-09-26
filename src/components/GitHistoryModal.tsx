@@ -36,6 +36,18 @@ const GitHistoryModal: React.FC<GitHistoryModalProps> = ({
 }) => {
   const [selectedCommit, setSelectedCommit] = useState<Commit | null>(null);
 
+  React.useEffect(() => {
+    if (!open) return;
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        e.stopPropagation();
+        onClose();
+      }
+    };
+    document.addEventListener('keydown', handleKeyDown);
+    return () => document.removeEventListener('keydown', handleKeyDown);
+  }, [open, onClose]);
+
   if (!open) {
     return null;
   }

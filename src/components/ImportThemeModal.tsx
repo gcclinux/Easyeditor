@@ -2,6 +2,7 @@ import React, { useState, useRef } from 'react';
 import './importThemeModal.css';
 import { FaUpload, FaExclamationTriangle, FaFileUpload } from 'react-icons/fa';
 import { useLanguage } from '../i18n/LanguageContext';
+import useEscapeKey from '../utils/useEscapeKey';
 
 interface ImportThemeModalProps {
   open: boolean;
@@ -16,6 +17,8 @@ const ImportThemeModal: React.FC<ImportThemeModalProps> = ({ open, onClose, onIm
   const [themeCss, setThemeCss] = useState('');
   const [error, setError] = useState('');
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  useEscapeKey(onClose, open);
 
   const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];

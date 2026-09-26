@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import useEscapeKey from '../utils/useEscapeKey';
 import './autoGenerator.css';
 
 interface TimelineGeneratorProps {
@@ -46,6 +47,7 @@ const getNextMonthYear = (currentMonth: number, currentYear: number) => {
 };
 
 export const TimelineGenerator: React.FC<TimelineGeneratorProps> = ({ isOpen, onClose, onInsert, showToast }) => {
+    useEscapeKey(onClose, isOpen);
     const [currentDate, setCurrentDate] = useState(getCurrentMonthYear());
 
     const [sections, setSections] = useState<Section[]>([{

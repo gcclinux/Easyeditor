@@ -7,6 +7,7 @@ import { exists as tauriExists } from '@tauri-apps/plugin-fs';
 import { cloudToastService } from '../cloud/utils/CloudToastService';
 import { trackError } from '../services/analytics';
 import * as CryptoJS from 'crypto-js';
+import useEscapeKey from '../utils/useEscapeKey';
 import './transferMDModal.css';
 
 interface Props {
@@ -23,6 +24,7 @@ interface ProviderStatus {
 
 export default function TransferMDModal({ isOpen, onClose }: Props) {
     const { t } = useLanguage();
+    useEscapeKey(onClose, isOpen);
     const [providers, setProviders] = useState<ProviderStatus[]>([]);
     const [source, setSource] = useState<string | 'local'>('');
     const [target, setTarget] = useState<string | 'local'>('');

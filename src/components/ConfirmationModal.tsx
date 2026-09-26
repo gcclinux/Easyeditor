@@ -1,5 +1,6 @@
 import React from 'react';
 import { FaExclamationTriangle, FaTimes } from 'react-icons/fa';
+import useEscapeKey from '../utils/useEscapeKey';
 
 interface ConfirmationModalProps {
   isOpen: boolean;
@@ -24,6 +25,7 @@ const ConfirmationModal: React.FC<ConfirmationModalProps> = ({
   onCancel,
   icon
 }) => {
+  useEscapeKey(onCancel, isOpen);
   if (!isOpen) return null;
 
   const handleBackdropClick = (e: React.MouseEvent) => {

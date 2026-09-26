@@ -4,6 +4,7 @@ import {
     FaTimes
 } from 'react-icons/fa';
 import { useLanguage } from '../i18n/LanguageContext';
+import useEscapeKey from '../utils/useEscapeKey';
 import './linksModal.css';
 
 type Props = {
@@ -13,6 +14,7 @@ type Props = {
 
 export default function LinksModal({ onInsertTemplate, onClose }: Props) {
     const { t } = useLanguage();
+    useEscapeKey(onClose);
 
     return (
         <div className="modal-overlay" onClick={onClose}>

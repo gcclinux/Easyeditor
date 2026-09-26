@@ -116,14 +116,14 @@ One-click insertion of structured checklists:
 EasyAI provides specialized personas and advanced command-based editing logic.
 
 ### AI Specialized Personas
-1. **Markdown Specialist**: Generates clean, standards-compliant documentation.
-2. **Mermaid Architect**: Converts requirements into syntactically correct diagrams.
-3. **User Story Writer**: Transforms goals into JIRA/Agile stories.
-4. **Technical Writer**: Builds architecture and API guides.
-5. **UML Diagram Expert**: Generates Nomnoml-based UML diagrams.
-6. **Table Builder**: Constructs well-aligned GFM tables.
-7. **Code & Content Fixer**: Repairs specific technical blocks.
-8. **Content Rewriter**: Adjusts tone and conciseness.
+1. 🏗️ **Architect**: System & software design.
+2. 👨‍💻 **Developer**: Code generation & fixes.
+3. ✍️ **Writer**: Documentation & prose.
+4. 📊 **Analyst**: Data & business analysis.
+5. 🧪 **Tester**: QA & test strategies.
+6. 🏃 **Scrum Master**: Agile & sprint planning.
+7. 🎨 **UX Designer**: User experience & flows.
+8. 🔒 **Security**: Security & threat models.
 
 ### EasyAI Slash Commands
 Use targeted commands to fix specific document elements:

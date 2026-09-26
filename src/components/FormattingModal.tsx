@@ -2,6 +2,7 @@ import React from 'react';
 import { FaBold, FaItalic, FaStrikethrough, FaCode, FaFileCode, FaLevelDownAlt, FaTimes, FaFont, FaEraser } from 'react-icons/fa';
 import { LuHeading1, LuHeading2, LuHeading3, LuHeading4, LuHeading5, LuHeading6 } from "react-icons/lu";
 import { useLanguage } from '../i18n/LanguageContext';
+import useEscapeKey from '../utils/useEscapeKey';
 import './formattingModal.css';
 
 type Props = {
@@ -38,6 +39,7 @@ export default function FormattingModal({
     onClose
 }: Props) {
     const { t } = useLanguage();
+    useEscapeKey(onClose);
 
     const renderTile = (
         icon: React.ReactNode,

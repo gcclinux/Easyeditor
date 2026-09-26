@@ -1,7 +1,7 @@
 import React, { useState, useRef, useEffect, useCallback } from 'react';
 import { FaRobot, FaTimes, FaFlag, FaDownload, FaSpinner, FaCheckCircle, FaExclamationTriangle, FaInfoCircle, FaTrash } from 'react-icons/fa';
 import { useLanguage } from '../i18n/LanguageContext';
-import { getPersonaDescription } from './easyai/aiPersonas';
+import { getPersonaDescription, getPersonaIcon } from './easyai/aiPersonas';
 import { loadEasyAIConfig, EasyAIConfig } from './easyai/aiService';
 import ReportContentModal from './ReportContentModal';
 import { downloadReportsAsFile, getReports, isTauriEnv } from './easyai/reportService';
@@ -90,17 +90,31 @@ const EasyAIPanel: React.FC<EasyAIPanelProps> = ({
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, [showEasyAIPanel, setShowEasyAIPanel]);
 
+  // Close panel on Escape key
+  useEffect(() => {
+    if (!showEasyAIPanel) return;
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        if (showReportModal) return;
+        e.stopPropagation();
+        setShowEasyAIPanel(false);
+      }
+    };
+    document.addEventListener('keydown', handleKeyDown);
+    return () => document.removeEventListener('keydown', handleKeyDown);
+  }, [showEasyAIPanel, setShowEasyAIPanel, showReportModal]);
+
   const panelWidth = 624;
 
   const actionButtons = [
-    { id: 'markdown', label: t('easyai.markdown') },
-    { id: 'mermaid', label: t('easyai.mermaid') },
-    { id: 'user-story', label: t('easyai.user_story') },
-    { id: 'documentation', label: t('easyai.documentation') },
-    { id: 'fix-code', label: t('easyai.fix_code') },
-    { id: 'rewrite', label: t('easyai.rewrite') },
-    { id: 'architecture', label: t('easyai.architecture') },
-    { id: 'implementation', label: t('easyai.implementation') }
+    { id: 'architect', label: t('easyai.architect'), icon: '🏗️' },
+    { id: 'developer', label: t('easyai.developer'), icon: '👨‍💻' },
+    { id: 'writer', label: t('easyai.writer'), icon: '✍️' },
+    { id: 'analyst', label: t('easyai.analyst'), icon: '📊' },
+    { id: 'tester', label: t('easyai.tester'), icon: '🧪' },
+    { id: 'scrum-master', label: t('easyai.scrum_master'), icon: '🏃' },
+    { id: 'ux-designer', label: t('easyai.ux_designer'), icon: '🎨' },
+    { id: 'security', label: t('easyai.security'), icon: '🔒' }
   ];
 
   const handleActionClick = (actionId: string) => {
@@ -314,8 +328,12 @@ const EasyAIPanel: React.FC<EasyAIPanelProps> = ({
                   }
                 }}
               >
-                {isThisWorking && <FaSpinner className="easyai-spin-icon" />}
-                {action.label}
+                {isThisWorking ? (
+                  <FaSpinner className="easyai-spin-icon" />
+                ) : (
+                  action.icon && <span style={{ fontSize: '15px' }}>{action.icon}</span>
+                )}
+                <span>{action.label}</span>
               </button>
             );
           })}

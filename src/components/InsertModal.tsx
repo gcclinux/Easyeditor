@@ -2,6 +2,7 @@ import React from 'react';
 import { FaCalendarAlt, FaLink, FaCheckSquare, FaRulerHorizontal, FaIndent, FaAngleDoubleRight, FaListUl, FaListOl, FaTimes, FaExternalLinkAlt, FaBookmark, FaMagic, FaEnvelope, FaPhone, FaAnchor, FaDownload, FaImage } from 'react-icons/fa';
 import { MdOutlineInsertChartOutlined } from "react-icons/md";
 import { useLanguage } from '../i18n/LanguageContext';
+import useEscapeKey from '../utils/useEscapeKey';
 import './insertModal.css';
 
 type Props = {
@@ -24,6 +25,7 @@ export default function InsertModal({
     onClose
 }: Props) {
     const { t } = useLanguage();
+    useEscapeKey(onClose);
 
     const renderTile = (
         icon: React.ReactNode,

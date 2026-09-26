@@ -1,6 +1,7 @@
 import React from 'react';
 import { FaImage, FaLink, FaExternalLinkAlt, FaStickyNote, FaTimes } from 'react-icons/fa';
 import { useLanguage } from '../i18n/LanguageContext';
+import useEscapeKey from '../utils/useEscapeKey';
 import './imagesModal.css';
 
 type Props = {
@@ -10,6 +11,7 @@ type Props = {
 
 export default function ImagesModal({ onInsertTemplate, onClose }: Props) {
     const { t } = useLanguage();
+    useEscapeKey(onClose);
 
     const renderTile = (
         icon: React.ReactNode,

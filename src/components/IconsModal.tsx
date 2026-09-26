@@ -23,6 +23,7 @@ import {
     FaClock
 } from 'react-icons/fa';
 import { useLanguage } from '../i18n/LanguageContext';
+import useEscapeKey from '../utils/useEscapeKey';
 import './iconsModal.css';
 
 type IconItem = {
@@ -88,6 +89,7 @@ export default function IconsModal({
     onClose
 }: Props) {
     const { t } = useLanguage();
+    useEscapeKey(onClose);
 
     // Flatten all icons into a single list
     const allIcons = ICON_CATEGORIES.flatMap(cat => cat.icons);

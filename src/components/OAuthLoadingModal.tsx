@@ -7,6 +7,7 @@
 import React from 'react';
 import { FaSpinner, FaExternalLinkAlt, FaCheckCircle, FaTimesCircle } from 'react-icons/fa';
 import ProgressBar from './ProgressBar';
+import useEscapeKey from '../utils/useEscapeKey';
 
 export type OAuthLoadingState = 
   | 'initiating'
@@ -41,6 +42,7 @@ const OAuthLoadingModal: React.FC<OAuthLoadingModalProps> = ({
   onClose,
   authUrl
 }) => {
+  useEscapeKey(onCancel || onClose, isOpen);
   if (!isOpen) return null;
 
   const getStateConfig = () => {
@@ -152,7 +154,7 @@ const OAuthLoadingModal: React.FC<OAuthLoadingModalProps> = ({
         {config.showProgress && (
           <div className="oauth-loading-progress">
             <ProgressBar
-              progress={progress !== undefined ? progress : undefined}
+              progress={progress !== undefined ? progress : 0}
               showPercentage={progress !== undefined}
               animated={true}
               size="medium"

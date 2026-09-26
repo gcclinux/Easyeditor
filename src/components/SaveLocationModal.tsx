@@ -1,5 +1,6 @@
 import React from 'react';
 import { FaSave, FaFolder, FaGoogleDrive, FaDropbox, FaTimes } from 'react-icons/fa';
+import useEscapeKey from '../utils/useEscapeKey';
 import './SaveLocationModal.css';
 
 interface Provider {
@@ -23,6 +24,7 @@ const SaveLocationModal: React.FC<SaveLocationModalProps> = ({
     onSelectProvider,
     connectedProviders
 }) => {
+    useEscapeKey(onClose, open);
     if (!open) return null;
 
     return (

@@ -7,6 +7,7 @@
 import React from 'react';
 import { FaCloud, FaTimes } from 'react-icons/fa';
 import OAuthUI from './OAuthUI';
+import useEscapeKey from '../utils/useEscapeKey';
 import './oauthUI.css';
 
 export interface CloudServicesModalProps {
@@ -24,6 +25,7 @@ const CloudServicesModal: React.FC<CloudServicesModalProps> = ({
   onAuthenticationError,
   onProviderDisconnect
 }) => {
+  useEscapeKey(onClose, open);
   if (!open) return null;
 
   const handleAuthSuccess = (provider: string, tokens: any) => {

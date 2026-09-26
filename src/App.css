@@ -333,7 +333,7 @@ html,
 
 /* Fixed menubar button size for uniform buttons */
 .fixed-menubar-btn {
-  width: 160px;
+  width: 125px;
   height: 43px;
   box-sizing: border-box;
   padding: 4px 4px;
@@ -348,6 +348,8 @@ html,
   transition: all 0.3s ease;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.15);
   font-weight: 500;
+  font-size: 0.88em;
+  white-space: nowrap;
 }
 
 .fixed-menubar-btn:hover {
@@ -369,13 +371,50 @@ html,
 
 /* Narrower variant for Tasks and Export buttons */
 .fixed-menubar-btn.compact {
-  width: 120px;
+  width: 110px;
   font-size: 0.85em;
+  white-space: nowrap;
+}
+
+/* Support button with warm/rose highlight */
+.fixed-menubar-btn.support-btn {
+  width: 110px;
+  font-size: 0.85em;
+  white-space: nowrap;
+  background: linear-gradient(135deg, #be123c 0%, #9f1239 100%);
+  border: 1px solid rgba(244, 63, 94, 0.45);
+  color: #ffffff;
+  box-shadow: 0 2px 5px rgba(190, 18, 60, 0.25);
+}
+
+.fixed-menubar-btn.support-btn:hover {
+  background: linear-gradient(135deg, #e11d48 0%, #be123c 100%);
+  box-shadow: 0 4px 10px rgba(225, 29, 72, 0.4);
+  transform: translateY(-1px);
+  border-color: rgba(251, 113, 133, 0.6);
+}
+
+.fixed-menubar-btn.support-btn:active {
+  transform: translateY(0);
+  box-shadow: 0 2px 4px rgba(190, 18, 60, 0.2);
+}
+
+.fixed-menubar-btn.support-btn .support-heart-icon {
+  color: #fda4af;
+  margin-right: 5px;
+  font-size: 1.05em;
+  vertical-align: -0.1em;
+  transition: transform 0.2s ease, color 0.2s ease;
+}
+
+.fixed-menubar-btn.support-btn:hover .support-heart-icon {
+  transform: scale(1.15);
+  color: #ffffff;
 }
 
 /* Help button: half the fixed size and light green */
 .help-menubar-btn {
-  width: 125px;
+  width: 112px;
   height: 43px;
   box-sizing: border-box;
   padding: 4px 4px;
@@ -387,6 +426,8 @@ html,
   border: 1px solid var(--btn-help-border);
   border-radius: 6px;
   cursor: pointer;
+  font-size: 0.88em;
+  white-space: nowrap;
 }
 
 /* Container for parallel layout */

@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import './fileBrowserModal.css';
+import useEscapeKey from '../utils/useEscapeKey';
 
 interface FileBrowserModalProps {
   open: boolean;
@@ -12,6 +13,8 @@ interface FileBrowserModalProps {
 const FileBrowserModal: React.FC<FileBrowserModalProps> = ({ open, onClose, onSelectFile, files, repoPath }) => {
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedFile, setSelectedFile] = useState<string | null>(null);
+
+  useEscapeKey(onClose, open);
 
   if (!open) {
     return null;

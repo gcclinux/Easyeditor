@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { FaGlobe, FaPlus, FaDownload } from 'react-icons/fa';
 import { useLanguage } from '../i18n/LanguageContext';
 import enTranslations from '../i18n/locales/en.json'; // Import English as template
+import useEscapeKey from '../utils/useEscapeKey';
 import './themeModal.css'; // Reuse theme modal styles for consistency
 
 interface LanguageModalProps {
@@ -15,6 +16,8 @@ const LanguageModal: React.FC<LanguageModalProps> = ({ open, onClose }) => {
     const [importCode, setImportCode] = useState('');
     const [importName, setImportName] = useState('');
     const [importJson, setImportJson] = useState('');
+
+    useEscapeKey(onClose, open);
 
     if (!open) return null;
 

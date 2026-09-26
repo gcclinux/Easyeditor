@@ -1,3 +1,4 @@
+import { useEffect } from 'react';
 import { FaCodeBranch, FaClone, FaDownload, FaUpload, FaSync, FaSave, FaKey, FaLock, FaHistory, FaPlus, FaFolderOpen, FaTimes } from 'react-icons/fa';
 import { useLanguage } from '../i18n/LanguageContext';
 import './gitModal.css';
@@ -38,6 +39,17 @@ export default function GitModal({
   onSaveCommitPush
 }: Props) {
   const { t } = useLanguage();
+
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        e.stopPropagation();
+        onClose();
+      }
+    };
+    document.addEventListener('keydown', handleKeyDown);
+    return () => document.removeEventListener('keydown', handleKeyDown);
+  }, [onClose]);
 
   const handleTileClick = (action: () => void, requiresAuth: boolean) => {
     if (requiresAuth && !isAuthenticated) {

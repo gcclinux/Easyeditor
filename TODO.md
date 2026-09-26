@@ -1,8 +1,8 @@
 # v2.5.0
-1) Add donation link to Main home page / model
+1) Add donation link to Main home page / model (DONE)
 [Support Link](https://buy.stripe.com/fZufZh9FKcedfaKakXdZ606) - $5
 
-2) Update EasyAI personas
+2) Update EasyAI personas (DONE)
 EasyAI brings 8 unique personas to EasyEditor and EasyGit, transforming how you document, innovate, and enhance your content with intelligent precision.
 
 🏗️ Architect - System & software design
@@ -14,7 +14,7 @@ EasyAI brings 8 unique personas to EasyEditor and EasyGit, transforming how you 
 🎨 UX Designer - User experience & flows
 🔒 Security - Security & threat models
 
-3) Update EasyNotes, EasyAI, EasyTeam and EasyGit
+3) Update EasyNotes, EasyAI, EasyTeam, EasyGit, AboutModal and all other Modals (DONE)
 Each modal with ESCAPE key close them.
  
 4) Test build all packages

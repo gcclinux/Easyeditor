@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { FaEdit, FaCheck, FaTimes } from 'react-icons/fa';
+import useEscapeKey from '../utils/useEscapeKey';
 import './FileNameModal.css';
 
 interface FileNameModalProps {
@@ -21,6 +22,7 @@ const FileNameModal: React.FC<FileNameModalProps> = ({
     placeholder = "Enter file name...",
     submitLabel = "Save"
 }) => {
+    useEscapeKey(onClose, open);
     const [fileName, setFileName] = useState(initialValue);
     const inputRef = useRef<HTMLInputElement>(null);
 

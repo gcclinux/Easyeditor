@@ -2,6 +2,7 @@
 import { FaTimes } from 'react-icons/fa';
 import { VscSymbolKeyword } from "react-icons/vsc";
 import { useLanguage } from '../i18n/LanguageContext';
+import useEscapeKey from '../utils/useEscapeKey';
 import './symbolsModal.css';
 
 type Props = {
@@ -21,6 +22,7 @@ export default function SymbolsModal({
     onClose
 }: Props) {
     const { t } = useLanguage();
+    useEscapeKey(onClose);
 
     return (
         <div className="modal-overlay" onClick={onClose}>

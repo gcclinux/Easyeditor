@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { FaTable, FaTimes, FaCheck } from 'react-icons/fa';
 import { useLanguage } from '../i18n/LanguageContext';
+import useEscapeKey from '../utils/useEscapeKey';
 import './autoGenerator.css';
 
 interface TableGeneratorProps {
@@ -63,6 +64,8 @@ export const TableGenerator: React.FC<TableGeneratorProps> = ({ isOpen, onClose,
     setHoverCol(0);
     onClose();
   };
+
+  useEscapeKey(handleClose, isOpen);
 
   const handleHeaderChange = (index: number, value: string) => {
     const newHeaders = [...customHeaders];

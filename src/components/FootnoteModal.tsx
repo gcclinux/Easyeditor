@@ -1,6 +1,7 @@
 import React from 'react';
 import { FaStickyNote, FaLayerGroup, FaSortNumericDown, FaGraduationCap, FaTimes } from 'react-icons/fa';
 import { useLanguage } from '../i18n/LanguageContext';
+import useEscapeKey from '../utils/useEscapeKey';
 import './footnoteModal.css';
 
 type Props = {
@@ -10,6 +11,7 @@ type Props = {
 
 export default function FootnoteModal({ onInsertTemplate, onClose }: Props) {
     const { t } = useLanguage();
+    useEscapeKey(onClose);
 
     const renderTile = (
         icon: React.ReactNode,

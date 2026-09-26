@@ -205,6 +205,21 @@ const EasyTeamPanel: React.FC<EasyTeamPanelProps> = ({
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, [showEasyTeamPanel, setShowEasyTeamPanel]);
 
+  // ─── Close on Escape key ────────────────────────────────────────────────
+
+  useEffect(() => {
+    if (!showEasyTeamPanel) return;
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        e.stopPropagation();
+        setShowEasyTeamPanel(false);
+      }
+    };
+
+    document.addEventListener('keydown', handleKeyDown);
+    return () => document.removeEventListener('keydown', handleKeyDown);
+  }, [showEasyTeamPanel, setShowEasyTeamPanel]);
+
   // ─── Status Badge Rendering ─────────────────────────────────────────────
 
   const renderStatusBadge = () => {

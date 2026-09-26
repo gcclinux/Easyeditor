@@ -2,6 +2,7 @@ import './featuresModal.css';
 import { createPortal } from 'react-dom';
 import { useLanguage } from '../i18n/LanguageContext';
 import icon from '../assets/logo.png';
+import useEscapeKey from '../utils/useEscapeKey';
 
 interface FeaturesModalProps {
   open: boolean;
@@ -10,6 +11,7 @@ interface FeaturesModalProps {
 
 export function FeaturesModal({ open, onClose }: FeaturesModalProps) {
   const { t } = useLanguage();
+  useEscapeKey(onClose, open);
 
   if (!open) return null;
 

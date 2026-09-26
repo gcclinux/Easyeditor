@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import useEscapeKey from '../utils/useEscapeKey';
 import './autoGenerator.css';
 
 interface GanttGeneratorProps {
@@ -17,6 +18,7 @@ interface Task {
 }
 
 export const GanttGenerator: React.FC<GanttGeneratorProps> = ({ isOpen, onClose, onInsert }) => {
+  useEscapeKey(onClose, isOpen);
   const [projectTitle, setProjectTitle] = useState('Project Schedule');
   const [tasks, setTasks] = useState<Task[]>([
     { id: 1, name: 'Task 1', startDate: '', section: '', duration: 3 }

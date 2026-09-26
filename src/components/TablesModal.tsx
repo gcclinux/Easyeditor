@@ -2,6 +2,7 @@ import React from 'react';
 import { FaTable, FaTasks, FaColumns, FaTimes, FaRoad, FaGem } from 'react-icons/fa';
 import { BsGrid3X3 } from "react-icons/bs";
 import { useLanguage } from '../i18n/LanguageContext';
+import useEscapeKey from '../utils/useEscapeKey';
 import './tablesModal.css';
 
 type Props = {
@@ -11,6 +12,7 @@ type Props = {
 
 export default function TablesModal({ onInsertTemplate, onClose }: Props) {
     const { t } = useLanguage();
+    useEscapeKey(onClose);
 
     const renderTile = (
         icon: React.ReactNode,

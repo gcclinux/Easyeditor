@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import useEscapeKey from '../utils/useEscapeKey';
 import './masterPasswordModal.css';
 
 interface MasterPasswordModalProps {
@@ -18,6 +19,7 @@ const MasterPasswordModal: React.FC<MasterPasswordModalProps> = ({
   isSetup,
   showToast
 }) => {
+  useEscapeKey(onClose, open);
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);

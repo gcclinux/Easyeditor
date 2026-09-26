@@ -13,6 +13,7 @@ import {
     BsRobot
 } from 'react-icons/bs';
 import { useLanguage } from '../i18n/LanguageContext';
+import useEscapeKey from '../utils/useEscapeKey';
 import './umlModal.css';
 
 type Props = {
@@ -41,6 +42,7 @@ export default function UMLModal({
     onClose
 }: Props) {
     const { t } = useLanguage();
+    useEscapeKey(onClose);
 
     const renderTile = (
         icon: React.ReactNode,

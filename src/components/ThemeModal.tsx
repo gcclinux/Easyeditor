@@ -3,6 +3,7 @@ import './themeModal.css';
 import { FaPalette, FaPlus, FaTrash, FaDownload } from 'react-icons/fa';
 import { getCustomThemes, deleteCustomTheme, CustomTheme } from '../customThemeManager';
 import { useLanguage } from '../i18n/LanguageContext';
+import useEscapeKey from '../utils/useEscapeKey';
 
 interface ThemeModalProps {
   open: boolean;
@@ -24,6 +25,8 @@ const builtInThemes = [
 const ThemeModal: React.FC<ThemeModalProps> = ({ open, onClose, onSelectTheme, currentTheme, onOpenImport }) => {
   const { t } = useLanguage();
   const [customThemes, setCustomThemes] = useState<CustomTheme[]>([]);
+
+  useEscapeKey(onClose, open);
 
   useEffect(() => {
     if (open) {

@@ -1,8 +1,9 @@
 import React from 'react';
-import { FaFileImport, FaSave, FaStar, FaGithub, FaHeart, FaPalette, FaGlobe, FaInfoCircle, FaTimes, FaFileAlt, FaLeaf, FaCog } from 'react-icons/fa';
+import { FaFileImport, FaGithub, FaPalette, FaGlobe, FaInfoCircle, FaTimes, FaFileAlt, FaLeaf, FaCog } from 'react-icons/fa';
 import { GrDocumentText } from 'react-icons/gr';
 import { BsFileEarmarkLockFill } from "react-icons/bs";
 import { useLanguage } from '../i18n/LanguageContext';
+import useEscapeKey from '../utils/useEscapeKey';
 import './fileModal.css';
 
 type Props = {
@@ -27,11 +28,7 @@ export default function FileModal({
     onOpenMarkdown,
     onOpenTxt,
     onOpenEncrypted,
-    onSave,
-    onSaveAs,
-    onFeatures,
     onSupport,
-    onBuyCoffee,
     onSelectTheme,
     onSelectLanguage,
     onAPI,
@@ -39,6 +36,7 @@ export default function FileModal({
     onClose
 }: Props) {
     const { t } = useLanguage();
+    useEscapeKey(onClose);
 
     const renderTile = (
         icon: React.ReactNode,

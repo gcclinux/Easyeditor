@@ -1,6 +1,6 @@
-import React from 'react';
 import { FaDownload, FaFilePdf, FaFileAlt, FaLock, FaCloud, FaTimes, FaImage, FaGoogleDrive, FaDropbox, FaSave } from 'react-icons/fa';
 import { useLanguage } from '../i18n/LanguageContext';
+import useEscapeKey from '../utils/useEscapeKey';
 import './exportModal.css';
 
 type Props = {
@@ -29,6 +29,7 @@ export default function ExportModal({
     onClose
 }: Props) {
     const { t } = useLanguage();
+    useEscapeKey(onClose);
 
     const renderTile = (
         icon: React.ReactNode,

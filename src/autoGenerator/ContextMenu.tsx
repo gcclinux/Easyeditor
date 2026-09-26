@@ -34,12 +34,21 @@ const ContextMenu: React.FC<ContextMenuProps> = ({
       }
     };
 
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') {
+        event.stopPropagation();
+        setContextMenu({ visible: false, x: 0, y: 0 });
+      }
+    };
+
     if (contextMenu.visible) {
       document.addEventListener('mousedown', handleClickOutside);
+      document.addEventListener('keydown', handleKeyDown);
     }
 
     return () => {
       document.removeEventListener('mousedown', handleClickOutside);
+      document.removeEventListener('keydown', handleKeyDown);
     };
   }, [contextMenu.visible, setContextMenu]);
 

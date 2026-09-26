@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import './commitModal.css';
+import useEscapeKey from '../utils/useEscapeKey';
 
 interface CommitModalProps {
   open: boolean;
@@ -17,6 +18,8 @@ const CommitModal: React.FC<CommitModalProps> = ({
   const [message, setMessage] = useState('');
   const [description, setDescription] = useState('');
   const [error, setError] = useState('');
+
+  useEscapeKey(onClose, open);
 
   useEffect(() => {
     if (open) {

@@ -638,6 +638,27 @@ const EasyNotesSidebar: React.FC<EasyNotesSidebarProps> = ({
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, [showEasyNotesSidebar, setShowEasyNotesSidebar]);
 
+  // Close sidebar on Escape key
+  useEffect(() => {
+    if (!showEasyNotesSidebar) return;
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        if (deleteConfirmModal.isOpen) {
+          setDeleteConfirmModal({ isOpen: false, noteToDelete: null });
+          return;
+        }
+        if (isLocalLibModalOpen) {
+          setIsLocalLibModalOpen(false);
+          return;
+        }
+        e.stopPropagation();
+        setShowEasyNotesSidebar(false);
+      }
+    };
+    document.addEventListener('keydown', handleKeyDown);
+    return () => document.removeEventListener('keydown', handleKeyDown);
+  }, [showEasyNotesSidebar, setShowEasyNotesSidebar, deleteConfirmModal.isOpen, isLocalLibModalOpen]);
+
   // ── Content search ───────────────────────────────────────────────────────────
   const runContentSearch = useCallback(async (query: string) => {
     if (!cloudManager || !query.trim()) return;

@@ -16,6 +16,7 @@ import {
   FaWifi,
   FaUserTimes
 } from 'react-icons/fa';
+import useEscapeKey from '../utils/useEscapeKey';
 
 export type OAuthErrorType = 
   | 'browser_launch_failed'
@@ -51,6 +52,7 @@ const OAuthErrorModal: React.FC<OAuthErrorModalProps> = ({
   onClose,
   onOpenSettings
 }) => {
+  useEscapeKey(onClose, isOpen);
   useEffect(() => {
     if (isOpen) {
       trackError('cloud', `OAuth ${providerName} (${errorType}): ${errorMessage}`);

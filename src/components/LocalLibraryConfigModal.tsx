@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { FaFolderOpen, FaCheckCircle, FaShieldAlt, FaInfoCircle, FaTimes, FaSave } from 'react-icons/fa';
 import { useLanguage } from '../i18n/LanguageContext';
 import { isTauriEnvironment } from '../utils/environment';
+import useEscapeKey from '../utils/useEscapeKey';
 import './localLibraryConfigModal.css';
 
 interface Props {
@@ -12,6 +13,7 @@ interface Props {
 
 export default function LocalLibraryConfigModal({ isOpen, onClose, onSelectFolder }: Props) {
   const { t } = useLanguage();
+  useEscapeKey(onClose, isOpen);
   const [isProcessing, setIsProcessing] = useState(false);
   const [libraryName, setLibraryName] = useState('');
   const isTauri = isTauriEnvironment();

@@ -47,9 +47,10 @@ export type FeatureCategory =
   | 'footnote'
   | 'symbol'
   | 'icon'
-  | 'settings';
+  | 'settings'
+  | 'support';
 
-export type FeatureAction = 'open' | 'use' | 'close' | 'error';
+export type FeatureAction = 'open' | 'use' | 'close' | 'error' | 'click';
 
 export type ErrorCategory =
   | 'ai'

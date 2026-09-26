@@ -3,6 +3,7 @@ import { FaTimes } from 'react-icons/fa';
 import { GoTasklist } from "react-icons/go";
 import { useLanguage } from '../i18n/LanguageContext';
 import taskTemplates from '../templates/tasks';
+import useEscapeKey from '../utils/useEscapeKey';
 import './taskModal.css';
 
 type Props = {
@@ -15,6 +16,7 @@ export default function TaskModal({
     onClose
 }: Props) {
     const { t } = useLanguage();
+    useEscapeKey(onClose);
 
     const renderTile = (
         icon: React.ReactNode,

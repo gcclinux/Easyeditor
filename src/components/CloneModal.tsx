@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import './cloneModal.css';
 import { useLanguage } from '../i18n/LanguageContext';
+import useEscapeKey from '../utils/useEscapeKey';
 
 interface CloneModalProps {
   open: boolean;
@@ -15,6 +16,8 @@ const CloneModal: React.FC<CloneModalProps> = ({ open, onClose, onSubmit, showTo
   const [targetDir, setTargetDir] = useState('');
   const [branch, setBranch] = useState('');
   const [showAdvanced, setShowAdvanced] = useState(false);
+
+  useEscapeKey(onClose, open);
 
   useEffect(() => {
     if (open) {

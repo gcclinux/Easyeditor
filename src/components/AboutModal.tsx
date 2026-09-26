@@ -218,6 +218,7 @@ export function AboutModal({ open, onClose }: AboutModalProps) {
     if (!open) return;
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === 'Escape') {
+        e.stopPropagation();
         onClose();
       }
     };

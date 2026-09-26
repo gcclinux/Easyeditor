@@ -10,7 +10,8 @@ import {
   FaDownload,
   FaCodeBranch,
   FaRobot,
-  FaUsers
+  FaUsers,
+  FaHeart
 } from 'react-icons/fa';
 import { VscSymbolKeyword } from "react-icons/vsc";
 import { GoTasklist } from "react-icons/go";
@@ -138,6 +139,7 @@ import AnalyticsConsentBanner from './components/AnalyticsConsentBanner';
 import { isFeatureEnabled } from './config/features';
 import { useLanguage } from './i18n/LanguageContext';
 import LanguageModal from './components/LanguageModal';
+import useEscapeKey from './utils/useEscapeKey';
 
 import { getRunningVersion, getAvailableVersion, compareVersions } from './utils/version';
 import { convertPdfToMarkdown, PdfImportError } from './pdfImporter';
@@ -301,6 +303,8 @@ const App = () => {
     cancelLabel: 'Cancel',
     onConfirm: () => { },
   });
+
+  useEscapeKey(() => setConfirmModalConfig(prev => ({ ...prev, open: false })), confirmModalConfig.open);
 
   // Phase 4: Enhanced Git features
   const [commitModalOpen, setCommitModalOpen] = useState(false);
@@ -2159,6 +2163,43 @@ const App = () => {
     }
   };
 
+  const handleOpenStripeSupport = async () => {
+    const url = 'https://buy.stripe.com/fZufZh9FKcedfaKakXdZ606';
+    let opened = false;
+
+    trackFeature('support', 'click', { provider: 'stripe', amount: 5 });
+
+    const isTauri = typeof window !== 'undefined' &&
+      ((window as any).__TAURI__ || (window as any).__TAURI_INTERNALS__ ||
+        typeof (window as any).__TAURI_INVOKE__ === 'function');
+
+    if (isTauri) {
+      try {
+        const { open } = await import('@tauri-apps/plugin-shell');
+        await open(url);
+        opened = true;
+      } catch (e) {
+        console.error('Tauri shell open failed:', e);
+      }
+    } else {
+      try {
+        const w = window.open(url, '_blank', 'noopener');
+        if (w) opened = true;
+      } catch (e) {
+        console.warn('window.open threw:', e);
+      }
+    }
+
+    if (!opened) {
+      try {
+        await navigator.clipboard.writeText(url);
+        showToast('Unable to open link automatically. The URL has been copied to your clipboard.', 'warning');
+      } catch (e) {
+        showToast('Unable to open or copy link automatically. Please open the URL manually from the address bar.', 'error');
+      }
+    }
+  };
+
   // Cloud note save handler
   const handleCloudNoteSave = async () => {
     if (!currentCloudNote) {
@@ -2661,7 +2702,7 @@ const App = () => {
           onClick={toggleView}
           title={getCurrentViewMode()}
         >
-          <FaExchangeAlt /> &nbsp; {getCurrentViewMode()}
+          {getCurrentViewMode()}
         </button>
         <button
           className="menu-item fixed-menubar-btn"
@@ -2699,6 +2740,15 @@ const App = () => {
             title={t('menu.exports')}
           >
             <FaDownload /> &nbsp; {t('menu.exports')}
+          </button>
+        </div>
+        <div className="dropdown-container">
+          <button
+            className="menu-item fixed-menubar-btn support-btn"
+            onClick={handleOpenStripeSupport}
+            title={`${t('menu.support')} ($5)`}
+          >
+            <FaHeart className="support-heart-icon" /> {t('menu.support')}
           </button>
         </div>
 
@@ -3459,9 +3509,15 @@ const App = () => {
             setEasyAISessionResult(null);
 
             // ── Documentation persona with repo scanning ──
-            if (actionId === 'documentation') {
+            const isRepoScanRequest = actionId === 'documentation' || (actionId === 'writer' && (
+              promptText.toLowerCase().includes('/scan') ||
+              promptText.toLowerCase().includes('scan repo') ||
+              promptText.toLowerCase().includes('document repo')
+            ));
+
+            if (isRepoScanRequest) {
               const isTauri = !!(window as any).__TAURI_INTERNALS__;
-              console.log('[EasyAI-Doc] Documentation action triggered');
+              console.log('[EasyAI-Doc] Documentation/Writer scan action triggered');
               console.log('[EasyAI-Doc] isTauri:', isTauri);
               console.log('[EasyAI-Doc] currentRepoPath:', currentRepoPath);
               console.log('[EasyAI-Doc] currentDirHandle:', currentDirHandle);
@@ -3472,109 +3528,113 @@ const App = () => {
               const hasWebRepo = !isTauri && currentDirHandle;
 
               if (!hasTauriRepo && !hasWebRepo) {
-                console.warn('[EasyAI-Doc] No repository available — aborting');
-                showToast('No Git repository loaded. Please open a repository first via EasyGit.', 'warning');
-                setEasyAIWorking(false);
-                setEasyAIWorkingAction(null);
-                setEasyAIWorkingMessage(null);
-                setEasyAISessionResult({ status: 'warning', message: 'No Git repository loaded.' });
+                if (actionId === 'documentation' || promptText.toLowerCase().includes('/scan')) {
+                  console.warn('[EasyAI-Doc] No repository available — aborting');
+                  showToast('No Git repository loaded. Please open a repository first via EasyGit.', 'warning');
+                  setEasyAIWorking(false);
+                  setEasyAIWorkingAction(null);
+                  setEasyAIWorkingMessage(null);
+                  setEasyAISessionResult({ status: 'warning', message: 'No Git repository loaded.' });
+                  return;
+                }
+                // If writer without explicit /scan, fall through to regular AI generation below
+              } else {
+
+                const controller = new AbortController();
+                scanAbortControllerRef.current = controller;
+
+                setScanProgress({ isScanning: true, currentFile: '', filesProcessed: 0, totalFiles: 0 });
+                setEasyAIWorkingMessage('Scanning repository files...');
+
+                try {
+                  let scanResult;
+
+                  if (hasTauriRepo) {
+                    console.log('[EasyAI-Doc] Using Tauri scanner for path:', currentRepoPath);
+                    const { scanRepositoryTauri } = await import('./components/easyai/tauriRepoScanner');
+                    scanResult = await scanRepositoryTauri({
+                      repoPath: currentRepoPath!,
+                      userPrompt: promptText,
+                      onProgress: (current, total, filePath) => {
+                        setScanProgress({ isScanning: true, currentFile: filePath, filesProcessed: current, totalFiles: total });
+                        setEasyAIWorkingMessage(`Scanning repository files (${current}/${total})...`);
+                      },
+                      signal: controller.signal,
+                    });
+                  } else {
+                    console.log('[EasyAI-Doc] Using web scanner with dirHandle:', currentDirHandle.name);
+                    scanResult = await scanRepository({
+                      dirHandle: currentDirHandle,
+                      userPrompt: promptText,
+                      onProgress: (current, total, filePath) => {
+                        setScanProgress({ isScanning: true, currentFile: filePath, filesProcessed: current, totalFiles: total });
+                        setEasyAIWorkingMessage(`Scanning repository files (${current}/${total})...`);
+                      },
+                      signal: controller.signal,
+                    });
+                  }
+
+                  if (scanResult.cancelled) {
+                    showToast('Scan cancelled.', 'info');
+                    setScanProgress({ isScanning: false, currentFile: '', filesProcessed: 0, totalFiles: 0 });
+                    setEasyAIWorking(false);
+                    setEasyAIWorkingAction(null);
+                    setEasyAIWorkingMessage(null);
+                    setEasyAISessionResult({ status: 'info', message: 'Scan cancelled.' });
+                    return;
+                  }
+
+                  if (scanResult.cache.size <= 1) {
+                    showToast('No scannable files found in the repository.', 'warning');
+                    setScanProgress({ isScanning: false, currentFile: '', filesProcessed: 0, totalFiles: 0 });
+                    setEasyAIWorking(false);
+                    setEasyAIWorkingAction(null);
+                    setEasyAIWorkingMessage(null);
+                    setEasyAISessionResult({ status: 'warning', message: 'No scannable files found in repository.' });
+                    return;
+                  }
+
+                  // Log scan results for debugging
+                  console.log(`[RepoScanner] Cache contains ${scanResult.cache.size - 1} file summaries`);
+
+                  setScanProgress(prev => ({ ...prev, currentFile: 'Generating documentation…' }));
+                  setEasyAIWorkingMessage('Generating documentation with AI backend...');
+                  const doc = await generateDocumentation({
+                    cache: scanResult.cache,
+                    userPrompt: promptText,
+                    signal: controller.signal,
+                  });
+
+                  if (doc) {
+                    setEditorContent(doc + '\n');
+                    setLastAIResponse(doc);
+                    showToast('EasyAI (documentation) — documentation generated.', 'success');
+                    setEasyAIWorking(false);
+                    setEasyAIWorkingAction(null);
+                    setEasyAIWorkingMessage(null);
+                    setEasyAISessionResult({ status: 'success', message: 'Documentation generated and inserted into editor.' });
+                  } else {
+                    showToast('EasyAI (documentation) — empty response.', 'warning');
+                    setEasyAIWorking(false);
+                    setEasyAIWorkingAction(null);
+                    setEasyAIWorkingMessage(null);
+                    setEasyAISessionResult({ status: 'warning', message: 'Empty response returned.' });
+                  }
+                } catch (err: any) {
+                  const msg = err.message || 'Scan failed';
+                  console.error('[EasyAI-Doc] Scan error:', msg, err);
+                  trackError('ai', `Doc scan: ${msg}`);
+                  showToast(msg, 'error');
+                  setEasyAIWorking(false);
+                  setEasyAIWorkingAction(null);
+                  setEasyAIWorkingMessage(null);
+                  setEasyAISessionResult({ status: 'error', message: msg });
+                } finally {
+                  setScanProgress({ isScanning: false, currentFile: '', filesProcessed: 0, totalFiles: 0 });
+                  scanAbortControllerRef.current = null;
+                }
                 return;
               }
-
-              const controller = new AbortController();
-              scanAbortControllerRef.current = controller;
-
-              setScanProgress({ isScanning: true, currentFile: '', filesProcessed: 0, totalFiles: 0 });
-              setEasyAIWorkingMessage('Scanning repository files...');
-
-              try {
-                let scanResult;
-
-                if (hasTauriRepo) {
-                  console.log('[EasyAI-Doc] Using Tauri scanner for path:', currentRepoPath);
-                  const { scanRepositoryTauri } = await import('./components/easyai/tauriRepoScanner');
-                  scanResult = await scanRepositoryTauri({
-                    repoPath: currentRepoPath!,
-                    userPrompt: promptText,
-                    onProgress: (current, total, filePath) => {
-                      setScanProgress({ isScanning: true, currentFile: filePath, filesProcessed: current, totalFiles: total });
-                      setEasyAIWorkingMessage(`Scanning repository files (${current}/${total})...`);
-                    },
-                    signal: controller.signal,
-                  });
-                } else {
-                  console.log('[EasyAI-Doc] Using web scanner with dirHandle:', currentDirHandle.name);
-                  scanResult = await scanRepository({
-                    dirHandle: currentDirHandle,
-                    userPrompt: promptText,
-                    onProgress: (current, total, filePath) => {
-                      setScanProgress({ isScanning: true, currentFile: filePath, filesProcessed: current, totalFiles: total });
-                      setEasyAIWorkingMessage(`Scanning repository files (${current}/${total})...`);
-                    },
-                    signal: controller.signal,
-                  });
-                }
-
-                if (scanResult.cancelled) {
-                  showToast('Scan cancelled.', 'info');
-                  setScanProgress({ isScanning: false, currentFile: '', filesProcessed: 0, totalFiles: 0 });
-                  setEasyAIWorking(false);
-                  setEasyAIWorkingAction(null);
-                  setEasyAIWorkingMessage(null);
-                  setEasyAISessionResult({ status: 'info', message: 'Scan cancelled.' });
-                  return;
-                }
-
-                if (scanResult.cache.size <= 1) {
-                  showToast('No scannable files found in the repository.', 'warning');
-                  setScanProgress({ isScanning: false, currentFile: '', filesProcessed: 0, totalFiles: 0 });
-                  setEasyAIWorking(false);
-                  setEasyAIWorkingAction(null);
-                  setEasyAIWorkingMessage(null);
-                  setEasyAISessionResult({ status: 'warning', message: 'No scannable files found in repository.' });
-                  return;
-                }
-
-                // Log scan results for debugging
-                console.log(`[RepoScanner] Cache contains ${scanResult.cache.size - 1} file summaries`);
-
-                setScanProgress(prev => ({ ...prev, currentFile: 'Generating documentation…' }));
-                setEasyAIWorkingMessage('Generating documentation with AI backend...');
-                const doc = await generateDocumentation({
-                  cache: scanResult.cache,
-                  userPrompt: promptText,
-                  signal: controller.signal,
-                });
-
-                if (doc) {
-                  setEditorContent(doc + '\n');
-                  setLastAIResponse(doc);
-                  showToast('EasyAI (documentation) — documentation generated.', 'success');
-                  setEasyAIWorking(false);
-                  setEasyAIWorkingAction(null);
-                  setEasyAIWorkingMessage(null);
-                  setEasyAISessionResult({ status: 'success', message: 'Documentation generated and inserted into editor.' });
-                } else {
-                  showToast('EasyAI (documentation) — empty response.', 'warning');
-                  setEasyAIWorking(false);
-                  setEasyAIWorkingAction(null);
-                  setEasyAIWorkingMessage(null);
-                  setEasyAISessionResult({ status: 'warning', message: 'Empty response returned.' });
-                }
-              } catch (err: any) {
-                const msg = err.message || 'Scan failed';
-                console.error('[EasyAI-Doc] Scan error:', msg, err);
-                trackError('ai', `Doc scan: ${msg}`);
-                showToast(msg, 'error');
-                setEasyAIWorking(false);
-                setEasyAIWorkingAction(null);
-                setEasyAIWorkingMessage(null);
-                setEasyAISessionResult({ status: 'error', message: msg });
-              } finally {
-                setScanProgress({ isScanning: false, currentFile: '', filesProcessed: 0, totalFiles: 0 });
-                scanAbortControllerRef.current = null;
-              }
-              return;
             }
 
             const systemPrompt = buildSystemPrompt(actionId, editorContent, promptText);
@@ -3606,7 +3666,7 @@ const App = () => {
                 if (actionId === 'rewrite') {
                   // Rewrite replaces the entire editor content
                   setEditorContent(aiResponse + '\n');
-                } else if (actionId === 'fix-code') {
+                } else if (actionId === 'fix-code' || actionId === 'developer') {
                   // Fix-code: replace the targeted block in-place
                   const { target } = parseFixTarget(promptText);
                   let extracted: { block: string; start: number; end: number } | null = null;

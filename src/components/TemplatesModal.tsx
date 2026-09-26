@@ -34,6 +34,7 @@ import { buildKatexExampleTemplate } from '../templates/katexExample';
 import { buildJiraDesignStoryTemplate } from '../templates/jiraDesignStory';
 import { buildJiraFeatureStoryTemplate } from '../templates/jiraFeatureStory';
 import { buildGenericUserStoryTemplate } from '../templates/genericUserStory';
+import useEscapeKey from '../utils/useEscapeKey';
 import './templatesModal.css';
 
 type Props = {
@@ -43,6 +44,7 @@ type Props = {
 
 export default function TemplatesModal({ onInsertTemplate, onClose }: Props) {
     const { t } = useLanguage();
+    useEscapeKey(onClose);
 
     const renderTile = (
         icon: React.ReactNode,

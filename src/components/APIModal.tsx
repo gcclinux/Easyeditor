@@ -3,6 +3,7 @@ import './aboutModal.css';
 import { createPortal } from 'react-dom';
 import logo from '../assets/128x128@2x.png';
 import { useLanguage } from '../i18n/LanguageContext';
+import useEscapeKey from '../utils/useEscapeKey';
 
 interface APIModalProps {
   open: boolean;
@@ -54,6 +55,7 @@ const AGENT_DEFAULTS: Record<string, { model: string; host: string }> = {
 
 export function APIModal({ open, onClose, showToast }: APIModalProps) {
   const { t } = useLanguage();
+  useEscapeKey(onClose, open);
 
   const [agent, setAgent] = React.useState('Ollama');
   const [host, setHost]   = React.useState('http://localhost:11434');

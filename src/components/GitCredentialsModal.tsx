@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import './gitCredentialsModal.css';
 import { useLanguage } from '../i18n/LanguageContext';
+import useEscapeKey from '../utils/useEscapeKey';
 
 interface GitCredentialsModalProps {
   open: boolean;
@@ -24,6 +25,8 @@ const GitCredentialsModal: React.FC<GitCredentialsModalProps> = ({
   const [token, setToken] = useState(initialToken);
   const [showToken, setShowToken] = useState(false);
   const [rememberMe, setRememberMe] = useState(true);
+
+  useEscapeKey(onClose, open);
 
   useEffect(() => {
     if (open) {

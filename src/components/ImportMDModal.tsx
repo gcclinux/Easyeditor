@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import './importMDModal.css';
 import { useLanguage } from '../i18n/LanguageContext';
+import useEscapeKey from '../utils/useEscapeKey';
 
 interface ImportMDModalProps {
     open: boolean;
@@ -10,6 +11,7 @@ interface ImportMDModalProps {
 
 const ImportMDModal: React.FC<ImportMDModalProps> = ({ open, onClose, onSubmit }) => {
     const { t } = useLanguage();
+    useEscapeKey(onClose, open);
     const [url, setUrl] = useState('');
 
     useEffect(() => {

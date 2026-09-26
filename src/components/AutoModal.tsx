@@ -1,6 +1,7 @@
 import React from 'react';
 import { FaBolt, FaTable, FaProjectDiagram, FaFileImport, FaTimes, FaStream, FaFileWord, FaFilePdf } from 'react-icons/fa';
 import { useLanguage } from '../i18n/LanguageContext';
+import useEscapeKey from '../utils/useEscapeKey';
 import './autoModal.css';
 
 type Props = {
@@ -25,6 +26,7 @@ export default function AutoModal({
     onClose
 }: Props) {
     const { t } = useLanguage();
+    useEscapeKey(onClose);
 
     const renderTile = (
         icon: React.ReactNode,
