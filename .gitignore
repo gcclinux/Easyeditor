@@ -46,6 +46,8 @@ parts
 prime
 stage
 .craft
+# Generated from snap/snapcraft.yaml.in by snap/generate-snapcraft.sh
+snap/snapcraft.yaml
 src/services/oauth/__tests__/
 # Graphify
 graphify-out/

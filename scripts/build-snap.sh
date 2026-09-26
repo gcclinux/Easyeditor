@@ -5,7 +5,11 @@
 # This script builds the EasyEditor snap package using strict confinement
 # with the gnome extension (provides WebKitGTK 4.1 from gnome-46-2404).
 #
-# Usage: ./linux/build-snap.sh [--clean] [--install] [--run]
+# snap/snapcraft.yaml is generated from snap/snapcraft.yaml.in for the host
+# architecture before building. Override the target arch with SNAP_ARCH, e.g.:
+#   SNAP_ARCH=arm64 ./scripts/build-snap.sh
+#
+# Usage: ./scripts/build-snap.sh [--clean] [--install] [--run]
 #   --clean   : Run snapcraft clean before building
 #   --install : Install the snap after building
 #   --run     : Run the snap after installing
@@ -32,7 +36,7 @@ for arg in "$@"; do
         --install) DO_INSTALL=true ;;
         --run)     DO_RUN=true ;;
         --help|-h)
-            echo "Usage: ./linux/build-snap.sh [--clean] [--install] [--run]"
+            echo "Usage: ./scripts/build-snap.sh [--clean] [--install] [--run]"
             echo "  --clean   : Run snapcraft clean before building"
             echo "  --install : Install the snap after building"
             echo "  --run     : Run the snap after installing"
@@ -54,7 +58,23 @@ echo ""
 VERSION=$(node -p "require('./package.json').version")
 echo -e "${GREEN}Version:${NC} $VERSION"
 
-# Retrieve arch from snap/snapcraft.yaml
+# Generate snap/snapcraft.yaml from the template for the host architecture.
+# snap/snapcraft.yaml is git-ignored and regenerated from snap/snapcraft.yaml.in
+# by snap/generate-snapcraft.sh (substitutes the @ARCH@ placeholder).
+# An explicit arch can be forced via: SNAP_ARCH=arm64 ./scripts/build-snap.sh
+if [ ! -f snap/snapcraft.yaml.in ]; then
+    echo -e "${RED}ERROR: snap/snapcraft.yaml.in template not found.${NC}"
+    exit 1
+fi
+if [ ! -f snap/generate-snapcraft.sh ]; then
+    echo -e "${RED}ERROR: snap/generate-snapcraft.sh not found.${NC}"
+    exit 1
+fi
+
+echo -e "${YELLOW}Generating snap/snapcraft.yaml from template...${NC}"
+bash snap/generate-snapcraft.sh ${SNAP_ARCH:-}
+
+# Retrieve arch from the freshly generated snap/snapcraft.yaml
 ARCH=$(awk '/^platforms:/ {getline; gsub(/:/, ""); print $1}' snap/snapcraft.yaml)
 echo -e "${GREEN}Architecture:${NC} $ARCH"
 echo ""
