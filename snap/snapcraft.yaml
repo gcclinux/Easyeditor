@@ -30,8 +30,9 @@ source-code: https://github.com/gcclinux/easyeditor
 issues: https://github.com/gcclinux/easyeditor/issues
 donation: https://github.com/sponsors/gcclinux
 
-platforms:
-  amd64:
+# No platforms block: snapcraft builds for the host machine's architecture.
+# The override-build below already derives the arch at build time via
+# `dpkg --print-architecture`, so the build is fully arch-agnostic.
 
 # NOTE: The gnome extension automatically provides a layout for webkit2gtk-4.1
 # binding $SNAP/gnome-platform/usr/lib/$CRAFT_ARCH_TRIPLET_BUILD_FOR/webkit2gtk-4.1
