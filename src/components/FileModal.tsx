@@ -1,5 +1,5 @@
 import React from 'react';
-import { FaFileImport, FaGithub, FaPalette, FaGlobe, FaInfoCircle, FaTimes, FaFileAlt, FaLeaf, FaCog } from 'react-icons/fa';
+import { FaFileImport, FaGithub, FaPalette, FaGlobe, FaInfoCircle, FaTimes, FaFileAlt, FaLeaf, FaCog, FaHeart } from 'react-icons/fa';
 import { GrDocumentText } from 'react-icons/gr';
 import { BsFileEarmarkLockFill } from "react-icons/bs";
 import { useLanguage } from '../i18n/LanguageContext';
@@ -15,6 +15,7 @@ type Props = {
     onSaveAs?: () => void;
     onFeatures?: () => void;
     onSupport: () => void;
+    onDonate?: () => void;
     onBuyCoffee?: () => void;
     onSelectTheme: () => void;
     onSelectLanguage: () => void;
@@ -29,6 +30,7 @@ export default function FileModal({
     onOpenTxt,
     onOpenEncrypted,
     onSupport,
+    onDonate,
     onSelectTheme,
     onSelectLanguage,
     onAPI,
@@ -42,11 +44,12 @@ export default function FileModal({
         icon: React.ReactNode,
         titleKey: string,
         descKey: string,
-        onClick: () => void
+        onClick: () => void,
+        customClass?: string
     ) => {
         return (
             <button
-                className="file-tile"
+                className={`file-tile ${customClass || ''}`}
                 onClick={() => {
                     onClick();
                     onClose();
@@ -59,6 +62,29 @@ export default function FileModal({
                 <div className="file-tile-desc">{t(descKey)}</div>
             </button>
         );
+    };
+
+    const handleDonate = async () => {
+        if (onDonate) {
+            onDonate();
+            return;
+        }
+        const url = 'https://buy.stripe.com/fZufZh9FKcedfaKakXdZ606';
+        const isTauri = typeof window !== 'undefined' &&
+            ((window as any).__TAURI__ || (window as any).__TAURI_INTERNALS__ ||
+                typeof (window as any).__TAURI_INVOKE__ === 'function');
+
+        if (isTauri) {
+            try {
+                const { open } = await import('@tauri-apps/plugin-shell');
+                await open(url);
+            } catch (e) {
+                console.error('Tauri shell open failed:', e);
+                window.open(url, '_blank');
+            }
+        } else {
+            window.open(url, '_blank');
+        }
     };
 
     return (
@@ -87,6 +113,7 @@ export default function FileModal({
                         {renderTile(<FaPalette />, 'menu.select_theme', 'menu.choose_theme', onSelectTheme)}
                         {renderTile(<FaGlobe />, 'menu.select_language', 'menu.choose_language', onSelectLanguage)}
                         {renderTile(<FaCog />, 'APIConfig', 'about.api_hosting', onAPI)}
+                        {renderTile(<FaHeart />, 'menu.donate', 'menu.donate_desc', handleDonate, 'donate-tile')}
                     </div>
                 </div>
 

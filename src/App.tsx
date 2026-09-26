@@ -2788,6 +2788,7 @@ const App = () => {
               onSaveAs={handleSaveToMarkdown}
               onFeatures={() => setFeaturesOpen(true)}
               onSupport={handleOpenSupport}
+              onDonate={handleOpenStripeSupport}
               onBuyCoffee={handleBuyCoffee}
               onSelectTheme={() => setThemeOpen(true)}
               onSelectLanguage={() => setLanguageOpen(true)}

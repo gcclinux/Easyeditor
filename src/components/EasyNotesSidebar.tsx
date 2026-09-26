@@ -891,7 +891,7 @@ const EasyNotesSidebar: React.FC<EasyNotesSidebarProps> = ({
           boxSizing: 'border-box'
         }}>
           {/* Header */}
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '10px' }}>
             <h2 style={{ margin: 0, fontSize: '1.5rem' }}>
               <FaStickyNote style={{ marginRight: '10px' }} />
               EasyNotes
@@ -993,12 +993,12 @@ const EasyNotesSidebar: React.FC<EasyNotesSidebarProps> = ({
           {/* Cloud Providers Section */}
           {(sectionFilter === 'all' || sectionFilter === 'cloud') && (
             <div style={{ marginBottom: '16px' }}>
-              <h3 style={{ fontSize: '1rem', marginBottom: '8px', color: 'var(--color-text-dropdown)' }}>
+              <h3 style={{ fontSize: '1rem', margin: '0 0 8px 0', color: 'var(--color-text-dropdown)' }}>
                 <FaCloud style={{ marginRight: '8px' }} />
                 Cloud Providers
               </h3>
 
-              <div style={{ maxHeight: '200px', overflowY: 'auto', paddingRight: '2px' }}>
+              <div style={{ maxHeight: '260px', overflowY: 'auto', paddingRight: '2px' }}>
                 {Object.entries(providers)
                   .filter(([name]) => name !== 'locallibrary')
                   .map(([providerName, metadata]) => (

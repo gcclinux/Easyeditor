@@ -92,6 +92,44 @@
   font-style: italic;
 }
 
+/* Donate tile in FileModal with red/rose highlight */
+.file-tile.donate-tile {
+  background: linear-gradient(135deg, #be123c 0%, #9f1239 100%);
+  border: 2px solid rgba(244, 63, 94, 0.5);
+  box-shadow: 0 2px 6px rgba(190, 18, 60, 0.25);
+}
+
+.file-tile.donate-tile:hover {
+  background: linear-gradient(135deg, #e11d48 0%, #be123c 100%);
+  border-color: rgba(251, 113, 133, 0.7);
+  box-shadow: 0 4px 14px rgba(225, 29, 72, 0.4);
+  transform: translateY(-2px);
+}
+
+.file-tile.donate-tile:active {
+  transform: translateY(0);
+  box-shadow: 0 2px 4px rgba(190, 18, 60, 0.2);
+}
+
+.file-tile.donate-tile .file-tile-icon {
+  color: #fda4af;
+  transition: transform 0.2s ease, color 0.2s ease;
+}
+
+.file-tile.donate-tile:hover .file-tile-icon {
+  transform: scale(1.15);
+  color: #ffffff;
+}
+
+.file-tile.donate-tile .file-tile-title {
+  color: #ffffff;
+  font-weight: 600;
+}
+
+.file-tile.donate-tile .file-tile-desc {
+  color: #fecdd3;
+}
+
 /* Modal actions */
 .file-modal .modal-actions {
   margin-top: 12px;
