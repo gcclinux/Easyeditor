@@ -10,7 +10,7 @@ cd linux
 echo "Building EasyEditor Flatpak from binary..."
 
 # Install Flatpak runtime if not present
-flatpak install --user -y flathub org.gnome.Platform//49 org.gnome.Sdk//49 || true
+flatpak install --user -y flathub org.gnome.Platform//51 org.gnome.Sdk//51 || true
 
 # Build the Flatpak from pre-built binary
 flatpak-builder --user --install --force-clean build-dir-binary io.github.gcclinux.easyeditor-tauri-binary.yml

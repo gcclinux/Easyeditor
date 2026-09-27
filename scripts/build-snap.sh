@@ -103,6 +103,48 @@ fi
 
 echo ""
 
+# -----------------------------------------------------------------------------
+# Fix Docker/LXD firewall conflict.
+# When Docker is installed it sets the iptables FORWARD policy to DROP and routes
+# it through its own DOCKER-USER chain, which drops forwarded traffic from the
+# snapcraft LXD build container. That makes apt-get update fail inside the
+# container and snapcraft reports "NetworkError: no network access".
+# Inserting ACCEPT rules for the LXD bridge into DOCKER-USER restores outbound
+# connectivity for the build container.
+# These rules are not persistent across reboots / Docker restarts, so we
+# (re)apply them here before each build. Requires sudo; skipped gracefully if
+# Docker's chain is absent or sudo is unavailable.
+# -----------------------------------------------------------------------------
+LXD_BRIDGE="${LXD_BRIDGE:-lxdbr0}"
+
+ensure_lxd_forwarding() {
+    # Nothing to do if iptables isn't present.
+    command -v iptables &> /dev/null || return 0
+
+    # Only relevant when Docker's DOCKER-USER chain exists.
+    if ! sudo iptables -S DOCKER-USER &> /dev/null; then
+        return 0
+    fi
+
+    echo -e "${YELLOW}Ensuring LXD bridge ($LXD_BRIDGE) is allowed through Docker's firewall...${NC}"
+
+    local dir
+    for dir in i o; do
+        if sudo iptables -C DOCKER-USER -${dir} "$LXD_BRIDGE" -j ACCEPT &> /dev/null; then
+            echo -e "  ✓ DOCKER-USER -${dir} $LXD_BRIDGE ACCEPT already present"
+        else
+            if sudo iptables -I DOCKER-USER -${dir} "$LXD_BRIDGE" -j ACCEPT; then
+                echo -e "  ${GREEN}✓ Added DOCKER-USER -${dir} $LXD_BRIDGE ACCEPT${NC}"
+            else
+                echo -e "  ${YELLOW}⚠ Failed to add DOCKER-USER -${dir} $LXD_BRIDGE rule (continuing)${NC}"
+            fi
+        fi
+    done
+    echo ""
+}
+
+ensure_lxd_forwarding
+
 # Output directory
 SNAP_DIR="src-tauri/target/release/bundle/snap"
 mkdir -p "$SNAP_DIR"

@@ -30,9 +30,16 @@ source-code: https://github.com/gcclinux/easyeditor
 issues: https://github.com/gcclinux/easyeditor/issues
 donation: https://github.com/sponsors/gcclinux
 
+# The amd64 placeholder is substituted at build time by snap/generate-snapcraft.sh
+# with the host machine's Debian architecture (e.g. amd64, arm64).
 platforms:
-  - amd64
-  - arm64
+  amd64:
+
+# NOTE: The gnome extension automatically provides a layout for webkit2gtk-4.1
+# binding $SNAP/gnome-platform/usr/lib/$CRAFT_ARCH_TRIPLET_BUILD_FOR/webkit2gtk-4.1
+# to /usr/lib/$CRAFT_ARCH_TRIPLET_BUILD_FOR/webkit2gtk-4.1
+# No additional layout needed here.
+
 apps:
   easyeditor:
     command: usr/bin/easyeditor
