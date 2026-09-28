@@ -1,3 +1,4 @@
+import { Fragment } from 'react';
 import { FaDownload, FaFilePdf, FaFileAlt, FaLock, FaCloud, FaTimes, FaImage, FaGoogleDrive, FaDropbox, FaSave } from 'react-icons/fa';
 import { useLanguage } from '../i18n/LanguageContext';
 import useEscapeKey from '../utils/useEscapeKey';
@@ -89,14 +90,14 @@ export default function ExportModal({
                         <div className="export-tiles-section-title">{t('exports.cloud')}</div>
                         <div className="export-tiles-grid">
                             {connectedProviders.map(provider => (
-                                <React.Fragment key={provider.name}>
+                                <Fragment key={provider.name}>
                                     {renderTile(
                                         getProviderIcon(provider.name),
                                         provider.displayName,
                                         t('exports.cloud_desc'),
                                         () => onExportToCloud(provider.name)
                                     )}
-                                </React.Fragment>
+                                </Fragment>
                             ))}
                         </div>
                     </div>

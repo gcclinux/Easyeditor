@@ -2280,7 +2280,26 @@ const App = () => {
       }
     }
 
-    // Priority 4: File System Access API save (Web)
+    // Priority 4: Direct write to a known file path (Tauri desktop app, non-Git file)
+    const isTauri = typeof window !== 'undefined' && (window as any).__TAURI_INTERNALS__;
+    if (isTauri && currentFilePath) {
+      try {
+        const { writeTauriFile } = await import('./tauriFileHandler');
+        const success = await writeTauriFile(currentFilePath, editorContent);
+        if (success) {
+          showToast('File saved successfully!', 'success');
+        } else {
+          showToast('Failed to save file', 'error');
+        }
+        return;
+      } catch (error) {
+        console.error('Failed to save file via Tauri:', error);
+        showToast('Failed to save file', 'error');
+        return;
+      }
+    }
+
+    // Priority 5: File System Access API save (Web)
     const { saveToCurrentFile, getCurrentFileHandle } = await import('./insertSave');
     const fileHandle = getCurrentFileHandle();
 
@@ -2437,11 +2456,10 @@ const App = () => {
     setFileNameModalOpen(true);
   };
 
-  // Export to Markdown - Always save as new file without changing current context
+  // Export to Markdown - Prompts for a save location, then keeps that file open
+  // so subsequent Ctrl+S saves go straight back to it.
   const handleExportToMarkdown = async () => {
-    // Force save as dialog by not passing a callback to update current file path
-    // This effectively "exports" a copy while keeping the current session intact
-    await saveToFile(editorContent);
+    await saveToFile(editorContent, setCurrentFilePath);
   };
 
   // Save to TXT wrapper
