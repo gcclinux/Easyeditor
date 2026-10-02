@@ -1,0 +1,39 @@
+# Maintainer: Ricardo Wagemaker <wagemra@gmail.com>
+pkgname=easyeditor
+pkgver=2.5.1
+pkgrel=1
+pkgdesc='Easy Markdown editor with live preview (Tauri)'
+arch=('x86_64' 'aarch64')
+url='https://github.com/gcclinux/Easyeditor'
+license=('AGPL-3.0-only')
+depends=('webkit2gtk-4.1' 'gtk3' 'glib2' 'openssl' 'libsoup3')
+makedepends=('nodejs' 'npm' 'rust' 'cargo' 'pkgconf' 'librsvg')
+optdepends=('git: Git integration support')
+options=('!lto')
+source=("$pkgname-$pkgver.tar.gz::$url/archive/refs/tags/v$pkgver.tar.gz"
+        "$pkgname.desktop")
+sha256sums=('SKIP'
+            'SKIP')
+
+prepare() {
+  cd "Easyeditor-$pkgver"
+  npm ci --no-audit --no-fund
+  cd src-tauri
+  cargo fetch --locked --target "$(rustc -vV | sed -n 's/host: //p')"
+}
+
+build() {
+  cd "Easyeditor-$pkgver"
+  export CARGO_TARGET_DIR=target
+  export WEBKIT_DISABLE_DMABUF_RENDERER=1
+  npx tauri build --no-bundle
+}
+
+package() {
+  cd "Easyeditor-$pkgver"
+  install -Dm755 src-tauri/target/release/easyeditor "$pkgdir/usr/bin/easyeditor"
+  install -Dm644 "$srcdir/$pkgname.desktop" "$pkgdir/usr/share/applications/$pkgname.desktop"
+  install -Dm644 src-tauri/icons/128x128.png "$pkgdir/usr/share/icons/hicolor/128x128/apps/$pkgname.png"
+  install -Dm644 src-tauri/icons/128x128@2x.png "$pkgdir/usr/share/icons/hicolor/256x256/apps/$pkgname.png"
+  install -Dm644 LICENSE "$pkgdir/usr/share/licenses/$pkgname/LICENSE"
+}

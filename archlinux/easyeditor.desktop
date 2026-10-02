@@ -1,0 +1,10 @@
+[Desktop Entry]
+Type=Application
+Name=EasyEditor
+GenericName=Markdown Editor
+Comment=Simple Markdown editor with preview
+Exec=easyeditor %U
+Icon=easyeditor
+Categories=Utility;TextEditor;Development;
+MimeType=text/plain;text/markdown;
+StartupWMClass=easyeditor
